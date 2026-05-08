@@ -73,11 +73,10 @@ function json(body, status, cors) {
 
 /* ============================================================ Anthropic call helper */
 
-async function callClaude(env, { system, messages, max_tokens = 1024, temperature = 0.7 }) {
+async function callClaude(env, { system, messages, max_tokens = 1024 }) {
   const body = {
-    model: env.MODEL || 'claude-opus-4-7',
+    model: env.MODEL || 'claude-sonnet-4-5',
     max_tokens,
-    temperature,
     system,
     messages
   };
