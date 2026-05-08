@@ -18,6 +18,16 @@ window.USER_DATA = {
   period: 'April 2026',
   portrait: 'assets/portraits/ramon.jpg',
 
+  /* Structured fields parsed from `reading` for the dashboard visuals.
+     If absent, the dashboard falls back to defaults / parses the raw text. */
+  auricMeters: 13.4,                      // ORIC FIELD extent
+  hawkinsLevel: 525,                      // current vibrational calibration
+  hawkinsTarget: 528,                     // 528 Hz Miracles, the resonant target
+  dna: { phaseLocked: 9, consolidating: 3, of: 12 },
+  primaryBlockQuote: 'Hesitation in finalizing commitments.',
+  archetype: 'Harmonic Guardian of the Inner Return',
+
+
   reading: `🜂 ORIC FIELD
 Your auric field extends 13.4 meters, a perfect Fibonacci harmonic. This suggests you are in a phase of coherence expansion, likely due to recent integrations (perhaps related to your medallion work).
 Field Status: Symmetrical but pulsating in triadic waves.
