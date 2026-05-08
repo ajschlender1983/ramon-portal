@@ -871,6 +871,45 @@ main { position: relative; z-index: 2; }
 @keyframes mesh-drift3 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(10vw,-15vh) scale(1.1)} 100%{transform:translate(-15vw,-5vh) scale(1.2)} }
 @keyframes mesh-drift4 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(-12vw,8vh) scale(1.15)} 100%{transform:translate(8vw,-12vh) scale(0.95)} }
 
+/* The Input parsed-reading frames sit collapsed by default — the user
+   opts in to read the practitioner's verbose words. The dashboard above
+   is the visual primary; this is the optional deep-read. */
+.input-collapse {
+  margin-top: 28px;
+}
+.input-collapse-summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  background: rgba(106,223,217,0.05);
+  border: 1px solid rgba(106,223,217,0.18);
+  border-radius: 999px;
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--teal);
+  transition: background .25s, border-color .25s;
+}
+.input-collapse-summary:hover {
+  background: rgba(106,223,217,0.10);
+  border-color: rgba(106,223,217,0.32);
+}
+.input-collapse-summary::-webkit-details-marker { display: none; }
+.input-collapse-icon {
+  display: inline-block; width: 10px; height: 10px;
+  border-right: 1.4px solid currentColor;
+  border-bottom: 1.4px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform .25s cubic-bezier(.2,.8,.2,1);
+  margin-left: 2px;
+}
+.input-collapse[open] .input-collapse-icon { transform: rotate(-135deg); }
+.input-collapse[open] .input-collapse-text::after {
+  content: ' (open)';
+  opacity: 0.55;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-size: 11px;
+}
 .input-panel-wrap {
   position: relative;
   margin-top: 32px;
@@ -1570,7 +1609,12 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .session-spotify::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(99,224,132,0.4); }
 
 .notes { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media (max-width: 720px) { .notes { grid-template-columns: 1fr; gap: 16px; } }
+/* Stack Before/After vertically below 1024px so the note blocks always have
+   enough width for the prompt + textarea without horizontal overflow. The
+   session card is in the right column of a 2-column map grid above this
+   breakpoint, so its inner body is around 350-450px on tablets — too tight
+   for two notes side-by-side. */
+@media (max-width: 1023px) { .notes { grid-template-columns: 1fr; gap: 14px; } }
 .note-block {
   display: flex; flex-direction: column; gap: 8px;
   background: rgba(11,8,15,0.4);
@@ -1578,6 +1622,10 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   border-radius: 12px;
   padding: 14px 16px;
   transition: border-color .25s, background .25s;
+  /* Critical for grid track sizing — without this, the textarea's intrinsic
+     min-width prevents the column from shrinking to 1fr, and the After card
+     overflows the body on narrow viewports. */
+  min-width: 0;
 }
 .note-block--before { border-left: 2px solid rgba(106,223,217,0.40); }
 .note-block--after  { border-left: 2px solid rgba(194,47,205,0.40); }
@@ -1603,6 +1651,8 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 }
 @media (max-width: 640px) { .note-prompt { font-size: 15px; } }
 textarea.note-input {
+  width: 100%;            /* respect the column track, ignore default cols=20 */
+  box-sizing: border-box; /* padding inside width budget */
   background: rgba(11,8,15,0.55);
   border: 1px solid var(--glass-border);
   border-radius: 8px; color: var(--light);
@@ -1869,15 +1919,24 @@ window.__userDataPromise = (function() {
 
   <div class="biofield-dashboard" id="biofield-dashboard"></div>
 
-  <div class="input-panel-wrap" id="input-panel-wrap">
-    <div class="field-panel">
-      <div class="field-panel-head">
-        <h3>The Input</h3>
+  <!-- The verbose parsed-reading frames are folded by default. The dashboard
+       above is the visual primary; the words are here for when the user
+       wants to read them. -->
+  <details class="input-collapse">
+    <summary class="input-collapse-summary">
+      <span class="input-collapse-icon" aria-hidden="true"></span>
+      <span class="input-collapse-text">Read the practitioner's words</span>
+    </summary>
+    <div class="input-panel-wrap" id="input-panel-wrap">
+      <div class="field-panel">
+        <div class="field-panel-head">
+          <h3>The Input</h3>
+        </div>
+        <div id="parsed-reading-mount"></div>
+        <textarea id="biofield" class="field-input" readonly aria-label="The Input (raw text)" hidden></textarea>
       </div>
-      <div id="parsed-reading-mount"></div>
-      <textarea id="biofield" class="field-input" readonly aria-label="The Input (raw text)" hidden></textarea>
     </div>
-  </div>
+  </details>
 </section>
 
 <hr class="gradient-divider">
@@ -1949,7 +2008,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.6.0';
+const VERSION = '1.6.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -2642,6 +2701,12 @@ function buildSilhouetteSVG() {
   });
   root.appendChild(defs);
 
+  // Read the active view once for everything below — auric extent, hawkins
+  // level, etc. all live on this. Hoisted up because the aura ring math
+  // depends on auricMeters (TDZ guard).
+  const view = getView();
+  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
+
   // Aura: 7 nested border-only rings in three triadic groups, breathing on
   // the master 10.91s clock with staggered group delays. Joy-Spark grammar
   // applied to the body context. Outer 3 rings tint gold, middle 3 teal,
@@ -2682,14 +2747,7 @@ function buildSilhouetteSVG() {
   });
 
   // Auric extent boundary — the gold dashed ring whose radius is driven by
-  // the user's measured field extent. Uses the plan's intent formula so a
-  // 13.4 m field reads as visibly larger than a 4 m one. The ring overflows
-  // the silhouette viewBox on the sides; overflow:visible is set on the
-  // SVG so the top/bottom arcs render past the body. The flanking ladders
-  // softly clip the side bulges, which is honest ("your field is bigger
-  // than the chart frame"). The numeric label lives in the aura caption.
-  const view = getView();
-  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
+  // the user's measured field extent (auricMeters declared at top of fn).
   // R = 80 + auric_m * 9, clamped to [120, 220] so the ring is always
   // generous but stays within the viewBox+gutter visual budget.
   const auricR = Math.max(120, Math.min(220, 80 + auricMeters * 9));
