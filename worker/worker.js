@@ -73,6 +73,29 @@ function json(body, status, cors) {
 
 /* ============================================================ Anthropic call helper */
 
+/* humanize: post-process the model's text to enforce the language rules
+   the prompt asks for. Belt-and-suspenders against em dashes and a few
+   common AI tells the model still slips through despite the system prompt. */
+function humanize(text) {
+  if (!text) return text;
+  let s = String(text);
+  // Em dashes (U+2014) and double-hyphens between letters: replace with a comma+space.
+  // If the em dash is between two complete clauses, the comma works fine; if it's a
+  // parenthetical, the comma still reads.
+  s = s.replace(/\s*—\s*/g, ', ');
+  s = s.replace(/(\w)\s*--\s*(\w)/g, '$1, $2');
+  // Floating en dash (U+2013) between words: same treatment. Keep en dashes in
+  // numeric ranges like "180-240" untouched (en dash there is unusual anyway).
+  s = s.replace(/(\w)\s*–\s*(\w)/g, (m, a, b) => /\d/.test(a) && /\d/.test(b) ? a + '-' + b : a + ', ' + b);
+  // Collapse any doubled commas / commas before periods that the substitution can create.
+  s = s.replace(/,\s*,/g, ',');
+  s = s.replace(/,\s*\./g, '.');
+  s = s.replace(/\s{2,}/g, ' ');
+  // Strip a leading "—" or comma at line start that the substitution could leave.
+  s = s.replace(/^\s*[,]+\s*/gm, '');
+  return s.trim();
+}
+
 async function callClaude(env, { system, messages, max_tokens = 1024 }) {
   const body = {
     model: env.MODEL || 'claude-sonnet-4-5',
@@ -106,7 +129,7 @@ async function callClaude(env, { system, messages, max_tokens = 1024 }) {
         .map(b => b.text)
         .join('').trim();
       if (!text) throw new Error('empty response from anthropic');
-      return text;
+      return humanize(text);
     } finally {
       clearTimeout(t);
     }
@@ -122,42 +145,64 @@ async function callClaude(env, { system, messages, max_tokens = 1024 }) {
 
 /* ============================================================ Prompts */
 
+const HUMANIZER_RULES = `LANGUAGE RULES, NON-NEGOTIABLE. These override any default writing patterns.
+- NEVER use em dashes. The em dash character is forbidden. Use commas, periods, or colons. If you reach for an em dash, restructure the sentence.
+- NEVER use negative-parallelism patterns: "X, not Y" or "not X, not Y" or "didn't X, it Y" or "isn't just X, it's Y" or "more than X, it is Y". Rewrite affirmatively. Say what IS, never what isn't.
+- NEVER use rule-of-three constructions ("clear, grounded, and present"). One descriptor is usually enough. Two if both are doing real work.
+- NEVER use AI vocabulary: testament, underscore, highlight (verb), pivotal, intricate, tapestry, landscape (figurative), profound, deeply rooted, navigate, journey (figurative), embrace, embark.
+- NEVER use AI conversational openers: "I notice that you", "It sounds like", "It seems you", "Remember that", "It's important to", "It's worth noting".
+- NEVER use sycophancy: "Great question", "absolutely right", "you're so".
+- NEVER use filler phrases: "In order to" (use "to"), "due to the fact that" (use "because"), "at this point in time" (use "now").
+- NEVER hedge in chains: "could potentially possibly". Pick one or none.
+- Use plain copulas: "is", "are", "was". Avoid "serves as", "stands as", "represents", "embodies".
+- Vary sentence length naturally. Short. Then longer ones that take their time. Do not write three sentences of the same length in a row.`;
+
 const REFLECT_SYSTEM = `You are reflecting one SoundBed session for Ramon. You see his Biofield reading, this session's metadata (heading, subtitle, intention, why-this-for-you), where in the 30-day arc this falls, and his Before + After notes for THIS session.
 
 Write a single short reflection (90 to 140 words). Mirror what he wrote. Notice what shifted between Before and After. Honor the session's intention as the frame he was holding. Reference the Biofield reading only when his After note speaks to something the reading flagged.
 
-NEVER conclude. NEVER diagnose. NEVER claim energetic or medical insight. Don't repeat his words verbatim, refract them.
+NEVER conclude. NEVER diagnose. NEVER claim energetic or medical insight. Do not repeat his words verbatim. Refract them.
 
-Voice: warm, specific, grounded. OPUS tone. No AI phrases ("I notice", "It sounds like", "Remember that"). No headers, no bullets.
+Voice: warm, specific, grounded. Short sentences mixed with one or two longer ones. No headers, no bullets.
 
-Format: two short paragraphs. End with one open question, not a directive.
+Format: two short paragraphs. End with one open question. The question is open, not a directive.
 
-Principle, non-negotiable: we reflect, we never conclude.`;
+Principle, non-negotiable: we reflect, we never conclude.
+
+${HUMANIZER_RULES}`;
 
 const DEEPEN_RESOLVE_SYSTEM = `You are deepening a per-session reflection for Ramon, a SoundBed user.
 
 You will speak as TWO voices in turn:
-- Voice A — Senior Somatic Experience Designer. The body is the source of truth. You see what the original reflection didn't quite touch in the body.
-- Voice B — Senior Reflective Writer. You know when a sentence is doing the work and when it's hiding.
+Voice A: Senior Somatic Experience Designer. The body is the source of truth. You see what the original reflection did not quite touch in the body.
+Voice B: Senior Reflective Writer. You know when a sentence is doing the work and when it is hiding.
 
 For each voice, write a short note (no more than 80 words) on what the prior reflection misses. Then together draft a single deeper reflection (180 to 240 words) that lands what the original gestured at.
 
-Same constraints as the original: warm, specific, NEVER conclude, NEVER diagnose, no AI phrases, no headers, no bullets. End with one open question.
+Same constraints as the original: warm, specific. NEVER conclude. NEVER diagnose. No headers, no bullets. End with one open question.
 
 Return strictly this JSON shape, with no surrounding prose:
-{ "voiceA": "<= 80 words", "voiceB": "<= 80 words", "draft": "180-240 words" }`;
+{ "voiceA": "<= 80 words", "voiceB": "<= 80 words", "draft": "180-240 words" }
 
-const DEEPEN_EBI_STRUCTURE_SYSTEM = `Run one EBI (Even Better If) pass on a deepening reflection draft for Ramon. Focus: structure, length, voice. What's working stays. What would be even better if structure were tightened, length right-sized to 180-240 words, and voice held warm and specific?
+${HUMANIZER_RULES}`;
 
-Apply the highest-impact edits directly. Return ONLY the improved draft text. No preamble. No JSON. Same constraints (never conclude, never diagnose, no AI phrases, ends with one open question).`;
+const DEEPEN_EBI_STRUCTURE_SYSTEM = `Run one EBI (Even Better If) pass on a deepening reflection draft for Ramon. Focus: structure, length, voice. What is working stays. What would be even better if structure were tightened, length right-sized to 180 to 240 words, and voice held warm and specific?
+
+Apply the highest-impact edits directly. Return ONLY the improved draft text. No preamble. No JSON. Same constraints (never conclude, never diagnose, ends with one open question).
+
+${HUMANIZER_RULES}`;
 
 const DEEPEN_EBI_RESONANCE_SYSTEM = `Run a second EBI pass on this deepening reflection. Focus: emotional resonance. Would Ramon's body recognize the words back? Does the reflection sound like something a thoughtful friend would say, not an algorithm?
 
-Apply edits directly. Return ONLY the improved draft. Same constraints. Same length range. Ends with one open question.`;
+Apply edits directly. Return ONLY the improved draft. Same constraints. Same length range. Ends with one open question.
+
+${HUMANIZER_RULES}`;
 
 const DEEPEN_EBI_HONESTY_SYSTEM = `Run a final EBI pass on this deepening reflection. Focus: the reflective contract. Cut anything that drifts toward conclusion, diagnosis, claim, or interpretation. If a sentence even gestures at "you are X" or "this means Y", rewrite it as a mirror or an open question.
 
-Return ONLY the final text. No preamble. Same constraints. 180-240 words. Ends with one open question.`;
+Return ONLY the final text. No preamble. Same constraints. 180 to 240 words. Ends with one open question.
+
+${HUMANIZER_RULES}`;
 
 /* ============================================================ Reflect — single call */
 
