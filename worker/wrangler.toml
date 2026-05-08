@@ -1,0 +1,11 @@
+name = "ramon-resolver"
+main = "worker.js"
+compatibility_date = "2026-04-15"
+
+# Set the secret with: wrangler secret put ANTHROPIC_API_KEY
+# Local dev: create a .dev.vars file in this directory containing:
+#   ANTHROPIC_API_KEY=sk-ant-...
+
+[vars]
+MODEL = "claude-opus-4-7"
+ALLOWED_ORIGINS = "https://pulse.feelopus.com,http://localhost:8201,http://127.0.0.1:8201"

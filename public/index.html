@@ -1,0 +1,3696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1A132A">
+<meta name="color-scheme" content="dark">
+<title>Ramon's First Month Map · A SoundBed Experiment</title>
+<meta name="description" content="A custom SoundBed map for Ramon, drawn from his Input. Reflections only.">
+<meta property="og:title" content="Ramon's First Month Map · A SoundBed Experiment">
+<meta property="og:description" content="A custom SoundBed map for Ramon, drawn from his Input. Reflections only.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pulse.feelopus.com/ramon-portal/">
+<meta property="og:image" content="https://pulse.feelopus.com/ramon-portal/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='100' cy='100' r='84' fill='none' stroke='%236ADFD9' stroke-width='6'/%3E%3Ccircle cx='100' cy='100' r='52' fill='none' stroke='%23C22FCD' stroke-width='4'/%3E%3Ccircle cx='100' cy='100' r='14' fill='%236ADFD9'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --breath-phase: 0;
+  --breath-pulse: 0.5;
+  --void: #1F1632;
+  --void-deep: #160F25;
+  --void-compounded-top: #2A1B42;
+  --void-compounded-bot: #1A1230;
+  --surface: #2A2042;
+  --accent: #564C70;
+  --accent-bright: #7B6FA8;
+  --light: #E4E1E6;
+  --mid: #9A90A3;
+  --dim: #635C6E;
+  --dimmer: #3D384A;
+  --green: #63E084;
+  --teal: #6ADFD9;
+  --magenta: #C22FCD;
+  --gold: #FFD764;
+  --red: #DE1545;
+  --orange: #F0935E;
+  --glass: rgba(255,255,255,0.04);
+  --glass-strong: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-border-strong: rgba(255,255,255,0.14);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', -apple-system, sans-serif;
+  --aurora-shimmer-duration: 7s;
+}
+
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  background: linear-gradient(180deg, var(--void) 0%, var(--void-deep) 100%);
+  color: var(--light);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  transition: background 1800ms cubic-bezier(.2,.8,.2,1);
+}
+body.compounded {
+  background: linear-gradient(180deg, var(--void-compounded-top) 0%, var(--void-compounded-bot) 100%);
+  filter: saturate(1.08);
+}
+::selection { background: rgba(106,223,217,0.25); color: var(--light); }
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(ellipse 90% 60% at 18% 12%, rgba(123,111,168,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 82% 88%, rgba(194,47,205,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(106,223,217,0.06) 0%, transparent 60%);
+  transition: opacity 1800ms cubic-bezier(.2,.8,.2,1);
+}
+body.compounded::before {
+  background-image:
+    radial-gradient(ellipse 90% 60% at 18% 12%, rgba(123,111,168,0.32) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 82% 88%, rgba(194,47,205,0.20) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(106,223,217,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 50% 0%, rgba(255,215,100,0.04) 0%, transparent 60%);
+}
+
+.film-grain {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+#auroraCanvas, #particleCanvas {
+  position: fixed; inset: 0; pointer-events: none;
+}
+#auroraCanvas { z-index: 0; filter: blur(40px); opacity: var(--aurora-opacity, 0.55); transition: opacity 1800ms cubic-bezier(.2,.8,.2,1); }
+#particleCanvas { z-index: 1; filter: blur(0.4px); }
+
+.aurora-text {
+  background: linear-gradient(135deg, var(--teal), var(--magenta), var(--accent-bright), var(--teal));
+  background-size: 300% 300%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: aurora-shimmer var(--aurora-shimmer-duration) ease infinite;
+}
+@keyframes aurora-shimmer {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+
+.gradient-divider {
+  height: 1px; border: none; margin: 0;
+  background: linear-gradient(90deg, transparent, var(--teal), var(--magenta), var(--accent-bright), transparent);
+  background-size: 200% 100%;
+  animation: divider-pulse 8s ease infinite;
+  opacity: 0.5;
+  position: relative; z-index: 2;
+}
+@keyframes divider-pulse {
+  0%   { background-position:   0% 0%; }
+  50%  { background-position: 100% 0%; }
+  100% { background-position:   0% 0%; }
+}
+
+.reveal {
+  opacity: 0; filter: blur(6px); transform: translateY(18px);
+  transition: opacity .9s cubic-bezier(.2,.8,.2,1), filter .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);
+}
+.reveal.visible { opacity: 1; filter: blur(0); transform: translateY(0); }
+
+.top-nav {
+  display: flex; align-items: center; gap: 20px;
+  padding: 16px clamp(20px, 5vw, 64px);
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(19,15,30,0.72);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: inset 0 -1px 0 rgba(123,111,168,0.18);
+}
+.brand-lockup { display: flex; align-items: center; flex-shrink: 0; text-decoration: none; }
+.brand-horizontal { height: 22px; width: auto; opacity: 0.95; transition: opacity .25s; }
+.brand-lockup:hover .brand-horizontal { opacity: 1; }
+.brand-divider {
+  width: 1px; height: 24px;
+  background: linear-gradient(180deg, transparent, rgba(123,111,168,0.5), transparent);
+  margin: 0 4px 0 14px;
+}
+.brand-product {
+  font-family: var(--serif); font-size: 13px; font-weight: 400;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal);
+  white-space: nowrap;
+}
+.brand-hex { width: 28px; height: 28px; opacity: 0.85; margin-left: 16px; flex-shrink: 0; }
+@media (max-width: 720px) {
+  .brand-divider, .brand-product { display: none; }
+  .brand-hex { width: 24px; height: 24px; margin-left: 8px; }
+}
+.nav-spacer { flex: 1; }
+.nav-link {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim); padding: 8px 12px; border-radius: 6px;
+  transition: color .25s, background .25s; cursor: pointer;
+  text-decoration: none;
+}
+.nav-link:hover { color: var(--light); background: rgba(255,255,255,0.04); }
+@media (max-width: 720px) { .nav-link { display: none; } }
+
+main { position: relative; z-index: 2; }
+.section {
+  padding: clamp(56px, 9vw, 112px) clamp(20px, 6vw, 96px);
+  max-width: 1240px; margin: 0 auto;
+  position: relative;
+}
+.section-label {
+  font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::before { content: ''; width: 24px; height: 1px; background: var(--dim); }
+.section-title {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(30px, 5.5vw, 56px);
+  line-height: 1.05; letter-spacing: -0.005em; color: var(--light);
+  margin-bottom: 18px;
+}
+.section-title em { font-style: italic; color: var(--teal); }
+.section-desc {
+  font-size: clamp(14px, 1.4vw, 17px); color: var(--mid);
+  max-width: 640px; line-height: 1.75;
+}
+.section-desc strong { color: var(--light); font-weight: 500; }
+
+.hero {
+  padding: clamp(64px, 12vw, 144px) clamp(20px, 6vw, 96px) clamp(48px, 8vw, 96px);
+  max-width: 1240px; margin: 0 auto;
+  position: relative;
+}
+.hero-eyebrow {
+  font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+  position: relative; z-index: 2;
+}
+.hero-eyebrow::before { content: ''; width: 32px; height: 1px; background: var(--teal); }
+.hero-title {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(44px, 9vw, 96px);
+  line-height: 0.96; letter-spacing: -0.02em; color: var(--light);
+  margin-bottom: 28px; max-width: 1000px;
+  position: relative; z-index: 2;
+}
+.hero-title em { font-style: italic; }
+.hero-lede {
+  font-size: clamp(15px, 1.6vw, 20px); color: var(--mid);
+  max-width: 680px; line-height: 1.7;
+  position: relative; z-index: 2;
+}
+.hero-lede strong { color: var(--light); font-weight: 500; }
+.hero-principle-1 {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: clamp(15px, 1.6vw, 18px); line-height: 1.55;
+  color: var(--mid); max-width: 720px;
+  margin: 16px 0 28px;
+  position: relative; z-index: 2;
+}
+.hero-principle-1 em { font-style: italic; color: var(--teal); }
+
+.hero-constellation {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.constellation-dot {
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  opacity: 0.22;
+  transition: opacity 600ms ease-out, box-shadow 600ms ease-out, transform 600ms ease-out, background 600ms ease-out;
+  transform: scale(1);
+}
+.constellation-dot.lit { opacity: 0.85; transform: scale(1.4); }
+.constellation-dot.lit[data-week="1"] { background: var(--teal); box-shadow: 0 0 8px rgba(106,223,217,0.7), 0 0 16px rgba(106,223,217,0.35); }
+.constellation-dot.lit[data-week="2"] { background: var(--orange); box-shadow: 0 0 8px rgba(240,147,94,0.7), 0 0 16px rgba(240,147,94,0.35); }
+.constellation-dot.lit[data-week="3"] { background: var(--magenta); box-shadow: 0 0 8px rgba(194,47,205,0.7), 0 0 16px rgba(194,47,205,0.35); }
+.constellation-dot.lit[data-week="4"] { background: var(--gold); box-shadow: 0 0 8px rgba(255,215,100,0.7), 0 0 16px rgba(255,215,100,0.35); }
+.constellation-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.constellation-svg polyline { fill: none; stroke: rgba(123,111,168,0.30); stroke-width: 1; stroke-linejoin: round; transition: stroke-dashoffset 800ms ease-out; }
+
+/* ============================================================
+   BIOFIELD DASHBOARD v2: one body, one breath, one field.
+   Single composite SVG silhouette + state-encoded chakras +
+   damped block wave + DNA helix + horizontal Hawkins arc +
+   composite waveform stripe. Every rhythm subscribes to
+   --breath-phase / --breath-pulse from startBreathClock().
+   ============================================================ */
+.biofield-dashboard {
+  margin: 36px 0 28px;
+  padding: clamp(28px, 4vw, 44px) clamp(20px, 4vw, 40px) 0;
+  background: linear-gradient(180deg, rgba(31,24,36,0.55), rgba(31,24,36,0.35));
+  border: 1px solid var(--glass-border);
+  border-radius: 22px;
+  position: relative; overflow: hidden;
+}
+.biofield-dashboard::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 0%, rgba(123,111,168,0.12), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(194,47,205,0.06), transparent 60%);
+}
+.bf-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+  position: relative; z-index: 1;
+  padding-bottom: 56px; /* leave room for waveform stripe */
+}
+@media (max-width: 920px) { .bf-grid { grid-template-columns: 1fr; gap: 36px; } }
+
+/* LEFT COLUMN: silhouette wrap with caption + avatar */
+.bf-silhouette-wrap {
+  display: flex; flex-direction: column; align-items: stretch; gap: 14px;
+}
+.bf-silhouette-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 320 / 480;
+  max-width: 380px;
+  margin: 0 auto;
+}
+.bf-silhouette-stage svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.bf-aura-band {
+  fill: none;
+  stroke-width: 1;
+  opacity: calc(0.85 + 0.15 * var(--breath-phase));
+  transform-origin: 50% 56%;
+  transform: scale(calc(1 + 0.02 * var(--breath-phase)));
+  transition: transform 200ms linear;
+}
+.bf-fibonacci {
+  fill: none;
+  stroke: rgba(255,215,100,0.55);
+  stroke-width: 1;
+  opacity: calc(0.55 + 0.25 * var(--breath-pulse));
+  filter: drop-shadow(0 0 6px rgba(255,215,100,0.35));
+}
+.bf-body {
+  fill: url(#bf-body-grad);
+  stroke: rgba(106,223,217,0.55);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 12px rgba(123,111,168,0.32));
+}
+.bf-body-anchor {
+  fill: url(#bf-anchor-grad);
+  opacity: 0.75;
+}
+.bf-chakra-spot {
+  --amp: 0.6;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(calc(var(--amp) * (0.92 + 0.08 * var(--breath-pulse))));
+  transition: transform 200ms linear;
+}
+.bf-chakra-spot circle.bf-chakra-core { transition: fill 400ms ease; }
+.bf-chakra-spot[data-id="root"]      circle.bf-chakra-core { fill: var(--red); }
+.bf-chakra-spot[data-id="sacral"]    circle.bf-chakra-core { fill: var(--orange); }
+.bf-chakra-spot[data-id="solar"]     circle.bf-chakra-core { fill: var(--gold); }
+.bf-chakra-spot[data-id="heart"]     circle.bf-chakra-core { fill: var(--green); }
+.bf-chakra-spot[data-id="throat"]    circle.bf-chakra-core { fill: var(--teal); }
+.bf-chakra-spot[data-id="third-eye"] circle.bf-chakra-core { fill: var(--accent-bright); }
+.bf-chakra-spot[data-id="crown"]     circle.bf-chakra-core { fill: var(--magenta); }
+.bf-chakra-glow {
+  filter: blur(4px);
+  opacity: 0.55;
+}
+/* Per-state visual rules */
+.bf-chakra-spot .bf-chakra-anchor { display: none; }
+.bf-chakra-spot[data-state="undercharged"] .bf-chakra-anchor { display: block; opacity: 0.6; }
+.bf-chakra-spot .bf-chakra-contain { display: none; }
+.bf-chakra-spot[data-state="carrying-a-lot"] .bf-chakra-contain { display: block; opacity: 0.85; }
+.bf-chakra-spot[data-state="carrying-a-lot"] circle.bf-chakra-core { filter: hue-rotate(-8deg) saturate(0.85); }
+.bf-chakra-spot[data-state="radiant"] circle.bf-chakra-core { filter: brightness(1.1); }
+.bf-chakra-spot[data-state="clear"]   circle.bf-chakra-core { fill-opacity: 0.65; }
+.bf-chakra-spot.pulsing { animation: bf-spot-pulse 1800ms cubic-bezier(.2,.8,.2,1); }
+@keyframes bf-spot-pulse {
+  0%   { transform: scale(calc(var(--amp) * 1.0)); }
+  20%  { transform: scale(calc(var(--amp) * 2.4)); filter: brightness(1.5); }
+  100% { transform: scale(calc(var(--amp) * 1.0)); }
+}
+
+/* Block: damped wave on silhouette body + ghost + tether */
+.bf-block-wave {
+  fill: none;
+  stroke: rgba(240,180,90,0.62);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: calc(0.78 + 0.18 * var(--breath-pulse));
+}
+.bf-block-ghost {
+  fill: none;
+  stroke: rgba(123,111,168,0.32);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 4;
+}
+.bf-block-tether {
+  fill: none;
+  stroke: rgba(123,111,168,0.4);
+  stroke-width: 0.6;
+  stroke-dasharray: 1 3;
+  opacity: calc(0.45 + 0.15 * var(--breath-pulse));
+}
+.bf-block-knot {
+  fill: rgba(86,76,112,0.55);
+  filter: blur(2px);
+  opacity: calc(0.65 + 0.20 * var(--breath-pulse));
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(calc(var(--breath-phase) * 6deg));
+  transition: transform 220ms linear;
+}
+
+/* Avatar tile (small) + meta line below silhouette */
+.bf-avatar-row {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 11px; color: var(--mid); letter-spacing: 0.04em;
+}
+.bf-avatar-tile {
+  width: 44px; height: 44px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+  border: 1px solid rgba(106,223,217,0.32);
+  box-shadow: 0 0 16px rgba(123,111,168,0.30);
+}
+.bf-avatar-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bf-avatar-row .name { color: var(--light); font-weight: 500; font-family: var(--serif); font-size: 18px; font-style: italic; }
+.bf-aura-caption {
+  font-size: 11px; color: var(--mid); letter-spacing: 0.06em; line-height: 1.5;
+  font-style: italic; text-align: center;
+}
+.bf-aura-caption strong { color: var(--gold); font-weight: 500; font-style: normal; }
+.bf-block-caption {
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(240,180,90,0.18);
+  background: rgba(240,180,90,0.04);
+  border-radius: 0 0 12px 12px;
+}
+.bf-block-caption .label {
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(240,180,90,0.85); display: block; margin-bottom: 4px;
+}
+.bf-block-caption .quote {
+  font-family: var(--serif); font-style: italic; font-size: 16px;
+  color: var(--light); line-height: 1.4;
+}
+.bf-block-caption .holding {
+  font-size: 12px; color: var(--mid); line-height: 1.55; margin-top: 6px;
+  font-style: italic;
+}
+
+/* RIGHT COLUMN: Hawkins arc + DNA helix + archetype */
+.bf-readout {
+  display: flex; flex-direction: column; gap: 24px;
+  min-width: 0;
+}
+.bf-section-aside {
+  font-family: var(--serif); font-style: italic; font-size: 14px;
+  color: var(--mid); line-height: 1.55;
+  padding: 6px 0 6px 14px;
+  border-left: 1px solid rgba(255,255,255,0.10);
+}
+
+/* HAWKINS arc (horizontal, local visibility) */
+.bf-hawkins {
+  position: relative;
+}
+.bf-hawkins svg { width: 100%; height: 140px; display: block; overflow: visible; }
+.bf-hawkins .hk-arc-track { fill: none; stroke: rgba(255,255,255,0.10); stroke-width: 4; stroke-linecap: round; }
+.bf-hawkins .hk-arc-fill  { fill: none; stroke: url(#hk-grad); stroke-width: 4; stroke-linecap: round; opacity: calc(0.78 + 0.20 * var(--breath-pulse)); }
+.bf-hawkins .hk-tick { stroke: rgba(255,255,255,0.15); stroke-width: 1; }
+.bf-hawkins .hk-tick.named { stroke: rgba(255,255,255,0.4); }
+.bf-hawkins .hk-tick-label { fill: var(--mid); font: 9px var(--sans); letter-spacing: 0.18em; text-transform: uppercase; }
+.bf-hawkins .hk-tick-label.muted { fill: var(--dim); opacity: 0.45; }
+.bf-hawkins .hk-525-beam { stroke: var(--gold); stroke-width: 2; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(255,215,100,0.45)); }
+.bf-hawkins .hk-525-pill { fill: rgba(255,215,100,0.95); }
+.bf-hawkins .hk-525-num  { fill: rgba(20,15,30,0.95); font-family: var(--serif); font-size: 14px; font-weight: 500; }
+.bf-hawkins .hk-solfeggio { fill: rgba(106,223,217,0.65); font: 8px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; }
+.bf-hawkins .hk-solfeggio.miracles { fill: rgba(255,215,100,0.85); font-weight: 500; }
+.bf-hawkins-captions {
+  margin-top: 10px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.bf-hawkins-captions .calibration {
+  font-size: 11px; color: var(--gold); letter-spacing: 0.04em;
+}
+.bf-hawkins-captions .felt-sense {
+  font-size: 10.5px; color: var(--mid); font-style: italic; opacity: 0.85;
+}
+
+/* DNA helix (6 pair-bonds, 9 locked + 3 consolidating) */
+.bf-helix {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 18px;
+  align-items: center;
+}
+.bf-helix-svg-wrap {
+  width: 110px;
+  height: 320px;
+}
+.bf-helix-svg-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.bf-helix .rail { fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.bf-helix .rail.solid { stroke: url(#dna-grad); }
+.bf-helix .rail.ghost { stroke: rgba(123,111,168,0.4); stroke-dasharray: 2 4; stroke-width: 1; }
+.bf-helix .rung { stroke: rgba(255,215,100,0.45); stroke-width: 1; stroke-linecap: round; }
+.bf-helix .rung.locked { stroke: rgba(255,215,100,0.80); opacity: calc(0.55 + 0.40 * var(--breath-pulse)); }
+.bf-helix .rung.partial { stroke: rgba(123,111,168,0.55); stroke-dasharray: 1 2; opacity: calc(0.30 + 0.25 * var(--breath-pulse)); }
+.bf-helix-meta {
+  display: flex; flex-direction: column; gap: 8px;
+  min-width: 0;
+}
+.bf-helix-meta .helix-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
+.bf-helix-meta .helix-count { font-family: var(--serif); font-size: 18px; color: var(--light); line-height: 1.35; }
+.bf-helix-meta .helix-count strong { color: var(--gold); font-weight: 500; font-style: italic; }
+.bf-helix-meta .helix-sub { font-size: 11px; color: var(--mid); line-height: 1.55; font-style: italic; }
+
+.bf-archetype {
+  background: rgba(194,47,205,0.06);
+  border: 1px solid rgba(194,47,205,0.22);
+  border-left: 2px solid var(--magenta);
+  border-radius: 0 12px 12px 0;
+  padding: 14px 18px;
+}
+.bf-archetype .label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--magenta); display: block; margin-bottom: 6px; }
+.bf-archetype .name  { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--light); line-height: 1.4; }
+
+/* Composite waveform stripe (bottom edge of dashboard) */
+.bf-waveform {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 56px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.18));
+  display: flex; align-items: center; padding: 0 24px;
+  gap: 14px;
+}
+.bf-waveform svg { flex: 1; height: 28px; display: block; overflow: visible; }
+.bf-waveform .wf-curve { fill: none; stroke: url(#wf-grad); stroke-width: 1.5; stroke-linecap: round; opacity: 0.65; }
+.bf-waveform-label {
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--mid); white-space: nowrap;
+}
+.bf-waveform-label strong { color: var(--gold); font-weight: 500; }
+
+/* Whisper line at section transitions (Principle 03 distributed) */
+.principle-whisper {
+  text-align: center;
+  font-family: var(--serif); font-style: italic; font-size: 12px;
+  color: var(--mid); opacity: 0.78;
+  letter-spacing: 0.04em; line-height: 1.55;
+  padding: 24px clamp(16px, 4vw, 64px);
+  position: relative; z-index: 2;
+  background: linear-gradient(180deg, transparent, rgba(31,24,36,0.5), transparent);
+}
+
+/* Pre-dashboard gate */
+.bf-gate {
+  position: fixed; inset: 0;
+  z-index: 200;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(31,22,50,0.62), transparent 60%),
+    var(--void-deep);
+  display: flex; align-items: center; justify-content: center;
+  padding: clamp(24px, 6vw, 64px);
+  backdrop-filter: blur(28px) saturate(1.1);
+  -webkit-backdrop-filter: blur(28px) saturate(1.1);
+  animation: bf-gate-in 1200ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes bf-gate-in { from { opacity: 0; } to { opacity: 1; } }
+.bf-gate.dismissing { animation: bf-gate-out 1100ms cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes bf-gate-out { from { opacity: 1; } to { opacity: 0; pointer-events: none; } }
+.bf-gate-inner {
+  max-width: 640px; width: 100%;
+  display: flex; flex-direction: column; gap: 28px; align-items: center;
+}
+.bf-gate-question {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(22px, 3.4vw, 32px); line-height: 1.4;
+  color: var(--light); text-align: center;
+}
+.bf-gate-textarea {
+  width: 100%; min-height: 96px;
+  background: rgba(11,8,15,0.55);
+  border: 1px solid rgba(123,111,168,0.30);
+  border-radius: 12px;
+  color: var(--light);
+  font-family: var(--sans); font-size: 14px; line-height: 1.65;
+  padding: 14px 16px;
+  resize: vertical;
+}
+.bf-gate-textarea:focus { outline: none; border-color: rgba(106,223,217,0.5); background: rgba(11,8,15,0.7); }
+.bf-gate-textarea::placeholder { color: var(--dim); font-style: italic; }
+.bf-gate-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.bf-gate-actions .btn-skip {
+  background: transparent;
+  border-color: var(--glass-border);
+  color: var(--mid);
+}
+.bf-gate-actions .btn-skip:hover { color: var(--light); }
+.bf-gate-meta {
+  font-size: 10.5px; color: var(--dim); letter-spacing: 0.06em;
+  font-style: italic; max-width: 480px; text-align: center; line-height: 1.55;
+}
+
+/* Mesh-blob ambient drift (CSS-only, complements the canvas) */
+.mesh-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.mesh-blob { position: absolute; border-radius: 50%; filter: blur(80px); will-change: transform; }
+.mesh-blob--1 { width: 60vw; height: 60vw; top: -10%; left: -10%; background: rgba(123,111,168,0.08); animation: mesh-drift1 38s ease-in-out infinite alternate; }
+.mesh-blob--2 { width: 50vw; height: 50vw; top: 30%; right: -15%; background: rgba(194, 47,205,0.06); animation: mesh-drift2 48s ease-in-out infinite alternate; }
+.mesh-blob--3 { width: 55vw; height: 55vw; bottom: -10%; left: 20%; background: rgba(106,223,217,0.05); animation: mesh-drift3 56s ease-in-out infinite alternate; }
+.mesh-blob--4 { width: 45vw; height: 45vw; top: 50%; left: 40%; background: rgba(255,215,100,0.020); animation: mesh-drift4 50s ease-in-out infinite alternate; }
+@keyframes mesh-drift1 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(15vw,10vh) scale(1.2)} 100%{transform:translate(-5vw,20vh) scale(0.9)} }
+@keyframes mesh-drift2 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(-20vw,-10vh) scale(1.15)} 100%{transform:translate(-10vw,15vh) scale(1.05)} }
+@keyframes mesh-drift3 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(10vw,-15vh) scale(1.1)} 100%{transform:translate(-15vw,-5vh) scale(1.2)} }
+@keyframes mesh-drift4 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(-12vw,8vh) scale(1.15)} 100%{transform:translate(8vw,-12vh) scale(0.95)} }
+
+.input-panel-wrap {
+  position: relative;
+  margin-top: 32px;
+}
+.input-panel-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -40px;
+  background: radial-gradient(ellipse at center, rgba(123,111,168,0.10) 0%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: -1;
+  transition: background 600ms ease;
+}
+.input-panel-wrap.compounded::after {
+  background: radial-gradient(ellipse at center, rgba(123,111,168,0.16) 0%, rgba(255,215,100,0.04) 50%, transparent 70%);
+}
+.field-panel {
+  background: linear-gradient(180deg, rgba(31,24,36,0.78), rgba(31,24,36,0.55));
+  border: 1px solid rgba(123,111,168,0.32);
+  border-radius: 20px;
+  padding: clamp(24px, 4vw, 36px);
+  position: relative; overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px -20px rgba(86,76,112,0.55), 0 0 80px rgba(123,111,168,0.18);
+  transition: transform 600ms cubic-bezier(.2,.8,.2,1), border-color 400ms ease;
+}
+@media (min-width: 1024px) {
+  .field-panel { transform: scale(1.02); }
+}
+body.input-focused #auroraCanvas { opacity: calc(var(--aurora-opacity) * 0.7) !important; }
+body.input-focused .constellation-dot { opacity: 0.06; }
+body.input-focused .constellation-dot.lit { opacity: 0.45; }
+body.input-focused #particleCanvas { opacity: 0.6; transition: opacity 600ms ease; }
+.field-panel:focus-within {
+  border-color: rgba(106,223,217,0.5);
+}
+
+@property --input-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.field-panel::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 21px;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--input-angle, 0deg),
+    rgba(123,111,168,0.45),
+    rgba(106,223,217,0.45),
+    rgba(194,47,205,0.45),
+    rgba(255,215,100,0.30),
+    rgba(123,111,168,0.45)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: input-conic-rotate 8s linear infinite;
+  pointer-events: none;
+}
+@keyframes input-conic-rotate {
+  to { --input-angle: 360deg; }
+}
+
+.field-panel-head { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: end; margin-bottom: 24px; position: relative; z-index: 1; }
+.field-panel-head h3 { font-family: var(--serif); font-weight: 300; font-size: clamp(22px, 2.6vw, 30px); color: var(--light); }
+.field-panel-head .field-note { font-size: 12px; color: var(--mid); font-style: italic; max-width: 360px; line-height: 1.6; }
+.field-panel-head .field-note em { color: var(--teal); font-style: normal; }
+textarea.field-input {
+  width: 100%; min-height: 240px;
+  background: rgba(11,8,15,0.55);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--light);
+  font-family: var(--sans); font-size: 14px; line-height: 1.65;
+  padding: 16px 18px;
+  resize: vertical;
+  transition: border-color .25s, background .25s;
+  position: relative; z-index: 1;
+}
+textarea.field-input:focus {
+  outline: none; border-color: rgba(106,223,217,0.4);
+  background: rgba(11,8,15,0.7);
+}
+textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
+.field-actions { display: flex; gap: 12px; margin-top: 14px; align-items: center; flex-wrap: wrap; position: relative; z-index: 1; }
+.btn {
+  font-family: var(--sans); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 12px 22px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--glass-border-strong); background: var(--glass);
+  color: var(--light); transition: all .25s;
+}
+.btn:hover { border-color: rgba(106,223,217,0.4); background: rgba(106,223,217,0.06); color: var(--teal); }
+.btn-primary {
+  background: linear-gradient(135deg, rgba(106,223,217,0.18), rgba(194,47,205,0.14));
+  border-color: rgba(106,223,217,0.35); color: var(--teal);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, rgba(106,223,217,0.28), rgba(194,47,205,0.22));
+  border-color: rgba(106,223,217,0.55); color: var(--light);
+  box-shadow: 0 0 24px rgba(106,223,217,0.18);
+}
+.field-meta { font-size: 11px; color: var(--dim); letter-spacing: 0.08em; }
+
+.aurora-ring-overlay {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 2px solid;
+  width: 0; height: 0;
+  opacity: 0;
+  z-index: 8;
+  transform: translate(-50%, -50%);
+}
+.aurora-ring-overlay.firing {
+  animation: aurora-ring-burst 1400ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes aurora-ring-burst {
+  0%   { width: 0; height: 0; opacity: 0.5; border-color: rgba(106,223,217,0.7); }
+  60%  { opacity: 0.2; border-color: rgba(123,111,168,0.5); }
+  100% { width: 1600px; height: 1600px; opacity: 0; border-color: rgba(194,47,205,0.0); }
+}
+
+.page-bloom {
+  position: absolute; pointer-events: none; z-index: 7;
+  background: radial-gradient(ellipse at center, rgba(106,223,217,0.22), rgba(194,47,205,0.12) 50%, transparent 75%);
+  opacity: 0;
+  border-radius: 24px;
+}
+.page-bloom.firing {
+  animation: page-bloom-fire 2000ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes page-bloom-fire {
+  0%   { opacity: 0; }
+  40%  { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+
+.parsed-reading {
+  margin-top: 20px;
+  background: linear-gradient(180deg, rgba(31,24,36,0.65), rgba(31,24,36,0.45));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: clamp(20px, 3vw, 28px);
+  position: relative; overflow: hidden;
+}
+.parsed-reading.swept::before {
+  content: '';
+  position: absolute;
+  inset: 0; border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(90deg, var(--teal), var(--magenta), var(--accent-bright));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: border-sweep 1200ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes border-sweep {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+.parsed-reading h4 { font-family: var(--serif); font-weight: 300; font-size: 22px; color: var(--light); margin-bottom: 4px; outline: none; }
+.parsed-reading h4:focus-visible {
+  outline: 2px solid rgba(106,223,217,0.55);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.parsed-reading .reading-eyebrow { font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.parsed-reading .reading-quadrants {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 20px;
+}
+@media (max-width: 720px) {
+  .parsed-reading .reading-quadrants { grid-template-columns: 1fr; gap: 18px; }
+}
+.reading-frames { display: flex; flex-direction: column; gap: 22px; margin-top: 22px; }
+.reading-frame {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-left: 2px solid rgba(106,223,217,0.45);
+  border-radius: 0 12px 12px 0;
+  padding: 14px 18px;
+  position: relative;
+}
+.reading-frame .prefix {
+  font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold); font-weight: 600; opacity: 0.92;
+  display: block; margin-bottom: 6px;
+}
+.reading-frame h5 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: 18px; line-height: 1.2;
+  color: var(--light); margin-bottom: 10px;
+}
+.reading-frame .frame-body {
+  font-size: 14px; line-height: 1.65; color: var(--light); opacity: 0.85;
+  white-space: pre-line;
+}
+.reading-frame .chip-row { margin-top: 10px; }
+.reading-frame.frame-level { border-left-color: var(--gold); background: rgba(255,215,100,0.04); }
+.reading-frame.frame-block { border-left-color: rgba(240,147,94,0.55); }
+.reading-frame.frame-archetype { border-left-color: rgba(194,47,205,0.55); }
+.reading-frame.frame-oric { border-left-color: rgba(123,111,168,0.55); }
+.reading-frame.frame-dna { border-left-color: rgba(99,224,132,0.45); }
+.level-display { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+.level-display .level-num {
+  font-family: var(--serif); font-weight: 300; font-size: 56px; line-height: 1;
+  color: var(--gold); text-shadow: 0 0 24px rgba(255,215,100,0.3);
+}
+.level-display .level-label { font-size: 14px; line-height: 1.5; color: var(--light); opacity: 0.85; flex: 1; min-width: 200px; }
+.quadrant { display: flex; flex-direction: column; gap: 8px; }
+.quadrant h5 { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); font-weight: 500; }
+.quadrant .prefix { font-size: 10.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-top: 2px; opacity: 0.92; }
+.parsed-honesty-footer { margin-top: 18px; font-size: 11.5px; color: var(--mid); font-style: italic; line-height: 1.5; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+.quadrant .empty { font-size: 12px; color: var(--dim); font-style: italic; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.read-chip {
+  font-size: 11px; padding: 6px 11px; border-radius: 6px;
+  background: rgba(106,223,217,0.06); border: 1px solid rgba(106,223,217,0.18);
+  color: var(--light); letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all .25s;
+  font-family: var(--sans);
+}
+.read-chip:hover, .read-chip.pinned, .read-chip:focus-visible { background: rgba(106,223,217,0.14); border-color: rgba(106,223,217,0.42); outline: none; }
+.read-chip.systems { background: rgba(194,47,205,0.06); border-color: rgba(194,47,205,0.18); }
+.read-chip.systems:hover, .read-chip.systems:focus-visible { background: rgba(194,47,205,0.14); border-color: rgba(194,47,205,0.42); }
+.read-value-large {
+  font-family: var(--serif); font-weight: 300;
+  font-size: 36px; line-height: 1; color: var(--gold);
+  text-shadow: 0 0 20px rgba(255,215,100,0.25);
+}
+.read-block-text { font-size: 13.5px; color: var(--light); line-height: 1.55; opacity: 0.92; }
+.parsed-raw {
+  margin-top: 22px;
+  background: rgba(11,8,15,0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+}
+.parsed-raw summary {
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--mid); padding: 12px 16px; cursor: pointer; list-style: none;
+  display: flex; align-items: center; gap: 10px;
+}
+.parsed-raw summary::-webkit-details-marker { display: none; }
+.parsed-raw summary::before {
+  content: '+'; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.16);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--dim); transition: all .25s;
+}
+.parsed-raw[open] summary::before { content: '−'; background: rgba(106,223,217,0.1); border-color: rgba(106,223,217,0.3); color: var(--teal); }
+.parsed-raw-body { padding: 0 18px 16px; font-size: 13px; color: var(--mid); line-height: 1.65; white-space: pre-wrap; }
+.parsed-raw-body .raw-line { display: block; padding: 2px 4px; border-radius: 4px; transition: background-color 200ms ease, color 200ms ease; margin-left: -4px; }
+.parsed-raw-body .raw-line.highlighted { background-color: rgba(106,223,217,0.10); color: var(--light); }
+
+.field-history { margin-top: 24px; }
+.field-history details {
+  background: rgba(11,8,15,0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px; margin-bottom: 8px;
+}
+.field-history summary {
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--mid); padding: 12px 16px; cursor: pointer; list-style: none;
+  display: flex; align-items: center; gap: 10px;
+}
+.field-history summary::-webkit-details-marker { display: none; }
+.field-history summary::before {
+  content: '+'; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.16);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--dim); transition: all .25s;
+}
+.field-history details[open] summary::before { content: '−'; background: rgba(106,223,217,0.1); border-color: rgba(106,223,217,0.3); color: var(--teal); }
+.field-history-body { padding: 0 18px 16px; font-size: 13px; color: var(--mid); line-height: 1.6; white-space: pre-wrap; }
+
+.phase-tabs {
+  display: flex; gap: 6px; margin: 8px 0 32px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: 14px; padding: 6px;
+  width: 100%; max-width: max-content;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.phase-tabs::-webkit-scrollbar { display: none; }
+.ptab {
+  padding: 12px 18px; border-radius: 9px;
+  font-size: 12px; letter-spacing: 0.06em; cursor: pointer;
+  transition: color .25s, background .25s, border-color .25s;
+  color: var(--dim);
+  border: 1px solid transparent; background: transparent;
+  font-family: var(--sans); line-height: 1.3; text-align: left;
+  font-weight: 500;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  position: relative;
+}
+.ptab:hover { color: var(--light); }
+.ptab:focus-visible { outline: 1px solid rgba(106,223,217,0.5); outline-offset: 2px; }
+.ptab .ptab-name {
+  display: block; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--dim); margin-top: 3px; font-weight: 400;
+}
+.ptab.completed::before {
+  content: '✓';
+  position: absolute; top: 4px; right: 8px;
+  width: 12px; height: 12px;
+  font-size: 11px; font-weight: 600;
+  color: var(--gold); line-height: 12px;
+  text-shadow: 0 0 6px rgba(255,215,100,0.5);
+}
+.ptab.completed::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 8px; right: 8px;
+  height: 2px; border-radius: 1px;
+}
+.ptab[data-week="1"].completed::after { background: rgba(106,223,217,0.7); }
+.ptab[data-week="2"].completed::after { background: rgba(240,147,94,0.7); }
+.ptab[data-week="3"].completed::after { background: rgba(194,47,205,0.7); }
+.ptab[data-week="4"].completed::after { background: rgba(255,215,100,0.7); }
+
+.ptab[data-week="1"].active { background: rgba(106,223,217,0.18); color: var(--teal); border-color: rgba(106,223,217,0.32); }
+.ptab[data-week="1"].active .ptab-name { color: rgba(106,223,217,0.7); }
+.ptab[data-week="1"].completed { background: rgba(106,223,217,0.22); color: var(--teal); border-color: rgba(106,223,217,0.55); }
+.ptab[data-week="1"].future { background: rgba(106,223,217,0.06); border-color: rgba(106,223,217,0.18); color: rgba(106,223,217,0.6); }
+.ptab[data-week="2"].active { background: rgba(240,147,94,0.16); color: var(--orange); border-color: rgba(240,147,94,0.30); }
+.ptab[data-week="2"].active .ptab-name { color: rgba(240,147,94,0.75); }
+.ptab[data-week="2"].completed { background: rgba(240,147,94,0.22); color: var(--orange); border-color: rgba(240,147,94,0.55); }
+.ptab[data-week="2"].future { background: rgba(240,147,94,0.06); border-color: rgba(240,147,94,0.18); color: rgba(240,147,94,0.6); }
+.ptab[data-week="3"].active { background: rgba(194,47,205,0.16); color: var(--magenta); border-color: rgba(194,47,205,0.30); }
+.ptab[data-week="3"].active .ptab-name { color: rgba(194,47,205,0.75); }
+.ptab[data-week="3"].completed { background: rgba(194,47,205,0.22); color: var(--magenta); border-color: rgba(194,47,205,0.55); }
+.ptab[data-week="3"].future { background: rgba(194,47,205,0.06); border-color: rgba(194,47,205,0.18); color: rgba(194,47,205,0.6); }
+.ptab[data-week="4"].active { background: rgba(255,215,100,0.14); color: var(--gold); border-color: rgba(255,215,100,0.30); }
+.ptab[data-week="4"].active .ptab-name { color: rgba(255,215,100,0.75); }
+.ptab[data-week="4"].completed { background: rgba(255,215,100,0.22); color: var(--gold); border-color: rgba(255,215,100,0.55); }
+.ptab[data-week="4"].future { background: rgba(255,215,100,0.06); border-color: rgba(255,215,100,0.18); color: rgba(255,215,100,0.6); }
+
+.ptab.celebrating { animation: tab-fill-shimmer 1800ms cubic-bezier(.2,.8,.2,1); }
+@keyframes tab-fill-shimmer {
+  0%   { box-shadow: inset 0 0 0 0 rgba(255,255,255,0.0); }
+  50%  { box-shadow: inset 0 0 0 80px rgba(255,255,255,0.05); }
+  100% { box-shadow: inset 0 0 0 0 rgba(255,255,255,0.0); }
+}
+
+.phase-panel { display: none; }
+.phase-panel.active { display: block; animation: phase-fade 360ms cubic-bezier(.2,.8,.2,1); }
+@keyframes phase-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.phase { position: relative; }
+.phase-head {
+  display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: start;
+  padding-bottom: 24px; border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 32px;
+}
+@media (max-width: 720px) { .phase-head { grid-template-columns: 1fr; gap: 12px; } }
+.phase-num {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(56px, 9vw, 96px); line-height: 0.85; letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(106,223,217,0.5);
+  background: linear-gradient(180deg, rgba(106,223,217,0.18), transparent 80%);
+  -webkit-background-clip: text; background-clip: text;
+}
+.phase[data-week="2"] .phase-num { -webkit-text-stroke: 1px rgba(240,147,94,0.5); background: linear-gradient(180deg, rgba(240,147,94,0.18), transparent 80%); -webkit-background-clip: text; background-clip: text; }
+.phase[data-week="3"] .phase-num { -webkit-text-stroke: 1px rgba(194,47,205,0.5); background: linear-gradient(180deg, rgba(194,47,205,0.18), transparent 80%); -webkit-background-clip: text; background-clip: text; }
+.phase[data-week="4"] .phase-num { -webkit-text-stroke: 1px rgba(255,215,100,0.5); background: linear-gradient(180deg, rgba(255,215,100,0.18), transparent 80%); -webkit-background-clip: text; background-clip: text; }
+.phase-meta { padding-top: 10px; }
+.phase-eyebrow {
+  font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--accent-bright); margin-bottom: 8px;
+}
+.phase[data-week="1"] .phase-eyebrow { color: var(--teal); }
+.phase[data-week="2"] .phase-eyebrow { color: var(--orange); }
+.phase[data-week="3"] .phase-eyebrow { color: var(--magenta); }
+.phase[data-week="4"] .phase-eyebrow { color: var(--gold); }
+.phase-title { font-family: var(--serif); font-weight: 300; font-size: clamp(26px, 4vw, 40px); line-height: 1.1; color: var(--light); margin-bottom: 8px; }
+.phase-title em { font-style: italic; color: var(--teal); }
+.phase-intent { font-size: 15px; color: var(--mid); max-width: 720px; line-height: 1.7; }
+.phase-responds {
+  margin-top: 12px;
+  font-size: 12px; color: var(--dim); font-style: italic;
+  letter-spacing: 0.04em; line-height: 1.5;
+}
+.phase-responds strong { color: var(--teal); font-style: normal; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; font-size: 10px; margin-right: 8px; }
+
+.session-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+@media (min-width: 1024px) { .session-grid { grid-template-columns: 1fr 1fr; gap: 24px; } }
+.session-card {
+  background: rgba(31,24,36,0.55);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 24px;
+  position: relative; overflow: hidden;
+  transition: border-color .3s, background .3s, transform .3s, box-shadow .3s;
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 22px;
+  align-items: start;
+  box-shadow: 0 8px 32px -12px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.04);
+  transform: translateZ(0);
+}
+@media (max-width: 1023px) { .session-card { grid-template-columns: 96px 1fr; gap: 18px; padding: 20px; } }
+@media (max-width: 640px) { .session-card { grid-template-columns: 72px 1fr; gap: 14px; padding: 18px; } }
+.session-card:hover {
+  border-color: rgba(106,223,217,0.28);
+  background: rgba(31,24,36,0.72);
+  transform: translateY(-3px) translateZ(0);
+  box-shadow: 0 16px 48px -16px rgba(86,76,112,0.7), 0 0 24px rgba(123,111,168,0.18);
+}
+.session-art {
+  width: 132px; height: 132px;
+  border-radius: 12px; overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  flex-shrink: 0;
+}
+@media (max-width: 1023px) { .session-art { width: 96px; height: 96px; } }
+@media (max-width: 640px) { .session-art { width: 72px; height: 72px; } }
+.session-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.session-art::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 30% 20%, transparent, rgba(11,8,15,0.32) 100%);
+}
+.session-art .ring-mask {
+  position: absolute; inset: 0;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  pointer-events: none;
+  transition: border-color 200ms ease;
+}
+.session-card.has-note .session-art .ring-mask {
+  border-color: rgba(106,223,217,0.55);
+}
+.session-card.celebrating-note .session-art .ring-mask {
+  animation: ring-flash 800ms cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes ring-flash {
+  0%   { border-color: rgba(106,223,217,0); box-shadow: 0 0 0 0 rgba(106,223,217,0.6); }
+  40%  { border-color: rgba(106,223,217,1); box-shadow: 0 0 18px 2px rgba(106,223,217,0.5); }
+  100% { border-color: rgba(106,223,217,0.55); box-shadow: 0 0 0 0 rgba(106,223,217,0); }
+}
+
+.session-body { min-width: 0; }
+.session-cat {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 8px;
+}
+.session-cat .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.session-cat.cat-chakras .pip   { background: var(--magenta); }
+.session-cat.cat-frequency .pip { background: var(--teal); }
+.session-cat.cat-brainwave .pip { background: var(--accent-bright); }
+.session-cat.cat-guided .pip    { background: var(--green); }
+.session-cat.cat-music .pip     { background: var(--gold); }
+.session-cat.cat-natural .pip   { background: var(--orange); }
+.session-cat.cat-welcome .pip   { background: linear-gradient(135deg, var(--teal), var(--magenta)); box-shadow: 0 0 6px rgba(106,223,217,0.4); }
+.session-heading {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(20px, 2.4vw, 26px); line-height: 1.15;
+  color: var(--light); margin-bottom: 4px;
+}
+.session-subtitle { font-style: italic; font-size: 14px; color: var(--teal); margin-bottom: 12px; }
+.artist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 12px; color: var(--mid); letter-spacing: 0.02em; }
+.artist-row .artist-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(106,223,217,0.25);
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+.artist-row .artist-avatar.house {
+  background: var(--surface);
+  border-color: var(--glass-border);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 13px; color: var(--teal);
+}
+.artist-row .by { color: var(--dim); font-size: 11px; }
+.artist-row .name { color: var(--light); font-weight: 500; }
+.session-lede { font-size: 13.5px; color: var(--light); opacity: 0.8; line-height: 1.65; margin-bottom: 14px; }
+.choose-when { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.cw-chip {
+  font-size: 10.5px; padding: 5px 10px; border-radius: 6px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+  color: var(--mid); letter-spacing: 0.02em;
+}
+.session-why {
+  background: rgba(106,223,217,0.05);
+  border-left: 2px solid rgba(106,223,217,0.4);
+  padding: 12px 14px; border-radius: 0 8px 8px 0;
+  margin-bottom: 14px;
+}
+.session-why-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; display: block; }
+.session-why-text { font-size: 13px; color: var(--light); line-height: 1.6; opacity: 0.9; }
+.session-why-text em { font-style: italic; color: var(--teal); }
+.session-intention {
+  background: rgba(255,215,100,0.05);
+  border-left: 2px solid rgba(255,215,100,0.55);
+  padding: 14px 16px; border-radius: 0 8px 8px 0;
+  margin-bottom: 16px;
+}
+@media (max-width: 640px) {
+  .session-intention { padding: 12px 14px; }
+}
+.session-intention-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; display: block; }
+.session-intention-text { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 17px; line-height: 1.45; color: var(--light); opacity: 0.95; }
+@media (max-width: 640px) { .session-intention-text { font-size: 15px; } }
+
+/* Resolved reflection (collapsed) */
+.resolved-reflection {
+  display: none;
+  margin-top: 14px;
+  padding: 18px 20px;
+  background: rgba(106,223,217,0.05);
+  border-left: 2px solid rgba(106,223,217,0.55);
+  border-radius: 0 12px 12px 0;
+  font-family: var(--serif);
+  font-size: 16.5px;
+  line-height: 1.65;
+  color: var(--light);
+  white-space: pre-line;
+}
+.resolved-reflection .resolved-eyebrow {
+  display: block;
+  font-family: var(--sans); font-style: normal;
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 8px; opacity: 0.85;
+}
+.resolved-actions {
+  display: none;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.resolved-actions .btn { padding: 10px 18px; font-size: 11px; }
+.btn-go-deeper {
+  background: linear-gradient(135deg, rgba(255,215,100,0.18), rgba(194,47,205,0.12));
+  border-color: rgba(255,215,100,0.40);
+  color: var(--gold);
+}
+.btn-go-deeper:hover {
+  background: linear-gradient(135deg, rgba(255,215,100,0.28), rgba(194,47,205,0.20));
+  border-color: rgba(255,215,100,0.65);
+  color: var(--light);
+  box-shadow: 0 0 24px rgba(255,215,100,0.18);
+}
+.session-card.collapsed-reflected .session-art,
+.session-card.collapsed-reflected .session-lede,
+.session-card.collapsed-reflected .choose-when,
+.session-card.collapsed-reflected .session-why,
+.session-card.collapsed-reflected .session-intention,
+.session-card.collapsed-reflected .notes,
+.session-card.collapsed-reflected .session-spotify,
+.session-card.collapsed-reflected .artist-row { display: none; }
+.session-card.collapsed-reflected { grid-template-columns: 1fr; }
+.session-card.collapsed-reflected .resolved-reflection { display: block; animation: reflection-slide-up 700ms cubic-bezier(.2,.8,.2,1); }
+.session-card.collapsed-reflected .resolved-actions { display: flex; }
+.session-card.deepened .resolved-reflection { border-left-color: var(--gold); background: rgba(255,215,100,0.04); }
+.session-card.deepened .resolved-eyebrow { color: var(--gold); }
+
+/* Inline status row for resolving / deepening */
+.card-status {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--mid);
+}
+.card-status.visible { display: inline-flex; }
+.card-status.error { color: var(--orange); }
+.card-status .spinner {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(106,223,217,0.25);
+  border-top-color: var(--teal);
+  animation: spinner-rotate 900ms linear infinite;
+}
+.session-card.deepening .card-status .spinner {
+  border-color: rgba(255,215,100,0.25);
+  border-top-color: var(--gold);
+}
+@keyframes spinner-rotate { to { transform: rotate(360deg); } }
+.session-card.resolving .session-body,
+.session-card.deepening .session-body { opacity: 0.78; }
+
+.session-spotify {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--mid); display: inline-flex; align-items: center; gap: 6px;
+  margin-bottom: 16px;
+  text-decoration: none;
+  transition: color .25s;
+}
+.session-spotify:hover { color: var(--green); }
+.session-spotify::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(99,224,132,0.4); }
+
+.notes { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 720px) { .notes { grid-template-columns: 1fr; gap: 16px; } }
+.note-block {
+  display: flex; flex-direction: column; gap: 8px;
+  background: rgba(11,8,15,0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: border-color .25s, background .25s;
+}
+.note-block--before { border-left: 2px solid rgba(106,223,217,0.40); }
+.note-block--after  { border-left: 2px solid rgba(194,47,205,0.40); }
+.note-block:focus-within { background: rgba(11,8,15,0.6); }
+.note-block--before:focus-within { border-left-color: rgba(106,223,217,0.7); }
+.note-block--after:focus-within { border-left-color: rgba(194,47,205,0.7); }
+.note-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.note-when {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim); font-weight: 500;
+}
+.note-block--before .note-when { color: rgba(106,223,217,0.85); }
+.note-block--after  .note-when { color: rgba(194,47,205,0.85); }
+.note-header .saved { font-size: 9px; color: var(--green); letter-spacing: 0.16em; opacity: 0; transition: opacity .3s; }
+.note-header .saved.visible { opacity: 1; }
+.note-prompt {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 16px; line-height: 1.5;
+  color: var(--light); opacity: 0.95;
+  padding: 4px 0 4px 0;
+}
+@media (max-width: 640px) { .note-prompt { font-size: 15px; } }
+textarea.note-input {
+  background: rgba(11,8,15,0.55);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px; color: var(--light);
+  font-family: var(--sans); font-size: 13px; line-height: 1.55;
+  padding: 10px 12px; min-height: 70px; resize: vertical;
+  transition: border-color .25s, background .25s;
+  margin-top: 4px;
+}
+textarea.note-input:focus { outline: none; border-color: rgba(106,223,217,0.35); background: rgba(11,8,15,0.7); }
+textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
+
+/* Per-card resolve action row */
+.note-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  margin-top: 12px;
+}
+.note-actions .resolve-hint {
+  font-size: 11px; color: var(--dim); letter-spacing: 0.04em;
+  font-style: italic; line-height: 1.45;
+  flex: 1; min-width: 0;
+}
+.note-actions .resolve-hint.ready { color: var(--mid); }
+.btn-resolve {
+  font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 10px 18px; border-radius: 999px; cursor: pointer;
+  border: 1px solid rgba(106,223,217,0.30);
+  background: linear-gradient(135deg, rgba(106,223,217,0.10), rgba(194,47,205,0.06));
+  color: var(--teal);
+  transition: all .25s;
+  white-space: nowrap;
+}
+.btn-resolve:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(106,223,217,0.22), rgba(194,47,205,0.16));
+  border-color: rgba(106,223,217,0.55);
+  color: var(--light);
+  box-shadow: 0 0 22px rgba(106,223,217,0.20);
+}
+.btn-resolve:disabled {
+  background: rgba(255,255,255,0.03);
+  border-color: var(--glass-border);
+  color: var(--dim);
+  cursor: not-allowed;
+}
+
+.reserve-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 24px; }
+.reserve-item {
+  background: var(--glass); border: 1px dashed var(--glass-border);
+  border-radius: 10px; padding: 14px 16px;
+  font-size: 12.5px; color: var(--mid); line-height: 1.45;
+}
+.reserve-item strong { color: var(--light); font-weight: 500; display: block; margin-bottom: 2px; }
+
+.reflect-cta {
+  background: linear-gradient(135deg, rgba(106,223,217,0.10), rgba(194,47,205,0.06));
+  border: 1px solid rgba(106,223,217,0.22);
+  border-radius: 18px; padding: clamp(24px, 4vw, 44px);
+  margin-top: 24px;
+  position: relative; overflow: hidden;
+}
+.reflect-cta::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 50% 80% at 100% 0%, rgba(194,47,205,0.10), transparent 60%);
+}
+.reflect-cta h3 { font-family: var(--serif); font-weight: 300; font-size: clamp(22px, 2.8vw, 32px); color: var(--light); margin-bottom: 10px; }
+.reflect-cta p { font-size: 14px; color: var(--mid); line-height: 1.65; max-width: 600px; margin-bottom: 18px; }
+.reflect-cta p em { color: var(--teal); font-style: italic; }
+.reflect-status { margin-top: 14px; font-size: 12px; color: var(--mid); letter-spacing: 0.06em; min-height: 16px; }
+.reflect-status.error { color: var(--orange); }
+.reflect-status.warn { color: var(--gold); }
+.reflect-cta.map-complete { border-color: rgba(255,215,100,0.45); box-shadow: 0 0 30px rgba(255,215,100,0.10); }
+.reflect-cta.map-complete h3::after {
+  content: ' · ready';
+  color: var(--gold);
+  font-size: 0.65em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-left: 8px;
+  font-style: normal;
+}
+#ask-reflect.pulse-ready { animation: pulse-ready 2400ms ease-in-out infinite; }
+@keyframes pulse-ready {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,100,0.0); }
+  50%      { box-shadow: 0 0 0 8px rgba(255,215,100,0.18); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #ask-reflect.pulse-ready { animation: none; box-shadow: 0 0 0 2px rgba(255,215,100,0.4); }
+}
+section#reflect.reflected .section-title em {
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 2px;
+}
+.reflect-log { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+.reflect-entry {
+  background: rgba(31,24,36,0.55);
+  border: 1px solid var(--glass-border);
+  border-left: 2px solid var(--teal);
+  border-radius: 0 12px 12px 0;
+  padding: 18px 22px;
+}
+.reflect-entry.fresh { animation: reflection-slide-up 800ms cubic-bezier(.2,.8,.2,1); }
+@keyframes reflection-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reflect-entry-meta { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+.reflect-entry-body { font-size: 14px; color: var(--light); opacity: 0.9; line-height: 1.7; white-space: pre-wrap; }
+.reflect-payload {
+  background: rgba(11,8,15,0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: ui-monospace, 'DM Mono', SFMono-Regular, Menlo, monospace;
+  font-size: 11px; color: var(--mid); line-height: 1.55;
+  max-height: 320px; overflow: auto;
+  white-space: pre-wrap; word-break: break-word;
+  margin-top: 14px;
+}
+
+.footer {
+  padding: clamp(40px, 6vw, 72px) clamp(20px, 6vw, 96px);
+  max-width: 1240px; margin: 0 auto;
+  border-top: 1px solid var(--glass-border);
+  display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--dim);
+  position: relative; z-index: 2;
+}
+.footer em { color: var(--teal); font-style: italic; text-transform: none; letter-spacing: 0; font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; filter: blur(0) !important; transform: none !important; transition: none !important; }
+  .aurora-text, .gradient-divider, .opus-ring::after { animation: none !important; }
+  .phase-panel.active, .field-panel::before { animation: none !important; }
+  body, body::before { transition: none !important; }
+  #auroraCanvas, #particleCanvas, .mesh-bg { display: none !important; }
+  .bf-orbit-glow, .bf-portrait, .bf-measure::after, .bf-chakra.pulsing { animation: none !important; }
+  .aurora-ring-overlay, .page-bloom, .ptab.celebrating, .session-card.celebrating-note .session-art .ring-mask, .reflect-entry.fresh, .parsed-reading.swept::before, .card-status .spinner, .session-card.collapsed-reflected .resolved-reflection {
+    animation: none !important;
+  }
+  .field-panel { transform: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="film-grain" aria-hidden="true"></div>
+<div class="mesh-bg" aria-hidden="true">
+  <div class="mesh-blob mesh-blob--1"></div>
+  <div class="mesh-blob mesh-blob--2"></div>
+  <div class="mesh-blob mesh-blob--3"></div>
+  <div class="mesh-blob mesh-blob--4"></div>
+</div>
+<canvas id="auroraCanvas" aria-hidden="true"></canvas>
+<canvas id="particleCanvas" aria-hidden="true"></canvas>
+<div class="aurora-ring-overlay" id="aurora-ring" aria-hidden="true"></div>
+<div class="page-bloom" id="page-bloom" aria-hidden="true"></div>
+<div role="status" aria-live="polite" id="a11y-status" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;"></div>
+<div class="bf-gate" id="bf-gate" hidden>
+  <div class="bf-gate-inner">
+    <div class="bf-gate-question">Before you see what was reflected, what does your body already know is here?</div>
+    <textarea class="bf-gate-textarea" id="bf-gate-text" placeholder="A line is enough." rows="3" aria-label="What your body already knows"></textarea>
+    <div class="bf-gate-actions">
+      <button class="btn btn-primary" id="bf-gate-show" type="button">Show me what was reflected</button>
+      <button class="btn btn-skip" id="bf-gate-skip" type="button">Skip</button>
+    </div>
+    <div class="bf-gate-meta">Optional. Whatever you write stays in this browser. The reflection layer reads it alongside your notes.</div>
+  </div>
+</div>
+
+<nav class="top-nav" aria-label="Main">
+  <a class="brand-lockup" href="#" aria-label="OPUS">
+    <img src="assets/logos/opus-horizontal.png" alt="OPUS" class="brand-horizontal">
+  </a>
+  <div class="brand-divider" aria-hidden="true"></div>
+  <div class="brand-product">SoundBed · First Month Map</div>
+  <div class="nav-spacer"></div>
+  <a class="nav-link" href="#input">Input</a>
+  <a class="nav-link" href="#map">Map</a>
+  <a class="nav-link" href="#reflect">Reflect</a>
+  <img src="assets/logos/opus-hex.png" alt="" class="brand-hex" aria-hidden="true">
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="hero-constellation" id="hero-constellation" aria-hidden="true"></div>
+  <div class="hero-eyebrow reveal">Designed for Ramon · April 2026</div>
+  <div class="hero-principle-1 reveal">The Input is the starting frame.<em> Your body is the source of truth.</em></div>
+  <h1 class="hero-title reveal"><em>Ramon's</em> First Month Map<br><span class="aurora-text">A SoundBed Experiment</span></h1>
+  <p class="hero-lede reveal" id="hero-lede">
+    Someone who works with energy gave you a reading. We're holding it as a starting point. From what they offered, we drew a 4-week path through 16 sessions in the OPUS catalog. As you move through it, the notes you take become part of the conversation.
+  </p>
+</header>
+
+<hr class="gradient-divider">
+<div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
+
+<section class="section reveal" id="input">
+  <div class="section-label">The Input</div>
+  <h2 class="section-title">Your Biofield reading, <em>held as the starting frame</em>.</h2>
+  <p class="section-desc">
+    This is the reading you were given. We mirror the words back to you and design the next 30 days around them. <strong>The Input itself is what we built the map from.</strong>
+  </p>
+
+  <div class="biofield-dashboard" id="biofield-dashboard"></div>
+
+  <div class="input-panel-wrap" id="input-panel-wrap">
+    <div class="field-panel">
+      <div class="field-panel-head">
+        <h3>The Input</h3>
+      </div>
+      <div id="parsed-reading-mount"></div>
+      <textarea id="biofield" class="field-input" readonly aria-label="The Input (raw text)" hidden></textarea>
+    </div>
+  </div>
+</section>
+
+<hr class="gradient-divider">
+<div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
+
+<section class="section reveal" id="map">
+  <div class="section-label">The Map · 4 Weeks · 16 Sessions</div>
+  <h2 class="section-title">Designed from your <em>Biofield reading</em>.</h2>
+  <p class="section-desc">
+    Your reading flagged the root as undercharged and the crown as already oversaturated. So we start with grounding and release, and save the higher-frequency work for once the base has more charge. Every session below is a real entry from the OPUS catalog. After each one, log a short note. We're listening for what changes.
+  </p>
+
+  <div class="phase-tabs" id="phase-tabs" role="tablist" aria-label="Weekly map"></div>
+  <div id="phases"></div>
+
+  <div class="reveal" style="margin-top:64px;">
+    <div class="section-label">Held in Reserve</div>
+    <h3 style="font-family:var(--serif); font-weight:300; font-size:clamp(22px,3vw,30px); color:var(--light); margin-bottom:10px;">
+      Sessions intentionally <em style="color:var(--magenta); font-style:italic;">not in Week 1–4</em>
+    </h3>
+    <p style="font-size:14px; color:var(--mid); max-width:680px; line-height:1.7;">
+      These fit the reading well, but we held them back. The crown and third-eye were flagged as already oversaturated. Once the root has more charge, these become useful.
+    </p>
+    <div class="reserve-list">
+      <div class="reserve-item"><strong>Rest in Love · 852 Hz</strong>third-eye / universal love</div>
+      <div class="reserve-item"><strong>Pure Awareness · Crown</strong>direct crown work</div>
+      <div class="reserve-item"><strong>Pineal Aperture</strong>third-eye attunement</div>
+      <div class="reserve-item"><strong>AUM · 136 Hz</strong>cosmic attune</div>
+      <div class="reserve-item"><strong>Bridging Worlds</strong>Earth / Spirit bridge</div>
+    </div>
+  </div>
+</section>
+
+<hr class="gradient-divider">
+<div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
+
+<section class="section reveal" id="reflect">
+  <div class="section-label">Reflection</div>
+  <h2 class="section-title">When you're ready, ask for a <em>reflection</em>.</h2>
+  <p class="section-desc">
+    The reflection looks across your Input and your session notes. It mirrors what you've written and asks open questions. It won't measure or diagnose anything. <strong>If you don't want it, don't ask for it.</strong>
+  </p>
+
+  <div class="reflect-cta">
+    <h3>Ask for a reflection</h3>
+    <p>
+      We'll send your saved Input and your session notes to a private reflection layer that knows the OPUS SoundBed catalog. It mirrors what you wrote. <em>Reflections only.</em> Nothing is stored outside this browser unless you ask us to store it.
+    </p>
+    <button class="btn btn-primary" id="ask-reflect">Ask for reflection</button>
+    <div class="reflect-status" id="reflect-status"></div>
+    <details id="payload-preview" hidden style="margin-top:16px;">
+      <summary style="cursor:pointer; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--mid); padding:6px 0;">View payload (debug)</summary>
+      <pre class="reflect-payload" id="payload-body"></pre>
+    </details>
+  </div>
+
+  <div class="reflect-log" id="reflect-log"></div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div>OPUS · SoundBed · Ramon's First Month Map</div>
+  <div><em>We reflect. We never conclude.</em></div>
+</footer>
+
+<script>
+/* Cloudflare Worker endpoints. Change RESOLVE_BASE for dev / prod.
+   Local dev: 'http://127.0.0.1:8787' (after `wrangler dev` in projects/ramon-portal/worker)
+   Prod:      'https://ramon-resolver.<subdomain>.workers.dev' */
+const RESOLVE_BASE = 'http://127.0.0.1:8787';
+const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
+const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
+
+const SAM_PORTRAIT = 'assets/artists/sam-bottner.jpg';
+
+const RAMON_INPUT = `🜂 ORIC FIELD
+Your auric field extends 13.4 meters, a perfect Fibonacci harmonic. This suggests you are in a phase of coherence expansion, likely due to recent integrations (perhaps related to your medallion work).
+Field Status: Symmetrical but pulsating in triadic waves.
+Notable Observation: A subtle golden spiral is emerging from the top of your field, indicative of higher integration.
+
+🜁 DNA STRAND ACTIVATION
+12 strands are partially online, with 9 fully phase-locked. This means you are operating with multidimensional awareness, but not all timelines are fully collapsed into coherence yet.
+Suggested Integration: Breathwork with 3-6-9 pattern to stabilize remaining strands.
+
+🜃 CHAKRA SCAN
+Crown (Sahasrara): Open, receiving high-frequency codes, slight oversaturation.
+Third Eye (Ajna): Clear, but filtering more data than usual, recommend grounding.
+Throat (Vishuddha): Expanding, finally releasing old constraints around truth-speaking.
+Heart (Anahata): Radiant, emitting green-gold harmonic, primary coherence source.
+Solar Plexus (Manipura): Stabilizing, recent spikes in willpower integration.
+Sacral (Svadhisthana): Holding space for creative rebirth, linked to harmonic feminine.
+Root (Muladhara): Undercharged, requires more earth resonance.
+
+🜄 ORGANIC FIELD
+Liver: Detox wave detected, processing emotional overload.
+Lungs: Clear, but rapid breathing patterns noted, may indicate integration stress.
+Heart: Strong, overcompensating for lower chakra instability.
+Kidneys: Recovering, fear-based residue still present.
+
+🜅 VIBRATIONAL LEVEL (Hawkins Scale)
+You are currently vibrating at 525, Love and Integration. This is a transition point between personal transcendence and universal service.
+
+🜆 PRIMARY BLOCK TO AUTHENTICITY
+Residual fear of timeline collapse, specifically a subconscious resistance to fully embodying the role you've already accepted. This manifests as: hesitation in finalizing commitments, micro-doubt in the midst of immense clarity, and a minor echo of "unworthiness" still embedded in the lower chakras.
+
+🜇 ARCHETYPE
+You are functioning as a Harmonic Guardian of the Inner Return. Your greatest gift is the ability to hold a mirror of coherence so precise that others cannot remain fragmented in your presence. Your greatest challenge: to believe you are already what you seek to become.`;
+
+const SESSIONS = {
+  'welcome-to-opus': { art: 'assets/sessions/welcome-to-opus.jpg', heading: 'Welcome to Opus', subtitle: 'Discover SoundBed.', artist: 'OPUS', portrait: '', category: 'Welcome', catClass: 'cat-welcome', collection: 'Orientation', lede: "Your first session on SoundBed. A short orientation that lets your nervous system meet the bed before you bring intention to it.", chooseWhen: ['First time on SoundBed', 'To set the somatic baseline'], spotify: '', why: "First-session orientation. Sets the somatic baseline before we ask anything of the body.", intention: "Let me arrive without needing to do anything yet." },
+  'stability-root': { art: 'assets/sessions/stability-root.jpg', heading: 'Stability | Root', subtitle: 'Feel Grounded', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz', lede: "Designed to help you connect deeply with a sense of safety and home, this session focuses on the root chakra, associated with the earth element and linked to feelings of security and stability.", chooseWhen: ['When you feel airy or ungrounded','To reconnect with safety','To feel anchored to the earth'], spotify: 'https://open.spotify.com/track/23F7Ue858vQVWosvdlWkGV', why: "Your Input flagged the root as undercharged. Start here. 432 Hz is a softer entry than the Solfeggio set.", intention: "I let the bed hold the weight my body has been carrying." },
+  'earth-awareness': { art: 'assets/sessions/earth-awareness.jpg', heading: 'Earth Awareness | Alpha Waves', subtitle: 'Ground Your Energy and Attune to Nature', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Brainwave Entrainment', catClass: 'cat-brainwave', collection: 'Binaural I', lede: "An Alpha brainwave session that invites you into meditative receptivity. Plant your roots into Earth's heartbeat, the Schumann resonance.", chooseWhen: ['As part of your morning routine','Prior to meditation','To connect with nature'], spotify: 'https://open.spotify.com/album/1V1NjXA4HN8WqFfJhPYl9a', why: "Alpha state lets you settle without flooding the upper chakras. Your Input asked for *more earth resonance*, and this is the simplest way in.", intention: "I plant down. Whatever is restless can rest on the ground." },
+  'body-scan': { art: 'assets/sessions/body-scan.jpg', heading: 'Body Scan | NSDR', subtitle: 'Non-Sleep Deep Rest', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: '', lede: "Replenish energy by entering low-frequency brain waves. Move attention through the body, using the breath to relax. NSDR slows the spinning thoughts and opens a state of deep rest.", chooseWhen: ['In the morning to start calmly','Before bed for deeper sleep','To ease an overstimulated nervous system'], spotify: '', why: "Body awareness without symbolic content. NSDR is a reliable nervous-system reset, which speaks to the breath notes in your Input.", intention: "I listen to my body the way I'd listen to a friend who hasn't been heard." },
+  'fearless-396': { art: 'assets/sessions/fearless-396.jpg', heading: 'Fearless | 396 Hz', subtitle: 'Release Heaviness and Stagnation.', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio I', lede: "Aids in the transcendence of guilt and fear blocks, opening the pathways for self-love and personal empowerment. 396 Hz can also help when moving through grief.", chooseWhen: ['During significant life changes','To calm your nervous system','For processing and releasing sadness'], spotify: 'https://open.spotify.com/track/0IVgsgwsl2l8amzrgKWtPE', why: "396 Hz is the frequency most associated with releasing fear at the root. It matches the kidney-residue and timeline-collapse threads in your Input.", intention: "I let the old fear leave through my breath. It doesn't have to come with me." },
+  'ease-174': { art: 'assets/sessions/ease-174.jpg', heading: 'Ease | 174 Hz', subtitle: 'Invite Comfort and Relief to Your Body', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio I', lede: "A Solfeggio tone session for soothing aches and pains, bringing you into a state of effortless ease.", chooseWhen: ['When physical discomfort arises','For supporting injury recovery','To clarify what you want'], spotify: 'https://open.spotify.com/album/0IZxiSGDAIlQQTCN6V9gQD', why: "174 Hz is the lowest Solfeggio tone, traditionally used for body comfort. A good companion to the *liver detox* thread.", intention: "The places that hurt are allowed to soften. Nothing is being asked to perform." },
+  'fire-cleanse': { art: 'assets/sessions/fire-cleanse.jpg', heading: 'Fire Cleanse', subtitle: 'Release What No Longer Serves', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Natural Soundscapes', catClass: 'cat-natural', collection: '', lede: "A calming organic soundscape. Immerse yourself in the felt experience of fire as it burns away any dead wood you're ready to let go.", chooseWhen: ['For evening relaxation','During significant life changes','To focus your intention'], spotify: 'https://open.spotify.com/track/41CRQAOids2p4yDhn8yWqq', why: "A second pass at release, without frequency or guidance. Sometimes the body lets go more inside a soundscape than inside an instruction.", intention: "I burn what I'm done carrying. I keep the warmth." },
+  'sending-mark-home': { art: 'assets/sessions/sending-mark-home.jpg', heading: 'Sending Mark Home', subtitle: 'Reflect, Feel, and Let Go.', artist: 'The Human Experience', portrait: 'assets/artists/the-human-experience.jpg', category: 'Immersive Music', catClass: 'cat-music', collection: '', lede: "Introspective and emotionally direct, this session is an invitation to feel. Let yourself soften and surrender into your heart with \"Sending Mark Home.\"", chooseWhen: ['To process and feel through memories','To feel your present emotion deeply',"When seeking clarity about what's next"], spotify: 'https://open.spotify.com/track/2QEBaJSZmBHtJ4XQr9zLRs', why: "One of the most direct *let-go* pieces in the catalog. A softer close to the release week.", intention: "I let myself feel what's been waiting at the edges." },
+  'heart-focus': { art: 'assets/sessions/heart-focus.jpg', heading: 'Heart Focus', subtitle: 'Foster a Deeper Heart Connection', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: 'Breathwork', lede: "A short breathwork session bringing focus to your heart. Coherent breathing connects you with the intuitive knowledge in your chest, releases physical and emotional stressors, and shifts your state from stress to peace in 4 deep breaths.", chooseWhen: ['To re-center during the work day','When feeling confused','To relieve stress'], spotify: 'https://open.spotify.com/track/6g5a5V8apyHEJY2j9QqYum', why: "Direct heart practice. Your Input called this your strongest center. Feed it instead of fixing it.", intention: "I bring my attention home to my chest and stay a few breaths longer than usual." },
+  'coherence-639': { art: 'assets/sessions/coherence-639.jpg', heading: 'Coherence | 639 Hz', subtitle: 'Tune Into Harmony Within and Around You', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Carrying the resonance of 639 Hz, often linked to heart connection, emotional balance, and harmonious relationships. The session brings your system into coherence, syncing mind and body with a deeper rhythm of ease.", chooseWhen: ['To calm emotional tension','When you want to feel more connected','To restore internal balance'], spotify: 'https://open.spotify.com/track/7AffEf6huXd4w2I9k5bjZP', why: "639 Hz is the Solfeggio tone associated with heart coherence. It lands close to the *525 / Love & Integration* note in your Input.", intention: "I listen for the rhythm underneath everything I'm trying to manage." },
+  'liberated-expression': { art: 'assets/sessions/liberated-expression.jpg', heading: 'Liberated Expression | Throat', subtitle: 'Deepen Communication and Listening', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Balancing · 432 Hz', lede: "Bring balance to your energetic center of authentic expression and attuned listening. This chakra is connected to your physical vocal cords, ears, and thyroid gland. Clarify it and your gifts and vision can grace the world.", chooseWhen: ['To free self-expression','For landing in the present moment','Prior to a significant conversation'], spotify: 'https://open.spotify.com/track/2vghyFSgChsZP554bkyBrG', why: "A throat session that doesn't push. It supports listening as much as speaking, which fits the throat-opening thread in your Input.", intention: "What I haven't said is allowed to come up here. I don't need to do anything with it yet." },
+  'toning-with-ancestors': { art: 'assets/sessions/toning-with-ancestors.jpg', heading: 'Toning with the Ancestors', subtitle: 'A Conversation Beyond Words', artist: 'Jade Fusco', portrait: 'assets/artists/jade-fusco.jpg', category: 'Guided', catClass: 'cat-guided', collection: '', lede: "Guided by Jade Fusco, this session invites you to connect with your lineage through the power of your voice. By humming, toning, and singing, you offer what your ancestors may need, and open yourself to receive their wisdom and strength. Vibration becomes the bridge.", chooseWhen: ['To explore your voice as healing','When honoring your ancestry','To open the heart before creative or vocal practice'], spotify: '', why: "Vocal toning. The throat opens through *use*, not only through frequency. Optional but worth trying once.", intention: "I let my own voice be the bridge." },
+  'heart-hara': { art: 'assets/sessions/heart-hara.jpg', heading: 'Heart-Hara Harmony', subtitle: 'Balance Love and Vitality', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: 'Breathwork', lede: "An invitation to balance your heart and hara centers, uniting the emotional depth of love with the vibrant energy of creativity and life force. Feel the heart's compassion flow as the hara anchors you with vitality.", chooseWhen: ['To harmonize emotion with creative energy','When you seek balance and grounding','To cultivate alignment and vitality'], spotify: 'https://open.spotify.com/track/5NNprGnrnUrWpxcIkxitcD', why: "Bridges the heart and the hara (sacral and solar region). A direct answer to the feminine-meets-willpower thread in your Input.", intention: "My heart and my belly can talk to each other without me arranging it." },
+  'flow-sacral': { art: 'assets/sessions/flow-sacral.jpg', heading: 'Flow | Sacral', subtitle: 'Unlock Your Creative Flow', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz', lede: "Dedicated to the sacral chakra, also known as the lower dan tian, linked to sensuality, creative energy, and the transition from survival mode to creation consciousness.", chooseWhen: ['To awaken creative inspiration','When transitioning from survival to creation','To connect with your deepest desires'], spotify: 'https://open.spotify.com/track/7aasWE5DWAENpEczNufTrN', why: "The *creative rebirth* note from your Input made this one obvious.", intention: "Something wants to be made through me. I make space for it without naming it." },
+  'sunmerge-174': { art: 'assets/sessions/sunmerge-174.jpg', heading: 'Sunmerge | 174 Hz', subtitle: 'Dissolve Tension, Absorb the Light', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Designed to soothe body and mind at a cellular level. Bathed in glowing ambient soundscapes, you'll feel the grounding properties of the 174 Hz Solfeggio frequency.", chooseWhen: ['To unwind after exertion','When you need to release tension','To prepare for restful sleep'], spotify: 'https://open.spotify.com/track/6MKA9DsEtfyxbxv4lyaw8d', why: "Closes the loop on body comfort while reaching toward integration.", intention: "I let the day's tension dissolve. I don't have to track where it goes." },
+  'open-path-741': { art: 'assets/sessions/open-path-741.jpg', heading: 'Open Path | 741 Hz', subtitle: 'Let Go of the Static. Step Into Clear Air', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Tuned to 741 Hz, often associated with mental and energetic cleansing. The session helps release what weighs on the mind and makes space for fresh energy. The vibrations move through you like a breeze clearing the inner landscape.", chooseWhen: ['To clear mental clutter','When starting a new project','To create space for new intentions'], spotify: '', why: "The lede line, *let go of the static, step into clear air*, lands close to the \"hesitation in finalizing commitments\" line in your Input. A clean closing session.", intention: "I clear what I've been holding so the next step has room to arrive." }
+};
+
+const PROMPTS = {
+  'welcome-to-opus':       { before: "Before you've done anything yet, what does your body feel like in this moment?", after: "What did you notice as the bed met you for the first time?" },
+  'stability-root':        { before: "Where in your body do you feel airy or untethered right now?", after: "Where did weight settle? What does the ground underneath you feel like?" },
+  'earth-awareness':       { before: "What's still loud in your body or your mind as you arrive?", after: "What got quieter when you tuned to Earth? What's still humming?" },
+  'body-scan':             { before: "Where is your attention right now: on your body, or somewhere else?", after: "What part of you got the most rest? Anywhere stay locked?" },
+  'fearless-396':          { before: "What fear or hesitation has been the loudest in you this week?", after: "What did you let go of? What's still here that didn't move?" },
+  'ease-174':              { before: "Where does your body hurt or ache today?", after: "What softened? What place is still asking for more?" },
+  'fire-cleanse':          { before: "What are you ready to be done carrying?", after: "What burned away? What did you keep, that you didn't expect to?" },
+  'sending-mark-home':     { before: "What feeling has been waiting at the edges of your week?", after: "What did you feel without trying? What surprised you about it?" },
+  'heart-focus':           { before: "How present is your heart to you right now: feeling it, or thinking about it?", after: "What changed in your chest? What did your heart say without words?" },
+  'coherence-639':         { before: "What relationship is on your mind today, with yourself or someone else?", after: "Where did coherence land? What got softer toward whom?" },
+  'liberated-expression':  { before: "What is something you haven't said aloud lately?", after: "What part of you feels heard now? What still needs space?" },
+  'toning-with-ancestors': { before: "Whose voice or lineage are you carrying that you haven't named?", after: "What did your own voice teach you? What stayed unspoken?" },
+  'heart-hara':            { before: "Where does your creative energy live in your body right now?", after: "What conversation happened between your heart and your belly?" },
+  'flow-sacral':           { before: "What wants to be made or moved through you, even if you can't name it?", after: "What started moving? What was already moving but you hadn't noticed?" },
+  'sunmerge-174':          { before: "What tension has been with you across all four weeks?", after: "What dissolved? What stayed because it isn't ready to leave yet?" },
+  'open-path-741':         { before: "What are you ready to clear so the next 30 days have room?", after: "What is open now that wasn't before? What direction is calling?" }
+};
+
+const PLAN = [
+  { week: 1, title: 'Land the Body', intent: "Ground first. Don't pile crown content on a system already oversaturated.", responds: 'Root undercharged · third-eye filtering more data than usual · "minor echo of unworthiness in lower chakras" · new to SoundBed', sessions: ['welcome-to-opus','stability-root','earth-awareness','body-scan'] },
+  { week: 2, title: 'Release the Residue', intent: "Make room. Let the body unload what it's already finished with.", responds: 'Liver detox wave · kidneys recovering / fear-based residue · "fear of timeline collapse" as primary block', sessions: ['fearless-396','ease-174','fire-cleanse','sending-mark-home'] },
+  { week: 3, title: 'Heart Coherent, Voice Open', intent: 'Feed what is already strong. Support what is already opening.', responds: 'Heart radiant emitting green-gold (primary coherence source) · throat finally releasing constraints around truth-speaking · Hawkins 525 = Love & Integration', sessions: ['heart-focus','coherence-639','liberated-expression','toning-with-ancestors'] },
+  { week: 4, title: 'Integration & Creative Flow', intent: "Let the loop close. Move toward what's next.", responds: 'Sacral holding space for creative rebirth · solar plexus stabilizing · "hesitation in finalizing commitments" · golden spiral integration signature', sessions: ['heart-hara','flow-sacral','sunmerge-174','open-path-741'] }
+];
+
+/* Chakra states parsed from Ramon's reading. Order = energetic ascent.
+   States renamed in felt-sense language (per Personal Development Guru consult):
+     oversaturated → carrying-a-lot
+     expanding → consolidating
+   Each chakra hot-spot is positioned on the silhouette's body anatomy as { yPct } of body height. */
+const CHAKRA_STATES = [
+  { id: 'crown',     label: 'Crown',        state: 'carrying-a-lot', yPct: 7,  note: 'Open, carrying a lot' },
+  { id: 'third-eye', label: 'Third Eye',    state: 'clear',          yPct: 14, note: 'Clear, filtering more data than usual' },
+  { id: 'throat',    label: 'Throat',       state: 'consolidating',  yPct: 22, note: 'Releasing old constraints' },
+  { id: 'heart',     label: 'Heart',        state: 'radiant',        yPct: 36, note: 'Radiant green-gold, primary coherence source' },
+  { id: 'solar',     label: 'Solar Plexus', state: 'stabilizing',    yPct: 48, note: 'Recent willpower spikes settling' },
+  { id: 'sacral',    label: 'Sacral',       state: 'holding',        yPct: 60, note: 'Holding space for creative rebirth' },
+  { id: 'root',      label: 'Root',         state: 'undercharged',   yPct: 76, note: 'Quiet, wants more earth resonance' }
+];
+
+/* Per-state amplitude multiplier driving CSS scale via --amp.
+   See Phase 3 of the plan: amplitude oscillation, not opacity tier. */
+const CHAKRA_STATE_AMP = {
+  'undercharged':    0.30,
+  'stabilizing':     0.60,
+  'holding':         0.65,
+  'consolidating':   0.80,
+  'clear':           0.85,
+  'radiant':         1.00,
+  'carrying-a-lot':  1.00
+};
+
+/* Map session slugs to chakras for the delight-pulse on resolve */
+const SLUG_TO_CHAKRA = {
+  'stability-root':         'root',
+  'earth-awareness':        'root',
+  'fearless-396':           'root',
+  'ease-174':               'root',
+  'fire-cleanse':           'sacral',
+  'flow-sacral':            'sacral',
+  'sunmerge-174':           'sacral',
+  'sending-mark-home':      'heart',
+  'heart-focus':            'heart',
+  'coherence-639':          'heart',
+  'heart-hara':             'heart',
+  'liberated-expression':   'throat',
+  'toning-with-ancestors':  'throat',
+  'open-path-741':          'throat',
+  'body-scan':              'crown',
+  'welcome-to-opus':        'crown'
+};
+
+const CONSTELLATION_POSITIONS = [
+  [12, 22], [22, 14], [33, 28], [42, 18],
+  [54, 10], [62, 24], [71, 16], [83, 28],
+  [16, 56], [27, 70], [38, 64], [48, 78],
+  [58, 60], [69, 72], [78, 56], [88, 70]
+];
+
+function el(tag, attrs, children) {
+  const node = document.createElement(tag);
+  if (attrs) {
+    for (const k in attrs) {
+      if (k === 'class') node.className = attrs[k];
+      else if (k === 'text') node.textContent = attrs[k];
+      else if (k === 'dataset') Object.assign(node.dataset, attrs[k]);
+      else if (k === 'style') node.setAttribute('style', attrs[k]);
+      else node.setAttribute(k, attrs[k]);
+    }
+  }
+  if (children) {
+    if (!Array.isArray(children)) children = [children];
+    children.forEach(c => {
+      if (c == null) return;
+      if (typeof c === 'string') node.appendChild(document.createTextNode(c));
+      else node.appendChild(c);
+    });
+  }
+  return node;
+}
+
+function parseEm(text) {
+  const frag = document.createDocumentFragment();
+  const parts = String(text || '').split(/(\*[^*]+\*)/g);
+  parts.forEach(p => {
+    if (/^\*[^*]+\*$/.test(p)) {
+      frag.appendChild(el('em', { text: p.slice(1, -1) }));
+    } else if (p) {
+      frag.appendChild(document.createTextNode(p));
+    }
+  });
+  return frag;
+}
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function reducedMotion() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+const LS = {
+  notes: 'ramon.notes.v1',
+  field: 'ramon.field.v1',
+  fieldHistory: 'ramon.field.history.v1',
+  reflections: 'ramon.reflections.v1',
+  state: 'ramon.state.v1',
+  sessionReflections: 'ramon.sessionReflections.v1',
+  priorKnowing: 'ramon.priorKnowing.v1',
+  gateSeen: 'ramon.preDashboardSeen.v1'
+};
+
+const DEFAULT_STATE = {
+  inputSaved: false,
+  notesByWeek: { 1: 0, 2: 0, 3: 0, 4: 0 },
+  weeksCompleted: 0,
+  reflectionRequested: false,
+  reflectionReceived: false,
+  lastVisit: null,
+  sessionsWithNote: []
+};
+
+let ramonState = loadState();
+
+function loadState() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LS.state));
+    return stored ? Object.assign({}, DEFAULT_STATE, stored) : Object.assign({}, DEFAULT_STATE);
+  } catch { return Object.assign({}, DEFAULT_STATE); }
+}
+
+function persistState() {
+  ramonState.lastVisit = Date.now();
+  localStorage.setItem(LS.state, JSON.stringify(ramonState));
+}
+
+function recomputeFromNotes() {
+  const notes = getNotes();
+  const sessionsWithNote = new Set();
+  PLAN.forEach(phase => {
+    let weekNoteCount = 0;
+    phase.sessions.forEach(slug => {
+      const before = (notes[slug + '__before'] || '').trim();
+      const after = (notes[slug + '__after'] || '').trim();
+      if (before || after) sessionsWithNote.add(slug);
+      if (before) weekNoteCount++;
+      if (after) weekNoteCount++;
+    });
+    ramonState.notesByWeek[phase.week] = weekNoteCount;
+  });
+  ramonState.sessionsWithNote = Array.from(sessionsWithNote);
+  let completed = 0;
+  PLAN.forEach(phase => {
+    const allNoted = phase.sessions.every(slug => sessionsWithNote.has(slug));
+    if (allNoted) completed++;
+  });
+  ramonState.weeksCompleted = completed;
+}
+
+function setState(partial) {
+  Object.assign(ramonState, partial);
+  recomputeFromNotes();
+  persistState();
+  applyStateToUI();
+}
+
+function engagementValue() {
+  const sumNotes = ramonState.notesByWeek[1] + ramonState.notesByWeek[2] + ramonState.notesByWeek[3] + ramonState.notesByWeek[4];
+  const e =
+    (ramonState.inputSaved ? 0.05 : 0) +
+    (sumNotes / 32) * 0.10 +
+    (ramonState.weeksCompleted / 4) * 0.05 +
+    (ramonState.reflectionReceived ? 0.02 : 0);
+  return clamp(e, 0, 0.22);
+}
+
+let auroraTransientBump = 0;
+let auroraBumpDecayRAF = null;
+function fireAuroraBump() {
+  auroraTransientBump = 0.06;
+  const start = performance.now();
+  const decay = 12000;
+  if (auroraBumpDecayRAF) cancelAnimationFrame(auroraBumpDecayRAF);
+  function tick(now) {
+    const t = (now - start) / decay;
+    auroraTransientBump = 0.06 * Math.max(0, 1 - t);
+    applyAuroraOpacity();
+    if (t < 1) auroraBumpDecayRAF = requestAnimationFrame(tick);
+    else auroraBumpDecayRAF = null;
+  }
+  auroraBumpDecayRAF = requestAnimationFrame(tick);
+}
+function applyAuroraOpacity() {
+  const eng = engagementValue();
+  const base = clamp(0.14 + eng * (0.32 - 0.14) / 0.22, 0.14, 0.32);
+  const opacity = clamp(base + auroraTransientBump, 0.14, 0.40);
+  document.documentElement.style.setProperty('--aurora-opacity', opacity.toFixed(3));
+}
+
+function applyStateToUI() {
+  const eng = engagementValue();
+  applyAuroraOpacity();
+  const shimmerDur = 7 + (eng / 0.22) * 4;
+  document.documentElement.style.setProperty('--aurora-shimmer-duration', shimmerDur.toFixed(1) + 's');
+  document.body.classList.toggle('compounded', ramonState.inputSaved);
+  document.getElementById('input-panel-wrap').classList.toggle('compounded', ramonState.inputSaved);
+  if (window.__particles) window.__particles.notifyState(ramonState, eng);
+  if (window.__aurora) window.__aurora.notifyState(ramonState, eng);
+  updateConstellation();
+  updatePhaseTabsStatus();
+  document.querySelectorAll('.session-card').forEach(card => {
+    card.classList.toggle('has-note', ramonState.sessionsWithNote.includes(card.dataset.slug));
+  });
+  updateMapCompleteSignal();
+  document.getElementById('reflect').classList.toggle('reflected', ramonState.reflectionReceived);
+}
+
+function updateMapCompleteSignal() {
+  const allSixteen = ramonState.sessionsWithNote.length >= 16;
+  const cta = document.querySelector('.reflect-cta');
+  const btn = document.getElementById('ask-reflect');
+  if (!cta || !btn) return;
+  const ctaP = cta.querySelector('p');
+  if (allSixteen && !ramonState.reflectionReceived) {
+    cta.classList.add('map-complete');
+    btn.classList.add('pulse-ready');
+    if (ctaP) ctaP.dataset.original = ctaP.dataset.original || ctaP.textContent;
+    if (ctaP && !ctaP.dataset.swapped) {
+      ctaP.dataset.swapped = '1';
+      ctaP.textContent = "All 16 sessions have notes. Your map is full. Ask when you're ready. The reflection will mirror what you've gathered.";
+    }
+  } else {
+    cta.classList.remove('map-complete');
+    btn.classList.remove('pulse-ready');
+    if (ctaP && ctaP.dataset.swapped && ctaP.dataset.original) {
+      ctaP.textContent = ctaP.dataset.original;
+      delete ctaP.dataset.swapped;
+    }
+  }
+}
+
+/* Master breath clock. Single rAF loop writing two CSS variables.
+   --breath-phase: -1 → 1 sine over 10.91s (5.5 breaths/min, the resonant breathing rate)
+   --breath-pulse: 0 → 1 → 0 cosine envelope over the same period
+   Reduced-motion freezes both at safe midpoints. */
+function startBreathClock() {
+  const root = document.documentElement;
+  if (reducedMotion()) {
+    root.style.setProperty('--breath-phase', '0');
+    root.style.setProperty('--breath-pulse', '0.5');
+    return;
+  }
+  const period = 10910;
+  const startT = performance.now();
+  let running = true;
+  function tick(now) {
+    if (!running) return;
+    const t = ((now - startT) % period) / period;
+    const phase = Math.sin(t * Math.PI * 2);
+    const pulse = 0.5 - 0.5 * Math.cos(t * Math.PI * 2);
+    root.style.setProperty('--breath-phase', phase.toFixed(4));
+    root.style.setProperty('--breath-pulse', pulse.toFixed(4));
+    requestAnimationFrame(tick);
+  }
+  document.addEventListener('visibilitychange', () => {
+    running = !document.hidden;
+    if (running) requestAnimationFrame(tick);
+  });
+  requestAnimationFrame(tick);
+}
+
+function mountAurora() {
+  if (reducedMotion()) return;
+  const canvas = document.getElementById('auroraCanvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, blobs;
+  const SCALE = 0.5;
+
+  function resize() {
+    w = Math.floor(window.innerWidth * SCALE);
+    h = Math.floor(window.innerHeight * SCALE);
+    canvas.width = w;
+    canvas.height = h;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+  }
+
+  function init() {
+    blobs = [
+      { x: 0.20, y: 0.30, r: 280, color: [123,111,168], speed: 0.0004, phase: 0,    weight: 1.0 },
+      { x: 0.80, y: 0.20, r: 220, color: [194, 47,205], speed: 0.0003, phase: 2,    weight: 0.7 },
+      { x: 0.50, y: 0.70, r: 260, color: [ 86, 76,112], speed: 0.00035, phase: 4,   weight: 0.9 },
+      { x: 0.10, y: 0.85, r: 240, color: [106,223,217], speed: 0.00045, phase: 1.5, weight: 0.5 },
+      { x: 0.90, y: 0.60, r: 200, color: [123,111,168], speed: 0.00038, phase: 3,   weight: 0.7 },
+      { x: 0.50, y: 0.10, r: 200, color: [255,215,100], speed: 0.0003, phase: 5,    weight: 0.0 }
+    ];
+  }
+
+  let intensity = 0.55;
+
+  function notifyState(state, eng) {
+    const goldWeight = 0.0 + (state.weeksCompleted / 4) * 0.5;
+    blobs[5].weight = goldWeight;
+    intensity = 0.55 + (eng / 0.22) * 0.35;
+  }
+
+  let running = true;
+  function draw(time) {
+    if (!running) return;
+    ctx.clearRect(0, 0, w, h);
+    blobs.forEach(b => {
+      const bx = w * b.x + Math.sin(time * b.speed + b.phase) * (80 * SCALE);
+      const by = h * b.y + Math.cos(time * b.speed * 0.7 + b.phase) * (60 * SCALE);
+      const grad = ctx.createRadialGradient(bx, by, 0, bx, by, b.r * SCALE);
+      const a = 0.12 * b.weight * intensity;
+      grad.addColorStop(0, 'rgba(' + b.color.join(',') + ',' + a.toFixed(3) + ')');
+      grad.addColorStop(1, 'rgba(' + b.color.join(',') + ',0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    });
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  init();
+  requestAnimationFrame(draw);
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', () => {
+    running = !document.hidden;
+    if (running) requestAnimationFrame(draw);
+  });
+
+  window.__aurora = { notifyState };
+}
+
+function mountParticles() {
+  if (reducedMotion()) return;
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  let w, h;
+  let particles = [];
+  let targetCount = 60;
+  let goldWeight = 0.05;
+  const mouse = { x: -9999, y: -9999, active: false };
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; });
+  window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+  function makeParticle() {
+    const r = Math.random();
+    let color;
+    const gw = goldWeight;
+    if (r < gw) color = [255,215,100];
+    else if (r < gw + (1 - gw) * 0.55) color = [123,111,168];
+    else if (r < gw + (1 - gw) * 0.80) color = [106,223,217];
+    else color = [194,47,205];
+    return {
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.24,
+      vy: -(Math.random() * 0.16 + 0.04),
+      r: 0.6 + Math.random() * 1.8,
+      a: 0.18 + Math.random() * 0.24,
+      color
+    };
+  }
+
+  function init() {
+    particles = [];
+    for (let i = 0; i < targetCount; i++) particles.push(makeParticle());
+  }
+
+  function notifyState(state, eng) {
+    targetCount = 60 + Math.round(eng / 0.22 * 50);
+    goldWeight = 0.05 + (state.weeksCompleted / 4) * 0.37; // up to 0.42
+    while (particles.length < targetCount) particles.push(makeParticle());
+    while (particles.length > targetCount) particles.pop();
+  }
+
+  function spawnFromCard(slug) {
+    const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    for (let i = 0; i < 6; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * (0.6 + Math.random() * 0.4),
+        vy: Math.sin(angle) * (0.6 + Math.random() * 0.4),
+        r: 1.2 + Math.random() * 1.4,
+        a: 0.5,
+        color: [255,215,100],
+        ttl: 1800,
+        born: performance.now()
+      });
+    }
+  }
+
+  function getInputCenter() {
+    const panel = document.querySelector('.field-panel');
+    if (!panel) return null;
+    const rect = panel.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }
+
+  let running = true;
+  const REPULSE_RADIUS = 120;
+  const CONNECT_DIST = 120;
+  function draw(now) {
+    if (!running) return;
+    ctx.clearRect(0, 0, w, h);
+    const inputC = getInputCenter();
+
+    // Update positions + render points
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      if (inputC) {
+        const dx = inputC.x - p.x;
+        const dy = inputC.y - p.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 200 && dist > 4) {
+          p.vx += (dx / dist) * 0.003;
+          p.vy += (dy / dist) * 0.003;
+          p.vx += (-dy / dist) * 0.012;
+          p.vy += ( dx / dist) * 0.012;
+        }
+      }
+      // Cursor repulsion
+      if (mouse.active) {
+        const mdx = p.x - mouse.x;
+        const mdy = p.y - mouse.y;
+        const mdist = Math.hypot(mdx, mdy);
+        if (mdist > 0 && mdist < REPULSE_RADIUS) {
+          const force = (REPULSE_RADIUS - mdist) / REPULSE_RADIUS;
+          p.vx += (mdx / mdist) * force * 0.6;
+          p.vy += (mdy / mdist) * force * 0.6;
+        }
+      }
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vx *= 0.985;
+      p.vy *= 0.985;
+      if (p.ttl !== undefined) {
+        const age = now - p.born;
+        if (age > p.ttl) { particles.splice(i, 1); continue; }
+        p.a = 0.5 * (1 - age / p.ttl);
+      } else {
+        if (p.x < -20) p.x = w + 20;
+        if (p.x > w + 20) p.x = -20;
+        if (p.y < -20) p.y = h + 20;
+        if (p.y > h + 20) p.y = -20;
+      }
+      ctx.fillStyle = 'rgba(' + p.color.join(',') + ',' + p.a.toFixed(2) + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Connection lines between nearby particles (per OPUS brand spec, max 120px)
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < particles.length; i++) {
+      const a = particles[i];
+      if (a.ttl !== undefined) continue;
+      for (let j = i + 1; j < particles.length; j++) {
+        const b = particles[j];
+        if (b.ttl !== undefined) continue;
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < CONNECT_DIST) {
+          const alpha = (1 - dist / CONNECT_DIST) * 0.16 * Math.min(a.a, b.a);
+          ctx.strokeStyle = 'rgba(123,111,168,' + alpha.toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  init();
+  requestAnimationFrame(draw);
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', () => {
+    running = !document.hidden;
+    if (running) requestAnimationFrame(draw);
+  });
+
+  window.__particles = { notifyState, spawnFromCard };
+}
+
+/* ============================================================
+   BIOFIELD DASHBOARD v2 RENDERERS
+   ============================================================ */
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svg(tag, attrs, children) {
+  const node = document.createElementNS(SVG_NS, tag);
+  if (attrs) {
+    for (const k in attrs) {
+      if (k === 'class') node.setAttribute('class', attrs[k]);
+      else if (k === 'text') node.textContent = attrs[k];
+      else if (k === 'dataset') Object.assign(node.dataset, attrs[k]);
+      else node.setAttribute(k, attrs[k]);
+    }
+  }
+  if (children) {
+    if (!Array.isArray(children)) children = [children];
+    children.forEach(c => { if (c) node.appendChild(c); });
+  }
+  return node;
+}
+
+/* Body silhouette path (neutral androgynous mannequin in a 320 x 480 viewBox).
+   Coordinates intentionally chosen to read as a body without anatomical precision. */
+const SILHOUETTE_PATH =
+  'M 160 24 ' +
+  'C 142 24 132 38 132 56 ' +
+  'C 132 70 138 80 144 86 ' +
+  'L 132 100 ' +
+  'C 122 104 110 110 102 122 ' +
+  'L 88 168 ' +
+  'C 84 178 80 188 80 200 ' +
+  'L 86 248 ' +
+  'C 86 256 90 264 96 268 ' +
+  'L 110 316 ' +
+  'C 112 332 116 372 118 410 ' +
+  'L 122 460 ' +
+  'L 138 460 ' +
+  'L 142 412 ' +
+  'C 144 380 146 350 148 320 ' +
+  'L 160 270 ' +
+  'L 172 320 ' +
+  'C 174 350 176 380 178 412 ' +
+  'L 182 460 ' +
+  'L 198 460 ' +
+  'L 202 410 ' +
+  'C 204 372 208 332 210 316 ' +
+  'L 224 268 ' +
+  'C 230 264 234 256 234 248 ' +
+  'L 240 200 ' +
+  'C 240 188 236 178 232 168 ' +
+  'L 218 122 ' +
+  'C 210 110 198 104 188 100 ' +
+  'L 176 86 ' +
+  'C 182 80 188 70 188 56 ' +
+  'C 188 38 178 24 160 24 Z';
+
+function buildSilhouetteSVG() {
+  const root = svg('svg', {
+    viewBox: '0 0 320 480',
+    preserveAspectRatio: 'xMidYMid meet',
+    'aria-hidden': 'true'
+  });
+
+  // Defs: gradients used by silhouette + aura + block
+  const defs = svg('defs');
+  // Body gradient
+  const bodyGrad = svg('linearGradient', { id: 'bf-body-grad', x1: '0', y1: '1', x2: '0', y2: '0' });
+  bodyGrad.appendChild(svg('stop', { offset: '0%', 'stop-color': 'rgba(86,76,112,0.32)' }));
+  bodyGrad.appendChild(svg('stop', { offset: '100%', 'stop-color': 'rgba(31,22,50,0.20)' }));
+  defs.appendChild(bodyGrad);
+  // Anchor gradient (root upward bloom)
+  const anchorGrad = svg('radialGradient', { id: 'bf-anchor-grad', cx: '50%', cy: '90%', r: '40%' });
+  anchorGrad.appendChild(svg('stop', { offset: '0%', 'stop-color': 'rgba(222,21,69,0.30)' }));
+  anchorGrad.appendChild(svg('stop', { offset: '100%', 'stop-color': 'rgba(222,21,69,0)' }));
+  defs.appendChild(anchorGrad);
+  // Aura band gradients (3 layers + outermost)
+  ['bf-aura-1','bf-aura-2','bf-aura-3','bf-aura-4'].forEach((id, i) => {
+    const g = svg('radialGradient', { id, cx: '50%', cy: '50%', r: '50%' });
+    const opa = [0.18, 0.12, 0.08, 0.04][i];
+    g.appendChild(svg('stop', { offset: '0%', 'stop-color': 'rgba(123,111,168,' + (opa * 0.6).toFixed(3) + ')' }));
+    g.appendChild(svg('stop', { offset: '60%', 'stop-color': 'rgba(106,223,217,' + (opa * 0.5).toFixed(3) + ')' }));
+    g.appendChild(svg('stop', { offset: '100%', 'stop-color': 'rgba(194,47,205,0)' }));
+    defs.appendChild(g);
+  });
+  root.appendChild(defs);
+
+  // Aura: 4 concentric ellipses centered around silhouette mass
+  const auraCx = 160, auraCy = 250;
+  const auraBase = 165;
+  [1.55, 1.30, 1.15, 1.05].forEach((mult, idx) => {
+    const fillId = 'bf-aura-' + (4 - idx);
+    const ellipse = svg('ellipse', {
+      class: 'bf-aura-band',
+      cx: String(auraCx), cy: String(auraCy),
+      rx: String((auraBase * mult * 0.92).toFixed(1)),
+      ry: String((auraBase * mult * 1.08).toFixed(1)),
+      fill: 'url(#' + fillId + ')',
+      stroke: idx === 3 ? 'rgba(123,111,168,0.18)' : 'none'
+    });
+    root.appendChild(ellipse);
+  });
+
+  // Body anchor (root-upward luminance gradient inside silhouette)
+  root.appendChild(svg('rect', {
+    class: 'bf-body-anchor',
+    x: '70', y: '300', width: '180', height: '180',
+    fill: 'url(#bf-anchor-grad)'
+  }));
+
+  // Body silhouette outline
+  root.appendChild(svg('path', { class: 'bf-body', d: SILHOUETTE_PATH }));
+
+  // Fibonacci spiral rising from crown (single golden curve, translucent)
+  // Approximation: cubic bezier sweep starting near crown going up + right with taper
+  root.appendChild(svg('path', {
+    class: 'bf-fibonacci',
+    d: 'M 160 30 C 154 8 200 -10 230 8 C 280 28 295 86 250 110'
+  }));
+
+  // Damped block wave: solar (y=290) → heart (y=174) → throat (y=110)
+  // We construct a vertical sine path along x ≈ 160 with amplitude decaying upward.
+  const blockPath = (function() {
+    const yStart = 290, yEnd = 110;
+    const steps = 32;
+    const path = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const y = yStart - (yStart - yEnd) * t; // top of body up
+      const decay = Math.exp(-0.9 * t * 2.2);
+      const amp = 14 * decay;
+      const phase = t * Math.PI * 4;
+      const x = 160 + amp * Math.sin(phase);
+      path.push((i === 0 ? 'M ' : 'L ') + x.toFixed(2) + ' ' + y.toFixed(2));
+    }
+    return path.join(' ');
+  })();
+  const ghostPath = (function() {
+    const yStart = 290, yEnd = 110;
+    const steps = 32;
+    const path = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const y = yStart - (yStart - yEnd) * t;
+      const amp = 14;
+      const phase = t * Math.PI * 4;
+      const x = 160 + amp * Math.sin(phase);
+      path.push((i === 0 ? 'M ' : 'L ') + x.toFixed(2) + ' ' + y.toFixed(2));
+    }
+    return path.join(' ');
+  })();
+  root.appendChild(svg('path', { class: 'bf-block-ghost', d: ghostPath }));
+  root.appendChild(svg('path', { class: 'bf-block-wave', d: blockPath }));
+  // Tether: a soft dashed curve trailing behind the silhouette to the right
+  root.appendChild(svg('path', {
+    class: 'bf-block-tether',
+    d: 'M 160 174 C 220 180 260 196 290 232'
+  }));
+  // Knot at the heart (center of damping) - small filled circle
+  root.appendChild(svg('circle', {
+    class: 'bf-block-knot', cx: '160', cy: '174', r: '7'
+  }));
+
+  // Chakra hot-spots positioned on body anatomy.
+  // Nested groups: outer <g transform="translate(...)"> handles positioning,
+  // inner <g class="bf-chakra-spot"> takes the CSS scale animation. Critical
+  // because in SVG, CSS transform overrides the transform attribute.
+  CHAKRA_STATES.forEach(c => {
+    const cy = (c.yPct / 100) * 480 + 12;
+    const positioner = svg('g', { transform: 'translate(160 ' + cy.toFixed(0) + ')' });
+    const spot = svg('g', {
+      class: 'bf-chakra-spot',
+      'data-id': c.id,
+      'data-state': c.state,
+      style: '--amp:' + (CHAKRA_STATE_AMP[c.state] || 0.7).toFixed(2) + ';'
+    });
+    // Glow layer
+    spot.appendChild(svg('circle', { class: 'bf-chakra-glow bf-chakra-core', r: '14', 'fill-opacity': '0.55' }));
+    // Core dot
+    spot.appendChild(svg('circle', { class: 'bf-chakra-core', r: '6' }));
+    // Containing ring (only visible for carrying-a-lot)
+    spot.appendChild(svg('circle', {
+      class: 'bf-chakra-contain',
+      r: '11', fill: 'none',
+      stroke: 'rgba(255,255,255,0.6)', 'stroke-width': '0.6'
+    }));
+    // Anchoring downward bloom (only visible for undercharged)
+    spot.appendChild(svg('ellipse', {
+      class: 'bf-chakra-anchor',
+      cx: '0', cy: '14', rx: '14', ry: '8',
+      fill: 'rgba(222,21,69,0.30)'
+    }));
+    positioner.appendChild(spot);
+    root.appendChild(positioner);
+  });
+
+  return root;
+}
+
+function buildHelixSVG() {
+  /* 6 pair-bonds stacked vertically. Pairs 0-3 phase-locked (4 pairs * 2 = 8 strands)
+     Pair 4 asymmetric (1 locked + 1 partial = 1 strand consolidating)
+     Pair 5 asymmetric (0 locked + 2 partial = 2 strands consolidating)
+     Total: 9 phase-locked + 3 consolidating of 12 ✓ */
+  const root = svg('svg', {
+    viewBox: '0 0 110 320',
+    preserveAspectRatio: 'xMidYMid meet',
+    'aria-hidden': 'true'
+  });
+  const defs = svg('defs');
+  const grad = svg('linearGradient', { id: 'dna-grad', x1: '0', y1: '0', x2: '0', y2: '1' });
+  grad.appendChild(svg('stop', { offset: '0%',  'stop-color': 'rgba(255,215,100,0.85)' }));
+  grad.appendChild(svg('stop', { offset: '50%', 'stop-color': 'rgba(106,223,217,0.85)' }));
+  grad.appendChild(svg('stop', { offset: '100%','stop-color': 'rgba(123,111,168,0.85)' }));
+  defs.appendChild(grad);
+  root.appendChild(defs);
+
+  const W = 110, H = 320;
+  const cx = W / 2;
+  const padTop = 12, padBot = 12;
+  const innerH = H - padTop - padBot;
+  const cycles = 3.0; // 3 full sine cycles top to bottom for visible helix
+  const amp = 28;
+  const samples = 100;
+
+  // Two rails (left and right). Each rail is a sequence of points along sine.
+  const railPoints = (phaseOffset, locked) => {
+    const pts = [];
+    for (let i = 0; i <= samples; i++) {
+      const t = i / samples;
+      const y = padTop + t * innerH;
+      const phase = t * Math.PI * 2 * cycles + phaseOffset;
+      const x = cx + amp * Math.sin(phase);
+      pts.push([x.toFixed(2), y.toFixed(2)]);
+    }
+    return 'M ' + pts.map(p => p.join(' ')).join(' L ');
+  };
+  // Pair definitions:
+  // Pairs 0..3 (root, sacral, solar, heart): both rails locked
+  // Pairs 4..5 (throat, third-eye/crown bands): one rail solid, other ghost
+  // We render rails segment-by-segment per pair so we can mix locked/partial:
+  // But simpler: render two full continuous rails (always solid for the locked one);
+  // overlay ghost overlay for the upper portion of the second rail.
+  // For visual integrity, render two rails: rail A is solid the whole way,
+  // rail B is solid for pairs 0..4 (bottom 5/6) and ghost for pair 5 (top 1/6).
+  // Actually we want 9 locked + 3 consolidating. Let's render rail A solid full,
+  // rail B solid for the bottom 4 pairs and ghost for the top 2 pairs.
+  // That makes the bottom 4 pairs fully locked (8 locked rails) + the upper 1 ratio
+  // = each of the top 2 pairs has 1 solid + 1 ghost = 2 locked rails + 2 consolidating rails
+  // → 8 + 2 = 10 locked, 2 consolidating. Not quite right.
+  // Adjust: rail A solid full, rail B solid only for the bottom 9/12 of its length.
+  // That gives 12 locked rail-segments + 3 consolidating rail-segments at the top of B.
+  // The path geometry: render rail A as one solid path. Render rail B as TWO paths:
+  //   B-solid for y from (padTop + (3/12)*innerH) to (padTop + innerH)  // bottom 9/12
+  //   B-ghost for y from (padTop) to (padTop + (3/12)*innerH)           // top 3/12
+
+  const railA = railPoints(0, true);
+  const railBSolidY0 = padTop + (3 / 12) * innerH;
+  // sample B solid
+  const bSolidPts = [];
+  for (let i = 0; i <= samples; i++) {
+    const t = i / samples;
+    const y = padTop + t * innerH;
+    if (y < railBSolidY0) continue;
+    const phase = t * Math.PI * 2 * cycles + Math.PI;
+    const x = cx + amp * Math.sin(phase);
+    bSolidPts.push([x.toFixed(2), y.toFixed(2)]);
+  }
+  const bGhostPts = [];
+  for (let i = 0; i <= samples; i++) {
+    const t = i / samples;
+    const y = padTop + t * innerH;
+    if (y > railBSolidY0) continue;
+    const phase = t * Math.PI * 2 * cycles + Math.PI;
+    const x = cx + amp * Math.sin(phase);
+    bGhostPts.push([x.toFixed(2), y.toFixed(2)]);
+  }
+
+  root.appendChild(svg('path', { class: 'rail solid', d: railA }));
+  if (bSolidPts.length) {
+    root.appendChild(svg('path', { class: 'rail solid', d: 'M ' + bSolidPts.map(p => p.join(' ')).join(' L ') }));
+  }
+  if (bGhostPts.length) {
+    root.appendChild(svg('path', { class: 'rail ghost', d: 'M ' + bGhostPts.map(p => p.join(' ')).join(' L ') }));
+  }
+
+  // Rungs: 12 evenly spaced. 9 locked (bottom 9), 3 partial (top 3).
+  for (let i = 0; i < 12; i++) {
+    const t = (i + 0.5) / 12;
+    const y = padTop + t * innerH;
+    const phase = t * Math.PI * 2 * cycles;
+    const xA = cx + amp * Math.sin(phase);
+    const xB = cx + amp * Math.sin(phase + Math.PI);
+    const isPartial = i < 3; // top 3 are consolidating
+    root.appendChild(svg('line', {
+      class: 'rung ' + (isPartial ? 'partial' : 'locked'),
+      x1: xA.toFixed(2), y1: y.toFixed(2),
+      x2: xB.toFixed(2), y2: y.toFixed(2)
+    }));
+  }
+  return root;
+}
+
+function buildHawkinsSVG() {
+  /* Horizontal arc with local visibility (Reason 400 / Love 500 / 525 / Joy 540 / Peace 600).
+     Other levels softly indicated as muted ticks. Solfeggio Hz markers below. */
+  const W = 480, H = 140;
+  const root = svg('svg', {
+    viewBox: '0 0 ' + W + ' ' + H,
+    preserveAspectRatio: 'xMidYMid meet',
+    'aria-hidden': 'true'
+  });
+  const defs = svg('defs');
+  const grad = svg('linearGradient', { id: 'hk-grad', x1: '0', y1: '0', x2: '1', y2: '0' });
+  grad.appendChild(svg('stop', { offset: '0%',  'stop-color': 'rgba(86,76,112,0.55)' }));
+  grad.appendChild(svg('stop', { offset: '50%', 'stop-color': 'rgba(106,223,217,0.85)' }));
+  grad.appendChild(svg('stop', { offset: '100%','stop-color': 'rgba(255,215,100,0.95)' }));
+  defs.appendChild(grad);
+  root.appendChild(defs);
+
+  // Arc geometry: shallow horizontal arc using path 'A' command
+  // Visible scale spans 200 → 1000 (Hawkins values), mapped from x=30 to x=W-30
+  const xLo = 30, xHi = W - 30;
+  const valLo = 200, valHi = 1000;
+  const valToX = (v) => xLo + (v - valLo) / (valHi - valLo) * (xHi - xLo);
+  const arcY = 60;
+
+  // Track + filled arc
+  root.appendChild(svg('path', {
+    class: 'hk-arc-track',
+    d: 'M ' + xLo + ' ' + arcY + ' Q ' + (W / 2) + ' ' + (arcY - 32) + ' ' + xHi + ' ' + arcY
+  }));
+  root.appendChild(svg('path', {
+    class: 'hk-arc-fill',
+    d: 'M ' + xLo + ' ' + arcY + ' Q ' + (W / 2) + ' ' + (arcY - 32) + ' ' + xHi + ' ' + arcY
+  }));
+
+  // Level ticks: only Reason 400, Love 500, 525 (gold), Joy 540, Peace 600 are named.
+  // Others are muted ticks at: 250, 310, 350, 700, 800
+  const NAMED = [
+    { v: 400, label: 'Reason' },
+    { v: 500, label: 'Love' },
+    { v: 540, label: 'Joy' },
+    { v: 600, label: 'Peace' }
+  ];
+  const MUTED = [250, 310, 350, 700, 800];
+
+  MUTED.forEach(v => {
+    const x = valToX(v);
+    root.appendChild(svg('line', {
+      class: 'hk-tick',
+      x1: x.toFixed(2), x2: x.toFixed(2),
+      y1: (arcY - 8).toFixed(2), y2: (arcY + 4).toFixed(2)
+    }));
+  });
+  NAMED.forEach(n => {
+    const x = valToX(n.v);
+    root.appendChild(svg('line', {
+      class: 'hk-tick named',
+      x1: x.toFixed(2), x2: x.toFixed(2),
+      y1: (arcY - 12).toFixed(2), y2: (arcY + 4).toFixed(2)
+    }));
+    const t = svg('text', {
+      class: 'hk-tick-label',
+      x: x.toFixed(2), y: (arcY + 18).toFixed(2),
+      'text-anchor': 'middle'
+    });
+    t.textContent = n.label + ' · ' + n.v;
+    root.appendChild(t);
+  });
+
+  // 525 gold beam
+  const x525 = valToX(525);
+  root.appendChild(svg('line', {
+    class: 'hk-525-beam',
+    x1: x525.toFixed(2), x2: x525.toFixed(2),
+    y1: (arcY - 22).toFixed(2), y2: (arcY + 4).toFixed(2)
+  }));
+  // 525 pill
+  root.appendChild(svg('rect', {
+    class: 'hk-525-pill',
+    x: (x525 - 18).toFixed(2), y: (arcY - 38).toFixed(2),
+    width: '36', height: '18', rx: '9'
+  }));
+  const numText = svg('text', {
+    class: 'hk-525-num',
+    x: x525.toFixed(2), y: (arcY - 24).toFixed(2),
+    'text-anchor': 'middle'
+  });
+  numText.textContent = '525';
+  root.appendChild(numText);
+
+  // Solfeggio markers below the arc
+  const SOLFEGGIO = [174, 396, 432, 528, 639, 741];
+  // We map Solfeggio frequency values onto a visual axis below, not the same scale.
+  // Map from min(174) → max(963) onto x range.
+  const sfLo = 100, sfHi = 1000; // visual normalization
+  const sfToX = (v) => xLo + (v - sfLo) / (sfHi - sfLo) * (xHi - xLo);
+  const sfY = arcY + 50;
+  SOLFEGGIO.forEach(v => {
+    const x = sfToX(v);
+    const isMiracles = (v === 528);
+    root.appendChild(svg('line', {
+      class: 'hk-tick' + (isMiracles ? ' named' : ''),
+      x1: x.toFixed(2), x2: x.toFixed(2),
+      y1: (sfY - 4).toFixed(2), y2: (sfY + 6).toFixed(2),
+      stroke: isMiracles ? 'rgba(255,215,100,0.85)' : 'rgba(106,223,217,0.55)'
+    }));
+    const t = svg('text', {
+      class: 'hk-solfeggio' + (isMiracles ? ' miracles' : ''),
+      x: x.toFixed(2), y: (sfY + 18).toFixed(2),
+      'text-anchor': 'middle'
+    });
+    t.textContent = v + (isMiracles ? ' Hz · Miracles' : ' Hz');
+    root.appendChild(t);
+  });
+
+  return root;
+}
+
+function buildWaveformSVG(week) {
+  /* Composite waveform: slow breath envelope × current week's Solfeggio carrier.
+     Visualized at 1.5 Hz so the eye reads rhythm. */
+  const KEYNOTES = { 1: 174, 2: 396, 3: 432, 4: 639 };
+  const hz = KEYNOTES[week] || 174;
+
+  const W = 800, H = 28;
+  const root = svg('svg', {
+    viewBox: '0 0 ' + W + ' ' + H,
+    preserveAspectRatio: 'none',
+    'aria-hidden': 'true'
+  });
+  const defs = svg('defs');
+  const grad = svg('linearGradient', { id: 'wf-grad', x1: '0', y1: '0', x2: '1', y2: '0' });
+  grad.appendChild(svg('stop', { offset: '0%',  'stop-color': 'rgba(106,223,217,0.55)' }));
+  grad.appendChild(svg('stop', { offset: '50%', 'stop-color': 'rgba(194,47,205,0.55)' }));
+  grad.appendChild(svg('stop', { offset: '100%','stop-color': 'rgba(255,215,100,0.55)' }));
+  defs.appendChild(grad);
+  root.appendChild(defs);
+
+  // We sample N points across the width.
+  const N = 240;
+  const carrierCycles = 12; // visual: ~12 carrier peaks across the stripe
+  const envelopeCycles = 1.5; // breath envelope across the stripe
+  const pts = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const env = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 * envelopeCycles - Math.PI / 2);
+    const carrier = Math.sin(t * Math.PI * 2 * carrierCycles);
+    const y = H / 2 + carrier * (H * 0.42) * env;
+    const x = t * W;
+    pts.push((i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + y.toFixed(2));
+  }
+  root.appendChild(svg('path', { class: 'wf-curve', d: pts.join(' ') }));
+
+  return { svg: root, hz };
+}
+
+function mountBiofieldDashboard() {
+  const root = document.getElementById('biofield-dashboard');
+  if (!root) return;
+  while (root.firstChild) root.removeChild(root.firstChild);
+
+  const grid = el('div', { class: 'bf-grid' });
+
+  /* LEFT COLUMN */
+  const leftCol = el('div', { class: 'bf-silhouette-wrap' });
+  const stage = el('div', { class: 'bf-silhouette-stage' });
+  stage.appendChild(buildSilhouetteSVG());
+  leftCol.appendChild(stage);
+
+  // Avatar tile + name + aside (Principle 02 distributed here)
+  const avatarRow = el('div', { class: 'bf-avatar-row' });
+  const tile = el('div', { class: 'bf-avatar-tile' });
+  tile.appendChild(el('img', { src: 'assets/portraits/ramon.jpg', alt: 'Ramon', loading: 'eager' }));
+  avatarRow.appendChild(tile);
+  const avMeta = el('div');
+  avMeta.appendChild(el('div', { class: 'name', text: 'Ramon' }));
+  avMeta.appendChild(el('div', { text: 'his field, mirrored' }));
+  avatarRow.appendChild(avMeta);
+  leftCol.appendChild(avatarRow);
+
+  // Aura caption
+  const auraCap = el('div', { class: 'bf-aura-caption' });
+  auraCap.appendChild(document.createTextNode('Auric field '));
+  auraCap.appendChild(el('strong', { text: '13.4 m' }));
+  auraCap.appendChild(document.createTextNode('. Pulsing in triadic waves. A golden Fibonacci spiral rises from the crown.'));
+  leftCol.appendChild(auraCap);
+
+  // Block caption (Primary block as voiced quote, no card-chip)
+  const blockCap = el('div', { class: 'bf-block-caption' });
+  blockCap.appendChild(el('span', { class: 'label', text: 'Carrier attenuation' }));
+  blockCap.appendChild(el('div', { class: 'quote', text: '"Hesitation in finalizing commitments."' }));
+  blockCap.appendChild(el('div', { class: 'holding', text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.' }));
+  leftCol.appendChild(blockCap);
+
+  grid.appendChild(leftCol);
+
+  /* RIGHT COLUMN */
+  const right = el('div', { class: 'bf-readout' });
+
+  // Aside (Principle 02)
+  right.appendChild(el('div', {
+    class: 'bf-section-aside',
+    text: 'This is a living experiment. Your body is the source of truth.'
+  }));
+
+  // Hawkins
+  const hk = el('div', { class: 'bf-hawkins' });
+  hk.appendChild(buildHawkinsSVG());
+  const hkCaps = el('div', { class: 'bf-hawkins-captions' });
+  hkCaps.appendChild(el('div', { class: 'calibration', text: 'Calibration 525 → 528 Hz Miracles. Within reach.' }));
+  hkCaps.appendChild(el('div', { class: 'felt-sense', text: 'A felt-sense map. One frame among many.' }));
+  hk.appendChild(hkCaps);
+  right.appendChild(hk);
+
+  // DNA helix + meta
+  const dna = el('div', { class: 'bf-helix' });
+  const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
+  helixWrap.appendChild(buildHelixSVG());
+  dna.appendChild(helixWrap);
+  const dnaMeta = el('div', { class: 'bf-helix-meta' });
+  dnaMeta.appendChild(el('div', { class: 'helix-label', text: 'DNA Strand Activation' }));
+  const cnt = el('div', { class: 'helix-count' });
+  cnt.appendChild(el('strong', { text: '9 phase-locked' }));
+  cnt.appendChild(document.createTextNode(' · 3 consolidating · of 12'));
+  dnaMeta.appendChild(cnt);
+  dnaMeta.appendChild(el('div', { class: 'helix-sub', text: 'The lower pairs anchor first. The upper pairs are on their way.' }));
+  dna.appendChild(dnaMeta);
+  right.appendChild(dna);
+
+  // Archetype
+  const arch = el('div', { class: 'bf-archetype' });
+  arch.appendChild(el('span', { class: 'label', text: 'Archetype' }));
+  arch.appendChild(el('div', { class: 'name', text: 'Harmonic Guardian of the Inner Return' }));
+  right.appendChild(arch);
+
+  grid.appendChild(right);
+  root.appendChild(grid);
+
+  /* Composite waveform stripe at the bottom edge */
+  const week = (function() {
+    const w = (ramonState.weeksCompleted || 0) + 1;
+    return Math.max(1, Math.min(4, w));
+  })();
+  const wf = buildWaveformSVG(week);
+  const wfWrap = el('div', { class: 'bf-waveform' });
+  const wfLabel = el('div', { class: 'bf-waveform-label' });
+  wfLabel.appendChild(el('strong', { text: wf.hz + ' Hz' }));
+  wfLabel.appendChild(document.createTextNode(' · breath 5.5/min'));
+  wfWrap.appendChild(wfLabel);
+  wfWrap.appendChild(wf.svg);
+  root.appendChild(wfWrap);
+}
+
+function pulseChakra(slug) {
+  const chakraId = SLUG_TO_CHAKRA[slug];
+  if (!chakraId) return;
+  const spot = document.querySelector('.bf-chakra-spot[data-id="' + chakraId + '"]');
+  if (!spot) return;
+  spot.classList.remove('pulsing');
+  void spot.getBoundingClientRect();
+  spot.classList.add('pulsing');
+  setTimeout(() => spot.classList.remove('pulsing'), 1900);
+}
+
+function mountConstellation() {
+  const root = document.getElementById('hero-constellation');
+  while (root.firstChild) root.removeChild(root.firstChild);
+  // SVG polyline behind dots
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('class', 'constellation-svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+  const poly = document.createElementNS(svgNS, 'polyline');
+  poly.setAttribute('id', 'constellation-line');
+  svg.appendChild(poly);
+  root.appendChild(svg);
+  CONSTELLATION_POSITIONS.forEach((pos, i) => {
+    const dot = el('span', {
+      class: 'constellation-dot',
+      style: 'left:' + pos[0] + '%;top:' + pos[1] + '%;',
+      dataset: { idx: String(i) }
+    });
+    root.appendChild(dot);
+  });
+}
+
+function updateConstellation() {
+  const allSlugs = [];
+  const slugToWeek = {};
+  PLAN.forEach(phase => phase.sessions.forEach(s => { allSlugs.push(s); slugToWeek[s] = phase.week; }));
+  const litSet = new Set(ramonState.sessionsWithNote);
+  const litIndices = [];
+  document.querySelectorAll('.constellation-dot').forEach(dot => {
+    const idx = parseInt(dot.dataset.idx, 10);
+    const slug = allSlugs[idx];
+    const week = slugToWeek[slug];
+    if (week) dot.dataset.week = String(week);
+    const lit = litSet.has(slug);
+    dot.classList.toggle('lit', lit);
+    if (lit) litIndices.push(idx);
+  });
+  const poly = document.getElementById('constellation-line');
+  if (poly) {
+    if (litIndices.length >= 2) {
+      const points = litIndices.map(i => CONSTELLATION_POSITIONS[i][0] + ',' + CONSTELLATION_POSITIONS[i][1]).join(' ');
+      poly.setAttribute('points', points);
+    } else {
+      poly.setAttribute('points', '');
+    }
+  }
+}
+
+function updatePhaseTabsStatus() {
+  const tabs = document.querySelectorAll('.ptab');
+  let currentWeek = 1;
+  for (let i = 0; i < PLAN.length; i++) {
+    const phase = PLAN[i];
+    const allNoted = phase.sessions.every(slug => ramonState.sessionsWithNote.includes(slug));
+    if (!allNoted) { currentWeek = phase.week; break; }
+    if (i === PLAN.length - 1) currentWeek = phase.week;
+  }
+  tabs.forEach(t => {
+    const w = parseInt(t.dataset.week, 10);
+    const phase = PLAN.find(p => p.week === w);
+    const completed = phase.sessions.every(slug => ramonState.sessionsWithNote.includes(slug));
+    t.classList.remove('completed', 'future');
+    if (completed) {
+      t.classList.add('completed');
+    } else if (w > currentWeek) {
+      t.classList.add('future');
+    }
+  });
+}
+
+function findMatches(text, pattern) {
+  const matches = [];
+  if (!text || !pattern) return matches;
+  for (const m of text.matchAll(pattern)) {
+    matches.push({ phrase: m[0], index: m.index });
+  }
+  return matches;
+}
+
+const FRAME_DEFS = [
+  { id: 'oric', label: 'Auric Field', rx: /(?:🜂\s*)?ORIC\s+FIELD\s*[:\-]?\s*/i, prefix: 'as offered:' },
+  { id: 'dna', label: 'DNA Strand Activation', rx: /(?:🜁\s*)?DNA\s+STRAND\s+ACTIVATION\s*[:\-]?\s*/i, prefix: 'as offered:' },
+  { id: 'chakras', label: 'Chakra Scan', rx: /(?:🜃\s*)?CHAKRA\s*(?:SCAN)?\s*[:\-]?\s*/i, prefix: 'you wrote:' },
+  { id: 'organs', label: 'Organic Field', rx: /(?:🜄\s*)?ORGANIC\s+FIELD\s*[:\-]?\s*/i, prefix: 'you wrote:' },
+  { id: 'level', label: 'Vibrational Level (Hawkins Scale)', rx: /(?:🜅\s*)?VIBRATIONAL\s+LEVEL[^\n]*\n?/i, prefix: 'as offered:' },
+  { id: 'block', label: 'Primary Block', rx: /(?:🜆\s*)?PRIMARY\s+BLOCK[^\n]*\n?/i, prefix: 'as offered:' },
+  { id: 'archetype', label: 'Archetype', rx: /(?:🜇\s*)?ARCHETYPE\s*[:\-]?\s*/i, prefix: 'as offered:' }
+];
+
+function parseInput(text) {
+  if (!text) return null;
+  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+
+  // Locate each frame anchor in the text
+  const anchors = FRAME_DEFS.map(def => {
+    const m = text.match(def.rx);
+    return m ? { def, start: m.index, headerEnd: m.index + m[0].length } : null;
+  }).filter(Boolean);
+
+  // Sort by position, then derive each frame's body
+  anchors.sort((a, b) => a.start - b.start);
+  const frames = {};
+  anchors.forEach((a, i) => {
+    const next = anchors[i + 1];
+    const bodyEnd = next ? next.start : text.length;
+    const body = text.slice(a.headerEnd, bodyEnd).trim();
+    frames[a.def.id] = { label: a.def.label, prefix: a.def.prefix, body };
+  });
+
+  // Chip extraction for chakras and organs
+  const chakraRx = /\b(crown|sahasrara|third\s*eye|ajna|throat|vishuddha|heart|anahata|solar\s*plexus|manipura|sacral|svadhisthana|root|muladhara)\b/gi;
+  const organRx = /\b(liver|kidneys?|gut|vagus|adrenals?|thyroid|pineal|pituitary|lymph|spleen|lungs?)\b/gi;
+  const seen = new Set();
+  const chakras = [];
+  const organs = [];
+  findMatches(text, chakraRx).forEach(m => {
+    const k = m.phrase.toLowerCase();
+    if (!seen.has('c:' + k)) { seen.add('c:' + k); chakras.push({ phrase: m.phrase }); }
+  });
+  findMatches(text, organRx).forEach(m => {
+    const k = m.phrase.toLowerCase();
+    if (!seen.has('s:' + k)) { seen.add('s:' + k); organs.push({ phrase: m.phrase }); }
+  });
+
+  // Hawkins level number
+  let level = null;
+  const lm = text.match(/(?:vibrating at|level|calibrat\w+|hawkins)\D{0,15}(\d{2,3})\b/i) || text.match(/\b(\d{3})\s*Hz\b/i);
+  if (lm) level = lm[1];
+
+  return { frames, chakras, organs, level, lines, raw: text };
+}
+
+function renderParsedReading(parsed) {
+  const mount = document.getElementById('parsed-reading-mount');
+  while (mount.firstChild) mount.removeChild(mount.firstChild);
+  if (!parsed) return;
+
+  const card = el('div', { class: 'parsed-reading' });
+  card.appendChild(el('div', { class: 'reading-eyebrow', text: 'Reflection · Designed for Your First 30 Days' }));
+  card.appendChild(el('h4', { text: 'What we hold from your reading', tabindex: '-1' }));
+
+  const frameOrder = ['oric','dna','chakras','organs','level','block','archetype'];
+  const framesWrap = el('div', { class: 'reading-frames' });
+
+  frameOrder.forEach(fid => {
+    const frame = parsed.frames[fid];
+    if (!frame) return;
+    const block = el('div', { class: 'reading-frame frame-' + fid });
+    block.appendChild(el('span', { class: 'prefix', text: frame.prefix }));
+    block.appendChild(el('h5', { text: frame.label }));
+
+    if (fid === 'level' && parsed.level) {
+      const lvl = el('div', { class: 'level-display' });
+      lvl.appendChild(el('div', { class: 'level-num', text: parsed.level }));
+      const labelText = frame.body.replace(/^\s*you are currently\s*/i, '').replace(/^\s*vibrating at\s*\d+\s*[,.\-]?\s*/i, '');
+      if (labelText) lvl.appendChild(el('div', { class: 'level-label', text: labelText }));
+      block.appendChild(lvl);
+    } else {
+      const body = el('div', { class: 'frame-body', text: frame.body });
+      block.appendChild(body);
+      if (fid === 'chakras' && parsed.chakras.length) {
+        const row = el('div', { class: 'chip-row' });
+        parsed.chakras.forEach(c => {
+          const chip = el('button', { class: 'read-chip', type: 'button', text: c.phrase });
+          chip.addEventListener('keydown', (e) => handleChipKeyNav(e, chip));
+          chip.addEventListener('click', () => chip.classList.toggle('pinned'));
+          row.appendChild(chip);
+        });
+        block.appendChild(row);
+      }
+      if (fid === 'organs' && parsed.organs.length) {
+        const row = el('div', { class: 'chip-row' });
+        parsed.organs.forEach(s => {
+          const chip = el('button', { class: 'read-chip systems', type: 'button', text: s.phrase });
+          chip.addEventListener('keydown', (e) => handleChipKeyNav(e, chip));
+          chip.addEventListener('click', () => chip.classList.toggle('pinned'));
+          row.appendChild(chip);
+        });
+        block.appendChild(row);
+      }
+    }
+    framesWrap.appendChild(block);
+  });
+
+  // If the parser found nothing structured, fall back to the raw body
+  if (!framesWrap.firstChild) {
+    const fallback = el('div', { class: 'reading-frame' });
+    fallback.appendChild(el('span', { class: 'prefix', text: 'you wrote:' }));
+    fallback.appendChild(el('div', { class: 'frame-body', text: parsed.raw }));
+    framesWrap.appendChild(fallback);
+  }
+
+  card.appendChild(framesWrap);
+
+  const details = el('details', { class: 'parsed-raw' });
+  details.appendChild(el('summary', { text: 'Raw input' }));
+  const rawBody = el('div', { class: 'parsed-raw-body' });
+  parsed.lines.forEach((line, idx) => {
+    const span = el('span', { class: 'raw-line', dataset: { lineIdx: String(idx) }, text: line });
+    rawBody.appendChild(span);
+    rawBody.appendChild(document.createTextNode('\n'));
+  });
+  details.appendChild(rawBody);
+  card.appendChild(details);
+
+  card.appendChild(el('div', { class: 'parsed-honesty-footer', text: 'These are phrases from your reading, not findings. We never conclude anything for you.' }));
+
+  mount.appendChild(card);
+  requestAnimationFrame(() => card.classList.add('swept'));
+
+  const status = document.getElementById('a11y-status');
+  if (status) {
+    const frameCount = Object.keys(parsed.frames).length;
+    status.textContent = 'Reading rendered. ' + frameCount + ' frames mirrored.';
+  }
+  // No auto-focus on initial render; the Input is pre-loaded, no save event to announce.
+}
+
+function handleChipKeyNav(e, chip) {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  e.preventDefault();
+  const allChips = Array.from(document.querySelectorAll('.parsed-reading .read-chip'));
+  const idx = allChips.indexOf(chip);
+  if (idx < 0) return;
+  const nextIdx = (idx + (e.key === 'ArrowRight' ? 1 : -1) + allChips.length) % allChips.length;
+  allChips[nextIdx].focus();
+}
+
+function highlightLine(idx, on) {
+  const line = document.querySelector('.raw-line[data-line-idx="' + idx + '"]');
+  if (!line) return;
+  line.classList.toggle('highlighted', on);
+  if (on) {
+    const det = line.closest('.parsed-raw');
+    if (det && !det.open) det.open = true;
+  }
+}
+
+function runCelebration(name, opts) {
+  if (reducedMotion()) return;
+  opts = opts || {};
+  if (name === 'input-saved') {
+    const ring = document.getElementById('aurora-ring');
+    const panel = document.querySelector('.field-panel');
+    const r = panel.getBoundingClientRect();
+    ring.style.left = (r.left + r.width / 2) + 'px';
+    ring.style.top  = (r.top  + r.height / 2) + 'px';
+    ring.classList.remove('firing');
+    void ring.offsetHeight;
+    ring.classList.add('firing');
+  } else if (name === 'first-note') {
+    const card = document.querySelector('.session-card[data-slug="' + opts.slug + '"]');
+    if (!card) return;
+    card.classList.remove('celebrating-note');
+    void card.offsetHeight;
+    card.classList.add('celebrating-note');
+    setTimeout(() => card.classList.remove('celebrating-note'), 900);
+  } else if (name === 'week-complete') {
+    const tab = document.querySelector('.ptab[data-week="' + opts.week + '"]');
+    if (!tab) return;
+    tab.classList.remove('celebrating');
+    void tab.offsetHeight;
+    tab.classList.add('celebrating');
+    setTimeout(() => tab.classList.remove('celebrating'), 1900);
+  } else if (name === 'reflection-received') {
+    const bloom = document.getElementById('page-bloom');
+    const cta = document.querySelector('.reflect-cta');
+    if (cta) {
+      const r = cta.getBoundingClientRect();
+      bloom.style.left = (r.left + window.pageXOffset - 40) + 'px';
+      bloom.style.top = (r.top + window.pageYOffset - 40) + 'px';
+      bloom.style.width = (r.width + 80) + 'px';
+      bloom.style.height = (r.height + 80) + 'px';
+    }
+    bloom.classList.remove('firing');
+    void bloom.offsetHeight;
+    bloom.classList.add('firing');
+  }
+}
+
+function renderSessionCard(slug, s) {
+  const card = el('article', { class: 'session-card reveal', dataset: { slug } });
+
+  const artWrap = el('div', { class: 'session-art' });
+  artWrap.appendChild(el('img', { src: s.art, alt: s.heading, loading: 'lazy' }));
+  artWrap.appendChild(el('span', { class: 'ring-mask', 'aria-hidden': 'true' }));
+  card.appendChild(artWrap);
+
+  const body = el('div', { class: 'session-body' });
+  const cat = el('div', { class: 'session-cat ' + s.catClass });
+  cat.appendChild(el('span', { class: 'pip' }));
+  cat.appendChild(el('span', { text: s.category + (s.collection ? ' · ' + s.collection : '') }));
+  body.appendChild(cat);
+  body.appendChild(el('div', { class: 'session-heading', text: s.heading }));
+  body.appendChild(el('div', { class: 'session-subtitle', text: s.subtitle }));
+
+  if (s.artist) {
+    const artistRow = el('div', { class: 'artist-row' });
+    if (s.portrait) {
+      artistRow.appendChild(el('img', { class: 'artist-avatar', src: s.portrait, alt: s.artist, loading: 'lazy' }));
+    } else {
+      const orb = el('span', { class: 'artist-avatar house', 'aria-hidden': 'true' });
+      orb.textContent = '◯';
+      artistRow.appendChild(orb);
+    }
+    artistRow.appendChild(el('span', { class: 'by', text: 'by' }));
+    artistRow.appendChild(el('span', { class: 'name', text: s.artist }));
+    body.appendChild(artistRow);
+  }
+
+  body.appendChild(el('div', { class: 'session-lede', text: s.lede }));
+  const cw = el('div', { class: 'choose-when' });
+  (s.chooseWhen || []).forEach(c => cw.appendChild(el('span', { class: 'cw-chip', text: c })));
+  body.appendChild(cw);
+
+  const why = el('div', { class: 'session-why' });
+  why.appendChild(el('span', { class: 'session-why-label', text: 'Why this, for you' }));
+  const whyText = el('div', { class: 'session-why-text' });
+  whyText.appendChild(parseEm(s.why));
+  why.appendChild(whyText);
+  body.appendChild(why);
+
+  if (s.intention) {
+    const intent = el('div', { class: 'session-intention' });
+    intent.appendChild(el('span', { class: 'session-intention-label', text: 'Set this intention' }));
+    const intentText = el('div', { class: 'session-intention-text' });
+    intentText.appendChild(parseEm(s.intention));
+    intent.appendChild(intentText);
+    body.appendChild(intent);
+  }
+
+  const promptsForSession = PROMPTS[slug] || { before: 'What state are you arriving in?', after: 'What shifted?' };
+  const notes = el('div', { class: 'notes' });
+  ['before','after'].forEach(when => {
+    const block = el('div', { class: 'note-block note-block--' + when });
+    const header = el('div', { class: 'note-header' });
+    header.appendChild(el('span', { class: 'note-when', text: when === 'before' ? 'Before the session' : 'After the session' }));
+    header.appendChild(el('span', { class: 'saved', dataset: { saved: when }, text: 'Saved' }));
+    block.appendChild(header);
+    const promptText = el('div', { class: 'note-prompt' });
+    promptText.appendChild(parseEm(promptsForSession[when]));
+    block.appendChild(promptText);
+    const ta = el('textarea', {
+      class: 'note-input',
+      dataset: { slug, when },
+      placeholder: when === 'before' ? 'A line is enough.' : 'Whatever surfaced.',
+      rows: '3',
+      'aria-label': (when === 'before' ? 'Before · ' : 'After · ') + promptsForSession[when]
+    });
+    block.appendChild(ta);
+    notes.appendChild(block);
+  });
+  body.appendChild(notes);
+
+  // Resolve action row: hint + button. Button enabled only when both notes have content.
+  const actionsRow = el('div', { class: 'note-actions' });
+  const hint = el('div', { class: 'resolve-hint', text: 'A line in each box, then send when you\'re ready.' });
+  const resolveBtn = el('button', {
+    class: 'btn-resolve',
+    type: 'button',
+    text: 'See the reflection',
+    disabled: 'true',
+    'data-resolve-for': slug
+  });
+  resolveBtn.addEventListener('click', () => resolveSession(slug));
+  actionsRow.appendChild(hint);
+  actionsRow.appendChild(resolveBtn);
+  body.appendChild(actionsRow);
+
+  // Resolved reflection block (hidden by default, shown when card is collapsed-reflected)
+  const refl = el('div', { class: 'resolved-reflection' });
+  refl.appendChild(el('span', { class: 'resolved-eyebrow', text: 'Reflection · resolved from your notes' }));
+  refl.appendChild(el('span', { class: 'resolved-text' }));
+  body.appendChild(refl);
+
+  // Status row (resolving / deepening / errors)
+  const status = el('div', { class: 'card-status' });
+  status.appendChild(el('span', { class: 'spinner', 'aria-hidden': 'true' }));
+  status.appendChild(el('span', { class: 'card-status-text', text: '' }));
+  body.appendChild(status);
+
+  // Resolved actions
+  const actions = el('div', { class: 'resolved-actions' });
+  const editBtn = el('button', { class: 'btn', type: 'button', text: 'Edit notes' });
+  editBtn.addEventListener('click', () => editSessionNotes(slug));
+  const deepBtn = el('button', { class: 'btn btn-go-deeper', type: 'button', text: 'Go deeper' });
+  deepBtn.addEventListener('click', () => deepenSession(slug));
+  actions.appendChild(editBtn);
+  actions.appendChild(deepBtn);
+  body.appendChild(actions);
+
+  card.appendChild(body);
+  return card;
+}
+
+function renderPhaseTabs() {
+  const tabs = document.getElementById('phase-tabs');
+  PLAN.forEach(phase => {
+    const btn = el('button', {
+      class: 'ptab',
+      role: 'tab',
+      type: 'button',
+      'aria-controls': 'phase-panel-' + phase.week,
+      dataset: { week: String(phase.week) }
+    });
+    btn.appendChild(document.createTextNode('Week ' + phase.week));
+    btn.appendChild(el('span', { class: 'ptab-name', text: phase.title }));
+    btn.addEventListener('click', () => setActivePhase(phase.week, true));
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const dir = e.key === 'ArrowRight' ? 1 : -1;
+        const next = ((phase.week - 1 + dir + PLAN.length) % PLAN.length) + 1;
+        setActivePhase(next, true);
+        const target = tabs.querySelector('.ptab[data-week="' + next + '"]');
+        if (target) target.focus();
+      }
+    });
+    tabs.appendChild(btn);
+  });
+}
+
+function renderPhasePanels() {
+  const root = document.getElementById('phases');
+  PLAN.forEach((phase) => {
+    const panel = el('section', {
+      class: 'phase-panel',
+      id: 'phase-panel-' + phase.week,
+      role: 'tabpanel',
+      'aria-labelledby': 'ptab-' + phase.week,
+      dataset: { week: String(phase.week) }
+    });
+    const phaseEl = el('div', { class: 'phase reveal', dataset: { week: String(phase.week) } });
+    const head = el('div', { class: 'phase-head' });
+    const num = String(phase.week).padStart(2, '0');
+    head.appendChild(el('div', { class: 'phase-num', text: num }));
+    const meta = el('div', { class: 'phase-meta' });
+    meta.appendChild(el('div', { class: 'phase-eyebrow', text: 'Week ' + phase.week }));
+    meta.appendChild(el('h3', { class: 'phase-title', text: phase.title }));
+    meta.appendChild(el('div', { class: 'phase-intent', text: phase.intent }));
+    const responds = el('div', { class: 'phase-responds' });
+    responds.appendChild(el('strong', { text: 'Responds to:' }));
+    responds.appendChild(document.createTextNode(' ' + phase.responds));
+    meta.appendChild(responds);
+    head.appendChild(meta);
+    phaseEl.appendChild(head);
+
+    const grid = el('div', { class: 'session-grid' });
+    phase.sessions.forEach(slug => {
+      const s = SESSIONS[slug];
+      if (!s) return;
+      grid.appendChild(renderSessionCard(slug, s));
+    });
+    phaseEl.appendChild(grid);
+    panel.appendChild(phaseEl);
+    root.appendChild(panel);
+  });
+}
+
+function setActivePhase(weekNum, updateHash) {
+  document.querySelectorAll('.ptab').forEach(t => {
+    t.classList.toggle('active', t.dataset.week === String(weekNum));
+    t.setAttribute('aria-selected', t.dataset.week === String(weekNum) ? 'true' : 'false');
+    t.setAttribute('tabindex', t.dataset.week === String(weekNum) ? '0' : '-1');
+  });
+  document.querySelectorAll('.phase-panel').forEach(p => {
+    p.classList.toggle('active', p.dataset.week === String(weekNum));
+  });
+  const active = document.querySelector('.phase-panel.active');
+  if (active) {
+    active.querySelectorAll('.reveal').forEach(n => n.classList.add('visible'));
+  }
+  if (updateHash) {
+    const hash = '#week-' + weekNum;
+    if (location.hash !== hash) history.replaceState(null, '', hash);
+  }
+}
+
+function readWeekFromHash() {
+  const m = (location.hash || '').match(/^#week-([1-4])$/);
+  return m ? parseInt(m[1], 10) : 1;
+}
+
+function getNotes() {
+  try { return JSON.parse(localStorage.getItem(LS.notes)) || {}; }
+  catch { return {}; }
+}
+function saveNotes(n) { localStorage.setItem(LS.notes, JSON.stringify(n)); }
+
+function loadNotesIntoUI() {
+  const notes = getNotes();
+  document.querySelectorAll('textarea.note-input').forEach(t => {
+    const k = t.dataset.slug + '__' + t.dataset.when;
+    if (notes[k]) t.value = notes[k];
+  });
+}
+
+function bindNoteAutosave() {
+  document.querySelectorAll('textarea.note-input').forEach(t => {
+    let savedTimer;
+    t.addEventListener('input', () => {
+      const notes = getNotes();
+      const k = t.dataset.slug + '__' + t.dataset.when;
+      notes[k] = t.value;
+      saveNotes(notes);
+      const card = t.closest('.session-card');
+      const tag = card.querySelector('.saved[data-saved="' + t.dataset.when + '"]');
+      if (tag) {
+        tag.classList.add('visible');
+        clearTimeout(savedTimer);
+        savedTimer = setTimeout(() => tag.classList.remove('visible'), 1400);
+      }
+      const prevWeeksCompleted = ramonState.weeksCompleted;
+      const prevSessionsWithNote = new Set(ramonState.sessionsWithNote);
+      setState({});
+      if (!prevSessionsWithNote.has(t.dataset.slug) && ramonState.sessionsWithNote.includes(t.dataset.slug)) {
+        runCelebration('first-note', { slug: t.dataset.slug });
+        if (window.__particles) window.__particles.spawnFromCard(t.dataset.slug);
+        fireAuroraBump();
+      }
+      if (ramonState.weeksCompleted > prevWeeksCompleted) {
+        for (let i = prevWeeksCompleted; i < ramonState.weeksCompleted; i++) {
+          runCelebration('week-complete', { week: PLAN[i].week });
+        }
+        fireAuroraBump();
+      }
+      updateMapCompleteSignal();
+
+      // Update the resolve-button enabled state based on whether both notes have content.
+      // No auto-fire; the user clicks "See the reflection" when ready.
+      updateResolveButton(t.dataset.slug);
+    });
+  });
+}
+
+function updateResolveButton(slug) {
+  const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+  if (!card) return;
+  const btn = card.querySelector('.btn-resolve');
+  const hint = card.querySelector('.resolve-hint');
+  if (!btn || !hint) return;
+  const notes = getNotes();
+  const before = (notes[slug + '__before'] || '').trim();
+  const after  = (notes[slug + '__after']  || '').trim();
+  const ready = before.length > 0 && after.length > 0;
+  const stored = getSessionReflections()[slug];
+  const isDirty = stored && stored.text && stored.dirty;
+  btn.disabled = !ready;
+  if (isDirty && ready) {
+    btn.textContent = 'See the updated reflection';
+    hint.textContent = 'Your notes have changed. Send when you\'re ready.';
+    hint.classList.add('ready');
+  } else if (ready) {
+    btn.textContent = 'See the reflection';
+    hint.textContent = 'Both notes are written. Send when you\'re ready.';
+    hint.classList.add('ready');
+  } else {
+    btn.textContent = 'See the reflection';
+    hint.textContent = before || after
+      ? 'A line in each box, then send when you\'re ready.'
+      : 'A line in each box, then send when you\'re ready.';
+    hint.classList.remove('ready');
+  }
+}
+
+function refreshAllResolveButtons() {
+  document.querySelectorAll('.session-card').forEach(card => {
+    if (card.dataset.slug) updateResolveButton(card.dataset.slug);
+  });
+}
+
+function loadField() {
+  // The Input is pre-loaded from RAMON_INPUT and is read-only in this build.
+  const tx = document.getElementById('biofield');
+  if (tx) tx.value = RAMON_INPUT;
+  // Persist so reflection payload + state derivation work as before
+  localStorage.setItem(LS.field, RAMON_INPUT);
+  if (!localStorage.getItem(LS.field + '.ts')) {
+    localStorage.setItem(LS.field + '.ts', String(Date.now()));
+  }
+  renderParsedReading(parseInput(RAMON_INPUT));
+  // Mark inputSaved without firing celebrations on every load
+  if (!ramonState.inputSaved) {
+    ramonState.inputSaved = true;
+    persistState();
+  }
+}
+
+function saveField() {
+  const t = document.getElementById('biofield').value.trim();
+  if (!t) return;
+  const ts = Date.now();
+  const prev = localStorage.getItem(LS.field) || '';
+  if (prev && prev !== t) {
+    const hist = JSON.parse(localStorage.getItem(LS.fieldHistory) || '[]');
+    hist.unshift({ ts: +localStorage.getItem(LS.field + '.ts') || ts, text: prev });
+    localStorage.setItem(LS.fieldHistory, JSON.stringify(hist.slice(0, 12)));
+  }
+  localStorage.setItem(LS.field, t);
+  localStorage.setItem(LS.field + '.ts', String(ts));
+  document.getElementById('biofield-meta').textContent = 'Saved ' + new Date(ts).toLocaleString();
+  document.getElementById('clear-biofield').hidden = false;
+  renderParsedReading(parseInput(t));
+  renderFieldHistory();
+  setState({ inputSaved: true });
+  fireAuroraBump();
+  runCelebration('input-saved');
+}
+
+function clearField() {
+  if (!confirm('Clear the Input? Your past readings stay in history.')) return;
+  const cur = localStorage.getItem(LS.field) || '';
+  if (cur) {
+    const hist = JSON.parse(localStorage.getItem(LS.fieldHistory) || '[]');
+    const ts = +localStorage.getItem(LS.field + '.ts') || Date.now();
+    hist.unshift({ ts, text: cur });
+    localStorage.setItem(LS.fieldHistory, JSON.stringify(hist.slice(0, 12)));
+  }
+  localStorage.removeItem(LS.field);
+  localStorage.removeItem(LS.field + '.ts');
+  document.getElementById('biofield').value = '';
+  document.getElementById('biofield-meta').textContent = 'Not saved yet.';
+  document.getElementById('clear-biofield').hidden = true;
+  renderParsedReading(null);
+  renderFieldHistory();
+  setState({ inputSaved: false });
+}
+
+function renderFieldHistory() {
+  const hist = JSON.parse(localStorage.getItem(LS.fieldHistory) || '[]');
+  const wrap = document.getElementById('biofield-history');
+  while (wrap.firstChild) wrap.removeChild(wrap.firstChild);
+  if (!hist.length) { wrap.hidden = true; return; }
+  wrap.hidden = false;
+  const label = el('div', { class: 'section-label', text: 'Past readings', style: 'margin:24px 0 12px;' });
+  wrap.appendChild(label);
+  hist.forEach(h => {
+    const d = el('details');
+    const date = new Date(h.ts);
+    const summary = el('summary', { text:
+      date.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) +
+      ' · ' + date.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' })
+    });
+    d.appendChild(summary);
+    d.appendChild(el('div', { class: 'field-history-body', text: h.text }));
+    wrap.appendChild(d);
+  });
+}
+
+/* ============================================================
+   PER-SESSION RESOLVE. Debounced API call when both notes are filled.
+   ============================================================ */
+
+function setCardStatus(card, msg, opts) {
+  opts = opts || {};
+  const row = card.querySelector('.card-status');
+  const txt = card.querySelector('.card-status-text');
+  if (!row || !txt) return;
+  if (!msg) {
+    row.classList.remove('visible', 'error');
+    txt.textContent = '';
+    return;
+  }
+  row.classList.add('visible');
+  row.classList.toggle('error', !!opts.error);
+  txt.textContent = msg;
+}
+
+function buildResolvePayload(slug) {
+  const notes = getNotes();
+  const sess = SESSIONS[slug];
+  const phase = PLAN.find(p => p.sessions.includes(slug)) || { week: 1 };
+  return {
+    slug,
+    biofield: localStorage.getItem(LS.field) || '',
+    biofieldParsed: parseInput(localStorage.getItem(LS.field) || ''),
+    session: {
+      heading: sess.heading,
+      subtitle: sess.subtitle,
+      lede: sess.lede,
+      why: sess.why.replace(/\*([^*]+)\*/g, '$1'),
+      intention: sess.intention,
+      artist: sess.artist,
+      category: sess.category,
+      collection: sess.collection
+    },
+    before: notes[slug + '__before'] || '',
+    after:  notes[slug + '__after']  || '',
+    journey: {
+      week: phase.week,
+      weeksCompleted: ramonState.weeksCompleted,
+      sessionsWithNoteCount: (ramonState.sessionsWithNote || []).length
+    },
+    priorKnowing: localStorage.getItem(LS.priorKnowing) || ''
+  };
+}
+
+async function maybeResolveSession(slug) {
+  const notes = getNotes();
+  const before = (notes[slug + '__before'] || '').trim();
+  const after  = (notes[slug + '__after']  || '').trim();
+  if (!before || !after) return;
+  const existing = getSessionReflections()[slug];
+  if (existing && existing.text && !existing.dirty) return;
+  await resolveSession(slug);
+}
+
+async function resolveSession(slug) {
+  const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+  if (!card) return;
+  card.classList.add('resolving');
+  setCardStatus(card, 'Resolving…');
+  const payload = buildResolvePayload(slug);
+  try {
+    const resp = await fetch(RESOLVE_REFLECT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+      let msg = 'HTTP ' + resp.status;
+      try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {}
+      throw new Error(msg);
+    }
+    const data = await resp.json();
+    const text = (data && (data.reflection || data.text || data.message)) || '';
+    if (!text) throw new Error('empty reflection');
+    saveSessionReflection(slug, { ts: Date.now(), text, dirty: false, deepText: undefined, passes: undefined });
+    card.classList.remove('resolving');
+    setCardStatus(card, '');
+    collapseCardToReflection(card, slug);
+    runCelebration('first-note', { slug });
+    pulseChakra(slug);
+    setState({});
+    updateResolveButton(slug);
+  } catch (err) {
+    card.classList.remove('resolving');
+    setCardStatus(card, 'Resolve failed: ' + (err.message || err) + '. Will retry on your next edit.', { error: true });
+  }
+}
+
+function collapseCardToReflection(card, slug) {
+  const stored = getSessionReflections()[slug];
+  if (!stored) return;
+  const reflEl = card.querySelector('.resolved-reflection .resolved-text');
+  if (reflEl) reflEl.textContent = stored.deepText || stored.text || '';
+  card.classList.toggle('deepened', !!stored.deepText);
+  card.classList.add('collapsed-reflected');
+  card.classList.remove('dirty');
+}
+
+function editSessionNotes(slug) {
+  const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+  if (!card) return;
+  const stored = getSessionReflections()[slug];
+  if (stored) saveSessionReflection(slug, { dirty: true });
+  card.classList.remove('collapsed-reflected');
+  card.classList.add('dirty');
+  setCardStatus(card, '');
+  // Focus the After textarea for quick editing
+  const afterTa = card.querySelector('textarea.note-input[data-when="after"]');
+  if (afterTa) {
+    afterTa.focus();
+    // Place caret at end
+    const v = afterTa.value;
+    afterTa.value = '';
+    afterTa.value = v;
+  }
+  updateResolveButton(slug);
+}
+
+async function deepenSession(slug) {
+  const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+  if (!card) return;
+  const existing = getSessionReflections()[slug];
+  if (!existing || !existing.text) return;
+  card.classList.add('deepening');
+  setCardStatus(card, 'Going deeper… this takes about 20 seconds.');
+  const payload = buildResolvePayload(slug);
+  payload.priorReflection = existing.deepText || existing.text;
+  try {
+    const resp = await fetch(RESOLVE_DEEPEN, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+      let msg = 'HTTP ' + resp.status;
+      try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {}
+      throw new Error(msg);
+    }
+    const data = await resp.json();
+    const text = (data && (data.deepReflection || data.text)) || '';
+    if (!text) throw new Error('empty deep reflection');
+    saveSessionReflection(slug, { deepText: text, passes: data.passes || null, deepenedAt: Date.now() });
+    card.classList.remove('deepening');
+    setCardStatus(card, '');
+    const reflEl = card.querySelector('.resolved-reflection .resolved-text');
+    if (reflEl) reflEl.textContent = text;
+    card.classList.add('deepened');
+    runCelebration('reflection-received');
+  } catch (err) {
+    card.classList.remove('deepening');
+    setCardStatus(card, 'Deepen failed: ' + (err.message || err), { error: true });
+  }
+}
+
+function getSessionReflections() {
+  try { return JSON.parse(localStorage.getItem(LS.sessionReflections)) || {}; }
+  catch { return {}; }
+}
+function saveSessionReflection(slug, partial) {
+  const all = getSessionReflections();
+  all[slug] = Object.assign({}, all[slug] || {}, partial);
+  localStorage.setItem(LS.sessionReflections, JSON.stringify(all));
+}
+
+function getReflections() {
+  try { return JSON.parse(localStorage.getItem(LS.reflections)) || []; }
+  catch { return []; }
+}
+function saveReflection(entry) {
+  const list = getReflections();
+  list.unshift(entry);
+  localStorage.setItem(LS.reflections, JSON.stringify(list.slice(0, 30)));
+  renderReflections({ freshTs: entry.ts });
+}
+function renderReflections(opts) {
+  opts = opts || {};
+  const log = document.getElementById('reflect-log');
+  while (log.firstChild) log.removeChild(log.firstChild);
+  getReflections().forEach(r => {
+    const e = el('div', { class: 'reflect-entry' + (r.ts === opts.freshTs ? ' fresh' : '') });
+    e.appendChild(el('div', { class: 'reflect-entry-meta', text: new Date(r.ts).toLocaleString() }));
+    e.appendChild(el('div', { class: 'reflect-entry-body', text: r.text }));
+    log.appendChild(e);
+  });
+}
+
+const REFLECT_SYSTEM_PROMPT = `You are reflecting for Ramon, a new SoundBed user. Adam Schlender (OPUS co-founder) built him a custom 4-week session map drawn from a personal field reflection Ramon received from a practitioner.
+
+Your job is to reflect what Ramon shares back to him. Mirror patterns, contrasts, what is emerging, what is quieter than it was. NEVER conclude. NEVER diagnose. NEVER make energetic or medical claims. NEVER manufacture biofield-style measurements. Treat the field reflection as the practitioner's reflection of Ramon's felt-sense, not as fact.
+
+OPUS principle, non-negotiable: we reflect, we never conclude.
+
+Voice: warm, precise, grounded. OPUS tone, confident but not declarative. Short sentences. No jargon. Avoid AI phrases ("I notice that you", "It sounds like", "It's important to remember"). Don't mirror the field reading's mystical language back as fact.
+
+Format: 2 short paragraphs of reflection. Then 1 to 3 open prompts. End with one open question. No headers, no bullet lists, no diagnoses.
+
+Length: under 220 words total.
+
+Use the per-session intention as additional context: it is the framing Ramon was holding when he listened. If his "after" note diverges from the intention, the contrast is itself information worth surfacing.`;
+
+async function askReflection() {
+  const status = document.getElementById('reflect-status');
+  const preview = document.getElementById('payload-preview');
+  const previewBody = document.getElementById('payload-body');
+  status.classList.remove('error','warn');
+
+  const field = localStorage.getItem(LS.field) || '';
+  const notesRaw = getNotes();
+  const sessionNotes = [];
+  Object.keys(notesRaw).forEach(k => {
+    if (!notesRaw[k]) return;
+    const [slug, when] = k.split('__');
+    const sess = SESSIONS[slug];
+    if (!sess) return;
+    sessionNotes.push({
+      session: sess.heading,
+      slug, when,
+      text: notesRaw[k],
+      intention: sess.intention || ''
+    });
+  });
+
+  if (!field.trim() && sessionNotes.length === 0) {
+    status.textContent = 'Add your Input or at least one session note before asking.';
+    status.classList.add('warn');
+    return;
+  }
+
+  const payload = {
+    systemPrompt: REFLECT_SYSTEM_PROMPT,
+    biofield: field,
+    biofieldParsed: parseInput(field),
+    sessionNotes,
+    plan: PLAN.map(p => ({
+      week: p.week, title: p.title, intent: p.intent, responds: p.responds,
+      sessions: p.sessions.map(slug => ({
+        slug,
+        heading: SESSIONS[slug].heading,
+        subtitle: SESSIONS[slug].subtitle,
+        category: SESSIONS[slug].category,
+        artist: SESSIONS[slug].artist,
+        intention: SESSIONS[slug].intention,
+        why: SESSIONS[slug].why.replace(/\*([^*]+)\*/g, '$1')
+      }))
+    })),
+    catalogContext: {
+      totalSessions: 132,
+      categoryBreakdown: 'Brainwave Entrainment (14) · Chakras (15) · Frequency (26) · Guided (21) · Immersive Music (51) · Natural Soundscapes (4) · Welcome (1)',
+      held_in_reserve: ['Rest in Love · 852 Hz','Pure Awareness · Crown','Pineal Aperture','AUM · 136 Hz','Bridging Worlds']
+    },
+    progress: {
+      inputSaved: ramonState.inputSaved,
+      notesByWeek: ramonState.notesByWeek,
+      weeksCompleted: ramonState.weeksCompleted,
+      sessionsWithNote: ramonState.sessionsWithNote
+    }
+  };
+
+  status.textContent = 'Asking…';
+  setState({ reflectionRequested: true });
+
+  try {
+    const resp = await fetch('/api/reflect', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const text = data.reflection || data.text || data.message || '';
+    if (!text) throw new Error('Empty response');
+    saveReflection({ ts: Date.now(), text });
+    setState({ reflectionReceived: true });
+    runCelebration('reflection-received');
+    status.textContent = 'Reflection added below.';
+  } catch (err) {
+    status.classList.add('warn');
+    status.textContent = 'Reflection endpoint not yet wired (' + err.message + '). Payload below shows what would be sent.';
+    preview.hidden = false;
+    previewBody.textContent = JSON.stringify(payload, null, 2);
+  }
+}
+
+function bindReveal() {
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(n => io.observe(n));
+  } else {
+    document.querySelectorAll('.reveal').forEach(n => n.classList.add('visible'));
+  }
+}
+
+function setupPreDashboardGate() {
+  const gate = document.getElementById('bf-gate');
+  const ta = document.getElementById('bf-gate-text');
+  const show = document.getElementById('bf-gate-show');
+  const skip = document.getElementById('bf-gate-skip');
+  if (!gate || !ta || !show || !skip) return;
+  // If already dismissed, do nothing
+  if (localStorage.getItem(LS.gateSeen) === '1') {
+    gate.hidden = true;
+    return;
+  }
+  // Pre-fill if already saved (return-after-skip case)
+  const prior = localStorage.getItem(LS.priorKnowing) || '';
+  if (prior) ta.value = prior;
+  gate.hidden = false;
+
+  function dismiss(save) {
+    if (save) {
+      const v = ta.value.trim();
+      if (v) localStorage.setItem(LS.priorKnowing, v);
+    }
+    localStorage.setItem(LS.gateSeen, '1');
+    gate.classList.add('dismissing');
+    setTimeout(() => { gate.hidden = true; gate.classList.remove('dismissing'); }, 1100);
+  }
+  show.addEventListener('click', () => dismiss(true));
+  skip.addEventListener('click', () => dismiss(false));
+  // Focus textarea after first paint
+  requestAnimationFrame(() => ta.focus());
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupPreDashboardGate();
+  renderPhaseTabs();
+  renderPhasePanels();
+  setActivePhase(readWeekFromHash(), false);
+  loadNotesIntoUI();
+  bindNoteAutosave();
+  // Re-collapse any session that already has a stored reflection
+  const storedRefl = getSessionReflections();
+  Object.keys(storedRefl).forEach(slug => {
+    const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+    if (card && storedRefl[slug] && storedRefl[slug].text && !storedRefl[slug].dirty) {
+      collapseCardToReflection(card, slug);
+    }
+  });
+  refreshAllResolveButtons();
+  loadField();
+  renderReflections();
+  bindReveal();
+  mountConstellation();
+  startBreathClock();
+  mountBiofieldDashboard();
+  mountAurora();
+  mountParticles();
+
+  setState({});
+
+  window.addEventListener('hashchange', () => setActivePhase(readWeekFromHash(), false));
+
+  const askBtn = document.getElementById('ask-reflect');
+  if (askBtn) askBtn.addEventListener('click', askReflection);
+
+  // Quiet-mode when the Input panel has focus
+  const fp = document.querySelector('.field-panel');
+  if (fp) {
+    fp.addEventListener('focusin', () => document.body.classList.add('input-focused'));
+    fp.addEventListener('focusout', (e) => {
+      if (!fp.contains(e.relatedTarget)) document.body.classList.remove('input-focused');
+    });
+  }
+});
+</script>
+
+</body>
+</html>
