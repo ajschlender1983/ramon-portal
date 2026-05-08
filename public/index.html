@@ -562,6 +562,130 @@ main { position: relative; z-index: 2; }
 /* HAWKINS arc (horizontal, local visibility) */
 /* The horizontal Hawkins arc styles were removed in v1.3.0; see
    .bf-ladder-* rules above for the vertical ladder + Solfeggio scale. */
+
+/* Timeline strip — 5 dots showing which weeks have captures (Phase C / v1.5.0) */
+.bf-timeline {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  margin-top: 6px;
+}
+.bf-timeline-strip {
+  display: flex; gap: 18px;
+  position: relative;
+  padding: 6px 4px;
+}
+.bf-timeline-strip::before {
+  content: ''; position: absolute;
+  left: 14px; right: 14px; top: 50%;
+  height: 1px;
+  background: rgba(255,215,100,0.18);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+.bf-timeline-dot {
+  position: relative; z-index: 1;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(31,22,50,0.9);
+  border: 1px solid rgba(255,215,100,0.32);
+  color: rgba(255,215,100,0.55);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 9px var(--sans);
+  letter-spacing: 0.04em;
+  transition: all .25s;
+  padding: 0;
+}
+.bf-timeline-dot.empty { border-style: dashed; opacity: 0.55; }
+.bf-timeline-dot.has { background: rgba(255,215,100,0.10); }
+.bf-timeline-dot.active {
+  background: var(--gold);
+  color: rgba(20,15,30,0.95);
+  border-color: rgba(255,215,100,0.85);
+  width: 26px; height: 26px;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(255,215,100,0.5);
+}
+.bf-timeline-dot:hover { border-color: rgba(255,215,100,0.7); color: rgba(255,215,100,0.85); }
+.bf-timeline-dot:focus-visible { outline: 1px solid rgba(106,223,217,0.6); outline-offset: 2px; }
+.bf-timeline-num { display: inline-block; }
+.bf-timeline-caption {
+  font-size: 11px; color: var(--mid);
+  letter-spacing: 0.04em;
+  font-style: italic;
+}
+.bf-timeline-caption .label {
+  color: var(--gold);
+  font-style: normal;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-size: 10px;
+  margin-right: 6px;
+}
+
+/* "What moved" delta panel (Phase C) */
+.bf-delta {
+  background: rgba(106,223,217,0.05);
+  border: 1px solid rgba(106,223,217,0.18);
+  border-left: 2px solid var(--teal);
+  border-radius: 0 12px 12px 0;
+  padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.bf-delta-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
+.bf-delta-head .label {
+  font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: var(--teal);
+}
+.bf-delta-head .range {
+  font-size: 11px; color: var(--mid); font-style: italic;
+}
+.bf-delta-rows { display: flex; flex-direction: column; gap: 4px; }
+.bf-delta-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 18px 1fr;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.bf-delta-row .name {
+  color: var(--mid);
+  text-transform: capitalize;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.bf-delta-row .before { color: var(--dim); }
+.bf-delta-row .arrow { color: var(--dim); text-align: center; font-size: 11px; }
+.bf-delta-row .after { color: var(--light); font-weight: 500; }
+.bf-delta-row.up    .after { color: rgba(120,210,140,0.95); }
+.bf-delta-row.down  .after { color: rgba(220,140,90,0.95); }
+.bf-delta-row.same  .after { color: var(--mid); }
+.bf-delta-row.same  .arrow { color: rgba(255,255,255,0.18); }
+.bf-delta-toggle {
+  display: flex; gap: 4px;
+  margin-top: 4px;
+}
+.bf-delta-toggle-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--dim);
+  font: 10px var(--sans);
+  letter-spacing: 0.10em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 6px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.bf-delta-toggle-btn.active {
+  background: rgba(106,223,217,0.12);
+  border-color: rgba(106,223,217,0.32);
+  color: var(--teal);
+}
+.bf-delta-toggle-btn:hover:not(.active) { color: var(--light); }
+
 .bf-calibration {
   background: rgba(255,215,100,0.05);
   border: 1px solid rgba(255,215,100,0.18);
@@ -1752,7 +1876,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.4.0';
+const VERSION = '1.5.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -1765,6 +1889,14 @@ let PROMPTS = {};
 let PLAN = [];
 let CHAKRA_STATES = [];
 let SLUG_TO_CHAKRA = {};
+/* ACTIVE_VIEW carries the field data the dashboard is currently rendering.
+   Defaults to the baseline USER view (Week 0). When the user clicks a
+   timeline dot in Phase C, ACTIVE_VIEW is reassigned to that week's parsed
+   snapshot and the dashboard re-mounts. Build functions read from
+   getView() so they don't have to know whether they're rendering Week 0 or
+   Week 3. */
+let ACTIVE_VIEW = null;
+function getView() { return ACTIVE_VIEW || USER || {}; }
 
 function makeLS(slug) {
   return {
@@ -1777,7 +1909,8 @@ function makeLS(slug) {
     versionSeen:        slug + '.versionSeen.v1',
     weekFields:         slug + '.weekFields.v1',     // { 1: {text, ts}, 2: ... }
     sessionFields:      slug + '.sessionFields.v1',  // { <slug>: {text, ts} }
-    expandedSessions:   slug + '.expanded.v1'        // [<slug>, <slug>, ...]
+    expandedSessions:   slug + '.expanded.v1',       // [<slug>, <slug>, ...]
+    activeSnapshot:     slug + '.activeSnapshot.v1'  // currently-viewed week (0..4)
   };
 }
 let LS = makeLS('__pending__'); // overwritten in init()
@@ -2442,7 +2575,8 @@ function buildSilhouetteSVG() {
   // caption below the silhouette (set in mountBiofieldDashboard); here we
   // just draw the ring. Cap visual radius at 156 so it stays inside the
   // 320-wide viewBox — the actual meters are still in the caption.
-  const auricMeters = (USER && typeof USER.auricMeters === 'number') ? USER.auricMeters : 13.4;
+  const view = getView();
+  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
   const auricR = Math.max(100, Math.min(156, 80 + auricMeters * 6));
   root.appendChild(svg('circle', {
     class: 'bf-aura-boundary',
@@ -2592,7 +2726,7 @@ function buildHelixSVG() {
      all the way (we treat its full length as locked baseline); rail B is
      solid for the bottom `(phaseLocked + consolidating) / of` portion and
      ghost above (the not-yet-anchored region). */
-  const dna = (USER && USER.dna) || { phaseLocked: 9, consolidating: 3, of: 12 };
+  const dna = (getView().dna) || { phaseLocked: 9, consolidating: 3, of: 12 };
   const total = Number(dna.of) || 12;
   const locked = Math.max(0, Math.min(total, Number(dna.phaseLocked) || 0));
   const consolidating = Math.max(0, Math.min(total - locked, Number(dna.consolidating) || 0));
@@ -2738,8 +2872,9 @@ function buildHawkinsLadder() {
   });
 
   // Current calibration: gold beam at user's level
-  const level = (USER && Number(USER.hawkinsLevel)) || 525;
-  const target = (USER && Number(USER.hawkinsTarget)) || null;
+  const view = getView();
+  const level = Number(view.hawkinsLevel) || 525;
+  const target = Number(view.hawkinsTarget) || null;
   const yLevel = valToY(level);
 
   // Soft connecting line from level to target (if any)
@@ -2866,6 +3001,9 @@ function buildWaveformSVG(week) {
 function mountBiofieldDashboard() {
   const root = document.getElementById('biofield-dashboard');
   if (!root) return;
+  // Apply the currently-active snapshot before any build function reads
+  // chakraStates / view fields.
+  applyActiveSnapshot();
   while (root.firstChild) root.removeChild(root.firstChild);
 
   const grid = el('div', { class: 'bf-grid' });
@@ -2877,6 +3015,10 @@ function mountBiofieldDashboard() {
   stage.appendChild(buildSilhouetteSVG());
   stage.appendChild(buildSolfeggioScale());
   leftCol.appendChild(stage);
+
+  // Timeline strip (Phase C). Renders even with only baseline; missing-week
+  // dots become CTAs that scroll to the Map's capture panel.
+  leftCol.appendChild(buildTimelineStrip());
 
   // Avatar tile + name + aside (Principle 02 distributed here)
   const avatarRow = el('div', { class: 'bf-avatar-row' });
@@ -2892,7 +3034,8 @@ function mountBiofieldDashboard() {
   leftCol.appendChild(avatarRow);
 
   // Aura caption — labels the gold dashed boundary ring with the actual meters.
-  const auricMeters = (USER && typeof USER.auricMeters === 'number') ? USER.auricMeters : 13.4;
+  const view = getView();
+  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
   const auraCap = el('div', { class: 'bf-aura-caption' });
   auraCap.appendChild(document.createTextNode('Auric field '));
   auraCap.appendChild(el('strong', { text: auricMeters.toFixed(1) + ' m' }));
@@ -2917,11 +3060,15 @@ function mountBiofieldDashboard() {
     text: 'This is a living experiment. Your body is the source of truth.'
   }));
 
+  // "What moved" delta panel (Phase C). Only renders when ≥2 snapshots exist.
+  const delta = buildDeltaPanel(true);
+  if (delta) right.appendChild(delta);
+
   // Calibration callout — the prose summary that used to live under the
   // horizontal arc. The full scale visualization moved into the silhouette
   // stage as the vertical ladder + Solfeggio Hz scale.
-  const hkLevel = (USER && Number(USER.hawkinsLevel)) || 525;
-  const hkTarget = (USER && Number(USER.hawkinsTarget)) || 528;
+  const hkLevel = Number(view.hawkinsLevel) || 525;
+  const hkTarget = Number(view.hawkinsTarget) || 528;
   const calBlock = el('div', { class: 'bf-calibration' });
   calBlock.appendChild(el('span', { class: 'label', text: 'Calibration' }));
   const calVal = el('div', { class: 'value' });
@@ -2931,8 +3078,8 @@ function mountBiofieldDashboard() {
   calBlock.appendChild(el('div', { class: 'felt', text: 'A felt-sense map. One frame among many.' }));
   right.appendChild(calBlock);
 
-  // DNA helix + meta — counts driven by USER.dna
-  const dnaInfo = (USER && USER.dna) || { phaseLocked: 9, consolidating: 3, of: 12 };
+  // DNA helix + meta — counts driven by current view's dna
+  const dnaInfo = (getView().dna) || { phaseLocked: 9, consolidating: 3, of: 12 };
   const dna = el('div', { class: 'bf-helix' });
   const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
   helixWrap.appendChild(buildHelixSVG());
@@ -3534,6 +3681,297 @@ function saveNotes(n) { localStorage.setItem(LS.notes, JSON.stringify(n)); }
    the user can capture a fresh reading; per session is optional. The most
    recent capture is what reflections see going forward, falling back to the
    baseline reading. */
+/* ---- Snapshot parsing & active-view management (Phase C / v1.5.0) ----
+   Each captured Biofield reading (baseline + per-week) gets parsed into a
+   structured snapshot the dashboard can render. The raw text remains the
+   source of truth; snapshots are derived. */
+
+/* Extract a chakra state word from a line of the chakras frame body. */
+const CHAKRA_STATE_WORDS = ['radiant', 'carrying-a-lot', 'clear', 'consolidating', 'stabilizing', 'holding', 'undercharged'];
+function parseChakraState(line) {
+  const lower = line.toLowerCase();
+  // Special-case: "oversaturated" maps to carrying-a-lot (legacy state name)
+  if (/oversaturated/.test(lower)) return 'carrying-a-lot';
+  // Match longest first so "carrying-a-lot" wins over "carrying"
+  for (const w of CHAKRA_STATE_WORDS) {
+    const re = new RegExp('\\b' + w.replace(/-/g, '[- ]') + '\\b');
+    if (re.test(lower)) return w;
+  }
+  // Heuristics for common practitioner adjectives
+  if (/expanding|releasing|opening/.test(lower)) return 'consolidating';
+  if (/stabiliz|recently|integrating/.test(lower)) return 'stabilizing';
+  return null;
+}
+
+/* Build a snapshot from raw reading text. Falls back to USER baseline fields
+   for anything missing — the parser is best-effort, not total. */
+function buildSnapshot(weekN, text, ts, source) {
+  const baseline = USER || {};
+  const parsed = parseInput(text || '') || {};
+  const frames = parsed.frames || {};
+
+  // Aura meters: e.g. "Your auric field extends 13.4 meters" or "13.4 m"
+  let auricMeters = baseline.auricMeters || 13.4;
+  const oric = (frames.oric && frames.oric.body) || '';
+  const am = (oric + ' ' + (frames.archetype && frames.archetype.body || '')).match(/\b(\d+(?:\.\d+)?)\s*m(?:eters?)?\b/i);
+  if (am) auricMeters = parseFloat(am[1]);
+
+  // Hawkins level: existing parseInput already extracts `level`
+  const hawkins = parsed.level ? parseInt(parsed.level, 10) : (baseline.hawkinsLevel || 525);
+  const hawkinsTarget = baseline.hawkinsTarget || 528;
+
+  // DNA counts
+  let dna = Object.assign({ phaseLocked: 9, consolidating: 3, of: 12 }, baseline.dna || {});
+  const dnaBody = (frames.dna && frames.dna.body) || '';
+  const dnaTotal = dnaBody.match(/(\d+)\s*strands?\s+(?:are|partially)/i);
+  const dnaLocked = dnaBody.match(/(\d+)\s*(?:fully\s+)?phase[- ]locked/i);
+  const dnaConsol = dnaBody.match(/(\d+)\s*(?:strands?\s+)?consolidating/i);
+  if (dnaTotal) dna.of = parseInt(dnaTotal[1], 10);
+  if (dnaLocked) dna.phaseLocked = parseInt(dnaLocked[1], 10);
+  if (dnaConsol) dna.consolidating = parseInt(dnaConsol[1], 10);
+  // If consolidating not stated, derive: total - phaseLocked
+  if (dnaTotal && dnaLocked && !dnaConsol) {
+    dna.consolidating = Math.max(0, dna.of - dna.phaseLocked);
+  }
+
+  // Per-chakra state. Walk lines of the chakras frame body and match the
+  // chakra label, then extract its state word from that line.
+  const chakraLabels = {
+    'crown': /crown|sahasrara/i,
+    'third-eye': /third\s*eye|ajna/i,
+    'throat': /throat|vishuddha/i,
+    'heart': /heart|anahata/i,
+    'solar': /solar\s*plexus|manipura/i,
+    'sacral': /sacral|svadhisthana/i,
+    'root': /root|muladhara/i
+  };
+  const chakras = {};
+  const chakrasBody = (frames.chakras && frames.chakras.body) || '';
+  const lines = chakrasBody.split(/\n+/);
+  Object.keys(chakraLabels).forEach(id => {
+    const rx = chakraLabels[id];
+    const line = lines.find(l => rx.test(l));
+    if (line) {
+      const st = parseChakraState(line);
+      if (st) chakras[id] = { state: st, note: line.replace(rx, '').replace(/^[\s:\-(),]+/, '').replace(/\)\s*$/, '').trim() };
+    }
+  });
+
+  // Build view-shaped chakraStates: keep yPct + label from baseline, override state + note
+  const baseChakras = baseline.chakraStates || CHAKRA_STATES;
+  const chakraStates = baseChakras.map(c => {
+    const override = chakras[c.id];
+    if (!override) return Object.assign({}, c);
+    return Object.assign({}, c, { state: override.state, note: override.note || c.note });
+  });
+
+  return {
+    weekN: weekN,
+    ts: ts,
+    source: source,
+    raw: text,
+    parseOk: true,
+    auricMeters: auricMeters,
+    hawkinsLevel: hawkins,
+    hawkinsTarget: hawkinsTarget,
+    dna: dna,
+    chakraStates: chakraStates,
+    chakras: chakras
+  };
+}
+
+/* Get all available snapshots sparsely keyed by weekN. Walks LS.field (week 0)
+   and LS.weekFields[1..4]. */
+function getSnapshots() {
+  const out = {};
+  // Week 0 — baseline. Use USER (already structured) merged with parsed raw text.
+  const baselineText = localStorage.getItem(LS.field) || (USER && USER.reading) || '';
+  if (baselineText) {
+    out['0'] = buildSnapshot(0, baselineText, +localStorage.getItem(LS.field + '.ts') || 0, 'baseline');
+  }
+  // Weeks 1..4 from LS.weekFields
+  const wf = getWeekFields();
+  Object.keys(wf).forEach(w => {
+    const entry = wf[w];
+    if (!entry || !entry.text) return;
+    out[String(w)] = buildSnapshot(parseInt(w, 10), entry.text, entry.ts || 0, 'weekField');
+  });
+  return out;
+}
+
+/* The currently-active week (0 = baseline). Persists in LS. */
+function getActiveSnapshotWeek() {
+  const stored = localStorage.getItem(LS.activeSnapshot);
+  if (stored == null) {
+    // Default: latest available
+    const all = getSnapshots();
+    let latest = 0;
+    Object.keys(all).forEach(k => {
+      const n = parseInt(k, 10);
+      if (n > latest) latest = n;
+    });
+    return latest;
+  }
+  return parseInt(stored, 10) || 0;
+}
+function setActiveSnapshot(weekN) {
+  localStorage.setItem(LS.activeSnapshot, String(weekN));
+  applyActiveSnapshot();
+  // Re-mount the dashboard so the new view paints
+  mountBiofieldDashboard();
+}
+function applyActiveSnapshot() {
+  const wk = getActiveSnapshotWeek();
+  const all = getSnapshots();
+  const sn = all[String(wk)];
+  if (sn && sn.parseOk) {
+    ACTIVE_VIEW = sn;
+    CHAKRA_STATES = sn.chakraStates;
+  } else {
+    ACTIVE_VIEW = USER;
+    CHAKRA_STATES = (USER && USER.chakraStates) || CHAKRA_STATES;
+  }
+}
+
+/* Timeline strip: 0..4 dots showing which weeks have captures, click to switch. */
+function buildTimelineStrip() {
+  const all = getSnapshots();
+  const active = getActiveSnapshotWeek();
+  const wrap = el('div', { class: 'bf-timeline' });
+  const strip = el('div', { class: 'bf-timeline-strip' });
+  for (let w = 0; w <= 4; w++) {
+    const has = !!all[String(w)];
+    const isActive = (w === active);
+    const dot = el('button', {
+      class: 'bf-timeline-dot' + (has ? ' has' : ' empty') + (isActive ? ' active' : ''),
+      type: 'button',
+      'aria-label': w === 0 ? 'Baseline reading' : ('Week ' + w + ' reading'),
+      'aria-pressed': isActive ? 'true' : 'false',
+      'data-week': String(w)
+    });
+    dot.appendChild(el('span', { class: 'bf-timeline-num', text: String(w) }));
+    dot.addEventListener('click', () => {
+      if (has) setActiveSnapshot(w);
+      else {
+        // No reading captured for this week — scroll to the Map's week panel
+        // and open its capture details.
+        const target = document.querySelector('.phase-panel[data-week="' + w + '"] .week-reading-capture details');
+        if (target) {
+          target.open = true;
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          // Fall back to scrolling to the map section
+          const map = document.getElementById('map');
+          if (map) map.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+    strip.appendChild(dot);
+  }
+  wrap.appendChild(strip);
+  // Caption beneath the strip
+  const sn = all[String(active)];
+  const cap = el('div', { class: 'bf-timeline-caption' });
+  if (active === 0) {
+    cap.appendChild(el('span', { class: 'label', text: 'Baseline reading' }));
+  } else {
+    cap.appendChild(el('span', { class: 'label', text: 'Week ' + active + ' reading' }));
+    if (sn && sn.ts) {
+      cap.appendChild(document.createTextNode(' · ' + new Date(sn.ts).toLocaleDateString()));
+    }
+  }
+  wrap.appendChild(cap);
+  return wrap;
+}
+
+/* "What moved" delta panel. Compares ACTIVE_VIEW snapshot vs prior (or vs Week 0).
+   Renders only when there are ≥2 snapshots. Five fixed slots in priority order. */
+const STATE_ORDINAL = {
+  'undercharged': 0, 'stabilizing': 1, 'holding': 2,
+  'consolidating': 3, 'clear': 4, 'carrying-a-lot': 5, 'radiant': 6
+};
+function buildDeltaPanel(comparePrev) {
+  const all = getSnapshots();
+  const weeks = Object.keys(all).map(k => parseInt(k, 10)).sort((a, b) => a - b);
+  if (weeks.length < 2) return null;
+  const activeW = getActiveSnapshotWeek();
+  const idx = weeks.indexOf(activeW);
+  if (idx <= 0) return null; // active is the earliest; nothing to compare to
+
+  // Compare baseline = previous captured week, or always Week 0
+  const baseW = comparePrev ? weeks[idx - 1] : 0;
+  if (baseW === activeW) return null;
+
+  const A = all[String(baseW)];
+  const B = all[String(activeW)];
+
+  const wrap = el('div', { class: 'bf-delta' });
+  const head = el('div', { class: 'bf-delta-head' });
+  head.appendChild(el('span', { class: 'label', text: 'What moved' }));
+  head.appendChild(el('span', { class: 'range', text: 'Week ' + baseW + ' → Week ' + activeW }));
+  wrap.appendChild(head);
+
+  const rows = el('div', { class: 'bf-delta-rows' });
+  function row(label, before, after, deltaClass) {
+    const r = el('div', { class: 'bf-delta-row ' + (deltaClass || '') });
+    r.appendChild(el('span', { class: 'name', text: label }));
+    r.appendChild(el('span', { class: 'before', text: String(before) }));
+    r.appendChild(el('span', { class: 'arrow', text: '→' }));
+    r.appendChild(el('span', { class: 'after', text: String(after) }));
+    rows.appendChild(r);
+  }
+
+  // 1. Hawkins
+  const hkDiff = (B.hawkinsLevel || 0) - (A.hawkinsLevel || 0);
+  row('Hawkins', A.hawkinsLevel, B.hawkinsLevel + (hkDiff !== 0 ? '  (' + (hkDiff > 0 ? '+' : '') + hkDiff + ')' : ''), hkDiff > 0 ? 'up' : (hkDiff < 0 ? 'down' : 'same'));
+
+  // 2. Aura extent
+  const auDiff = (B.auricMeters || 0) - (A.auricMeters || 0);
+  row('Auric field', A.auricMeters.toFixed(1) + ' m', B.auricMeters.toFixed(1) + ' m', auDiff > 0.05 ? 'up' : (auDiff < -0.05 ? 'down' : 'same'));
+
+  // 3-4. Two most-changed chakras (by ordinal delta)
+  const chakraDeltas = [];
+  Object.keys(A.chakras || {}).forEach(id => {
+    const aSt = A.chakras[id] && A.chakras[id].state;
+    const bSt = (B.chakras && B.chakras[id] && B.chakras[id].state) || aSt;
+    const aOrd = STATE_ORDINAL[aSt] != null ? STATE_ORDINAL[aSt] : 2;
+    const bOrd = STATE_ORDINAL[bSt] != null ? STATE_ORDINAL[bSt] : 2;
+    chakraDeltas.push({ id, aSt, bSt, diff: bOrd - aOrd });
+  });
+  chakraDeltas.sort((x, y) => Math.abs(y.diff) - Math.abs(x.diff));
+  for (let k = 0; k < Math.min(2, chakraDeltas.length); k++) {
+    const d = chakraDeltas[k];
+    const dirCls = d.diff > 0 ? 'up' : (d.diff < 0 ? 'down' : 'same');
+    row(d.id.replace('-', ' '), d.aSt, d.bSt, dirCls);
+  }
+
+  // 5. DNA phase-locked count
+  const dnaA = (A.dna && A.dna.phaseLocked) || 0;
+  const dnaB = (B.dna && B.dna.phaseLocked) || 0;
+  const dnaDiff = dnaB - dnaA;
+  row('DNA strands', dnaA + ' locked', dnaB + ' locked' + (dnaDiff !== 0 ? '  (' + (dnaDiff > 0 ? '+' : '') + dnaDiff + ')' : ''), dnaDiff > 0 ? 'up' : (dnaDiff < 0 ? 'down' : 'same'));
+
+  wrap.appendChild(rows);
+
+  // Toggle: vs previous | vs Week 0
+  const tog = el('div', { class: 'bf-delta-toggle' });
+  ['vs previous', 'vs Week 0'].forEach((label, i) => {
+    const isActive = (i === 0 ? comparePrev : !comparePrev);
+    const btn = el('button', {
+      class: 'bf-delta-toggle-btn' + (isActive ? ' active' : ''),
+      type: 'button', text: label
+    });
+    btn.addEventListener('click', () => {
+      const newPanel = buildDeltaPanel(i === 0);
+      if (newPanel) wrap.replaceWith(newPanel);
+    });
+    tog.appendChild(btn);
+  });
+  wrap.appendChild(tog);
+
+  return wrap;
+}
+
 function getWeekFields() {
   try { return JSON.parse(localStorage.getItem(LS.weekFields)) || {}; }
   catch { return {}; }
@@ -3713,10 +4151,18 @@ function buildWeekReadingCapture(week) {
     if (!v) return;
     saveWeekField(week, v);
     refresh();
+    // Re-mount the dashboard so the new snapshot appears in the timeline +
+    // gets a "What moved" delta panel if it's the second snapshot.
+    if (typeof mountBiofieldDashboard === 'function') {
+      try { setActiveSnapshot(week); } catch (e) { /* no-op */ }
+    }
   });
   clearBtn.addEventListener('click', () => {
     clearWeekField(week);
     refresh();
+    if (typeof mountBiofieldDashboard === 'function') {
+      try { mountBiofieldDashboard(); } catch (e) { /* no-op */ }
+    }
   });
   refresh();
   return wrap;
