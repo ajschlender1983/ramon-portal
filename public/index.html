@@ -311,8 +311,9 @@ main { position: relative; z-index: 2; }
   animation: bf-aura-breath 10910ms ease-in-out infinite;
   animation-delay: 0s;
 }
-.bf-aura-ring--group-1 { animation-delay: -7273ms; }
-.bf-aura-ring--group-2 { animation-delay: -3637ms; }
+/* Plan §3 stagger: +0 / +1.4s / +2.8s within the 10.91s breath period */
+.bf-aura-ring--group-1 { animation-delay: 1400ms; }
+.bf-aura-ring--group-2 { animation-delay: 2800ms; }
 @keyframes bf-aura-breath {
   0%, 100% { opacity: 0.55; transform: scale(1.000); }
   50%      { opacity: 0.92; transform: scale(1.018); }
@@ -345,6 +346,13 @@ main { position: relative; z-index: 2; }
   fill: rgba(255,255,255,0.45);
   font: italic 10px var(--serif);
   letter-spacing: 0.02em;
+}
+.bf-calib-hairline {
+  stroke: rgba(255,215,100,0.32);
+  stroke-width: 0.6;
+  stroke-dasharray: 1 2;
+  filter: drop-shadow(0 0 2px rgba(255,215,100,0.30));
+  transition: y1 400ms cubic-bezier(.2,.8,.2,1), y2 400ms cubic-bezier(.2,.8,.2,1);
 }
 .bf-ladder-beam {
   stroke: var(--gold);
@@ -412,6 +420,19 @@ main { position: relative; z-index: 2; }
   /* Tween radius when morphing between weekly snapshots (auric extent shifts) */
   transition: r 400ms cubic-bezier(.2,.8,.2,1);
 }
+.bf-aura-boundary-tick {
+  stroke: rgba(255,215,100,0.85);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 2px rgba(255,215,100,0.45));
+}
+.bf-aura-boundary-label {
+  fill: rgba(255,215,100,0.85);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  filter: drop-shadow(0 0 3px rgba(0,0,0,0.6));
+}
 @media (prefers-reduced-motion: reduce) {
   .bf-aura-boundary { transition: none; }
 }
@@ -428,7 +449,7 @@ main { position: relative; z-index: 2; }
    destination. */
 .bf-spiral-seg {
   fill: none;
-  stroke: rgba(255,215,100,0.78);
+  stroke: url(#bf-spiral-grad);
   stroke-width: 1;
   stroke-linecap: round;
   filter: drop-shadow(0 0 4px rgba(255,215,100,0.45));
@@ -639,6 +660,28 @@ main { position: relative; z-index: 2; }
 .bf-timeline-dot:hover { border-color: rgba(255,215,100,0.7); color: rgba(255,215,100,0.85); }
 .bf-timeline-dot:focus-visible { outline: 1px solid rgba(106,223,217,0.6); outline-offset: 2px; }
 .bf-timeline-num { display: inline-block; }
+/* Ghost overlay: rendered when hovering/long-pressing a non-active timeline
+   dot. Shows the chakra ring sizes from THAT week's snapshot, layered on
+   top of the current view, so the user can peek at the difference without
+   committing to a switch. */
+.bf-chakra-ghost {
+  stroke: rgba(255,215,100,0.50);
+  stroke-width: 0.6;
+  stroke-dasharray: 1 2;
+  filter: drop-shadow(0 0 3px rgba(255,215,100,0.35));
+  pointer-events: none;
+  animation: bf-ghost-fade-in 220ms ease forwards;
+}
+@keyframes bf-ghost-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 0.85; }
+}
+.bf-silhouette.ghost-peek .bf-chakra-glow { opacity: 0.18; }
+@media (prefers-reduced-motion: reduce) {
+  .bf-chakra-ghost { display: none; }
+  .bf-silhouette.ghost-peek .bf-chakra-glow { opacity: calc(0.42 + 0.20 * var(--breath-pulse)); }
+}
+
 .bf-timeline-caption {
   font-size: 11px; color: var(--mid);
   letter-spacing: 0.04em;
@@ -1906,7 +1949,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.5.1';
+const VERSION = '1.6.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -1940,7 +1983,8 @@ function makeLS(slug) {
     weekFields:         slug + '.weekFields.v1',     // { 1: {text, ts}, 2: ... }
     sessionFields:      slug + '.sessionFields.v1',  // { <slug>: {text, ts} }
     expandedSessions:   slug + '.expanded.v1',       // [<slug>, <slug>, ...]
-    activeSnapshot:     slug + '.activeSnapshot.v1'  // currently-viewed week (0..4)
+    activeSnapshot:     slug + '.activeSnapshot.v1', // currently-viewed week (0..4)
+    snapshots:          slug + '.snapshots.v1'       // { '0': SnapshotV1, '1': ..., ... } (cached)
   };
 }
 let LS = makeLS('__pending__'); // overwritten in init()
@@ -1956,13 +2000,13 @@ let LS = makeLS('__pending__'); // overwritten in init()
    Reference: Plan §4 "Chakras as state-encoded mini-nuclei".
 */
 const CHAKRA_VISUAL = {
-  'undercharged':   { radialOffset: -6, haloRadius: 8,  amp: 0.30 },
-  'stabilizing':    { radialOffset: -2, haloRadius: 10, amp: 0.60 },
-  'holding':        { radialOffset:  0, haloRadius: 11, amp: 0.65 },
-  'consolidating':  { radialOffset:  2, haloRadius: 13, amp: 0.80 },
-  'clear':          { radialOffset:  0, haloRadius: 14, amp: 0.85 },
-  'carrying-a-lot': { radialOffset:  4, haloRadius: 16, amp: 1.00 },
-  'radiant':        { radialOffset:  0, haloRadius: 20, amp: 1.00 }
+  'undercharged':   { radialOffset: -6, haloRadius: 8,  amp: 0.30, rings: 2 },
+  'stabilizing':    { radialOffset: -2, haloRadius: 10, amp: 0.60, rings: 3 },
+  'holding':        { radialOffset:  0, haloRadius: 11, amp: 0.65, rings: 3 },
+  'consolidating':  { radialOffset:  2, haloRadius: 13, amp: 0.80, rings: 4 },
+  'clear':          { radialOffset:  0, haloRadius: 14, amp: 0.85, rings: 4 },
+  'carrying-a-lot': { radialOffset:  4, haloRadius: 16, amp: 1.00, rings: 4 },
+  'radiant':        { radialOffset:  0, haloRadius: 23, amp: 1.00, rings: 5 }
 };
 /* Backward-compat alias so any remaining references to CHAKRA_STATE_AMP
    (e.g. older comments) still resolve. To be removed in a future cleanup. */
@@ -2465,15 +2509,17 @@ const SILHOUETTE_PATH =
   'C 182 80 188 70 188 56 ' +
   'C 188 38 178 24 160 24 Z';
 
-/* Golden spiral built from chakra anchors. Renders into the silhouette SVG.
-   Each segment is a quadratic bezier that bows away from the spine on
-   alternating sides (a stylized golden-spiral approximation that visits
-   each chakra in order, then exits past the auric perimeter at -70° from
-   vertical — upper right). Per-segment style picks up the destination
-   chakra's state. */
+/* True logarithmic spiral, sampled point-by-point. r(t) = a * e^(b*t) with
+   b = ln(φ) / (π/2) — radii grow by φ per quarter-turn (the canonical
+   golden growth rate). The spiral sources near the heart and sweeps
+   outward + up, exiting past the auric perimeter at upper right. Sampled
+   points are classified by which chakra y-band they fall in, and each
+   sub-segment is rendered as its own path with state-derived stroke
+   styling (consolidating throat dashed, clear third-eye thicker,
+   carrying-a-lot crown bowed). Stroke uses a gold gradient defined in
+   the SVG defs. */
 function buildGoldenSpiral(root) {
   if (!Array.isArray(CHAKRA_STATES)) return;
-  // Find each chakra's position. Use yPct from CHAKRA_STATES to compute y.
   const byId = {};
   CHAKRA_STATES.forEach(c => { byId[c.id] = c; });
   const yOf = (id) => {
@@ -2483,49 +2529,70 @@ function buildGoldenSpiral(root) {
   };
   const stateOf = (id) => (byId[id] && byId[id].state) || '';
 
-  // Anchor points on the spine (x=160, y=chakra-y).
-  const heart = { x: 160, y: yOf('heart') || 174, state: stateOf('heart') };
-  const throat = { x: 160, y: yOf('throat') || 110, state: stateOf('throat') };
-  const thirdEye = { x: 160, y: yOf('third-eye') || 72, state: stateOf('third-eye') };
-  const crown = { x: 160, y: yOf('crown') || 40, state: stateOf('crown') };
-  // Exit point: upper-right past auric perimeter
-  const exit = { x: 312, y: -10 };
+  // Spiral parameters
+  const cx = 160, cy = 174;       // origin = heart anchor
+  const b = Math.log(1.618) / (Math.PI / 2); // ≈ 0.3063
+  const a = 4;                    // initial radius at t=0
+  const tMin = -1.0;              // start slightly inside heart
+  const tMax = 5.4;               // end past auric perimeter at upper right
+  const samples = 64;
 
-  // Helper: build a quadratic bezier path string from p0 → p1 with a control
-  // point laterally offset. `bow` is positive=right, negative=left.
-  function qpath(p0, p1, bow) {
-    const cx = 160 + bow;
-    const cy = (p0.y + p1.y) / 2;
-    return 'M ' + p0.x + ' ' + p0.y.toFixed(1) +
-           ' Q ' + cx + ' ' + cy.toFixed(1) +
-           ' ' + p1.x + ' ' + p1.y.toFixed(1);
+  // Find which chakra zone a y-coordinate falls in
+  const yHeart = yOf('heart') || 174;
+  const yThroat = yOf('throat') || 110;
+  const yThirdEye = yOf('third-eye') || 72;
+  const yCrown = yOf('crown') || 40;
+  function zoneFor(y) {
+    if (y >= yHeart - 8) return 'heart';
+    if (y >= yThroat - 8) return 'throat';
+    if (y >= yThirdEye - 8) return 'third-eye';
+    if (y >= yCrown - 8) return 'crown';
+    return 'exit';
   }
 
-  // Per-segment: bow direction + state-derived class
-  const segs = [
-    { p0: heart,    p1: throat,   bow:  20, state: throat.state,   name: 'heart-throat' },
-    { p0: throat,   p1: thirdEye, bow: -22, state: thirdEye.state, name: 'throat-third-eye' },
-    { p0: thirdEye, p1: crown,    bow:  18, state: crown.state,    name: 'third-eye-crown' }
-  ];
-  segs.forEach(s => {
-    const cls = 'bf-spiral-seg bf-spiral-seg--' + s.state;
-    root.appendChild(svg('path', { class: cls, d: qpath(s.p0, s.p1, s.bow) }));
+  // Sample the spiral
+  const pts = [];
+  for (let i = 0; i <= samples; i++) {
+    const t = tMin + (tMax - tMin) * (i / samples);
+    const r = a * Math.exp(b * t);
+    // theta starts at -π/2 (downward from heart) and sweeps counterclockwise.
+    // The full sweep (~6.4 rad) takes the spiral up + outward to upper right.
+    const theta = -Math.PI / 2 + t;
+    const x = cx + r * Math.cos(theta);
+    const y = cy + r * Math.sin(theta);
+    pts.push({ x: x, y: y, t: t, zone: zoneFor(y) });
+  }
+
+  // Group consecutive samples by zone into segments
+  const segments = [];
+  let cur = { zone: pts[0].zone, points: [pts[0]] };
+  for (let i = 1; i < pts.length; i++) {
+    if (pts[i].zone === cur.zone) {
+      cur.points.push(pts[i]);
+    } else {
+      // Repeat the boundary point in both segments so they connect visually
+      cur.points.push(pts[i]);
+      segments.push(cur);
+      cur = { zone: pts[i].zone, points: [pts[i]] };
+    }
+  }
+  segments.push(cur);
+
+  // Render each segment with its zone's chakra state class
+  segments.forEach(s => {
+    if (s.points.length < 2) return;
+    const state = stateOf(s.zone) || s.zone;
+    const cls = 'bf-spiral-seg bf-spiral-seg--' + state + ' bf-spiral-seg--' + s.zone;
+    const d = 'M ' + s.points.map(p => p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' L ');
+    root.appendChild(svg('path', { class: cls, d: d }));
   });
 
-  // Final exit segment: cubic bezier from crown → upper-right exit, with the
-  // bow respecting carrying-a-lot containment if crown is in that state.
-  const crownBow = (crown.state === 'carrying-a-lot') ? 8 : 0; // outward push
-  const exitPath = 'M ' + crown.x + ' ' + crown.y.toFixed(1) +
-                   ' C ' + (180 + crownBow) + ' 18, 270 -8, ' +
-                   exit.x + ' ' + exit.y.toFixed(1);
-  root.appendChild(svg('path', { class: 'bf-spiral-seg bf-spiral-seg--exit', d: exitPath }));
-
-  // Terminal mini-nucleus at the exit point: 3 gold border rings + dot.
-  // Names the spiral as an "emerging coherence event" (the reading: "golden
-  // spiral emerging from the top of the field").
+  // Terminal mini-nucleus at the spiral's end point — the "emerging
+  // coherence event" the reading describes. 3 border rings + a core dot.
+  const last = pts[pts.length - 1];
   const term = svg('g', {
     class: 'bf-spiral-terminal',
-    transform: 'translate(' + exit.x + ' ' + exit.y + ')'
+    transform: 'translate(' + last.x.toFixed(1) + ' ' + last.y.toFixed(1) + ')'
   });
   [4, 8, 12].forEach((rr, i) => {
     term.appendChild(svg('circle', {
@@ -2546,8 +2613,14 @@ function buildSilhouetteSVG() {
     'aria-hidden': 'true'
   });
 
-  // Defs: gradients used by silhouette + aura + block
+  // Defs: gradients used by silhouette + aura + block + spiral
   const defs = svg('defs');
+  // Spiral gradient: gold → bright gold → faded gold along the path
+  const spiralGrad = svg('linearGradient', { id: 'bf-spiral-grad', x1: '0', y1: '1', x2: '1', y2: '0' });
+  spiralGrad.appendChild(svg('stop', { offset: '0%',  'stop-color': 'rgba(255,215,100,0.85)' }));
+  spiralGrad.appendChild(svg('stop', { offset: '50%', 'stop-color': 'rgba(255,242,180,0.95)' }));
+  spiralGrad.appendChild(svg('stop', { offset: '100%','stop-color': 'rgba(255,215,100,0.50)' }));
+  defs.appendChild(spiralGrad);
   // Body gradient
   const bodyGrad = svg('linearGradient', { id: 'bf-body-grad', x1: '0', y1: '1', x2: '0', y2: '0' });
   bodyGrad.appendChild(svg('stop', { offset: '0%', 'stop-color': 'rgba(86,76,112,0.32)' }));
@@ -2571,32 +2644,40 @@ function buildSilhouetteSVG() {
 
   // Aura: 7 nested border-only rings in three triadic groups, breathing on
   // the master 10.91s clock with staggered group delays. Joy-Spark grammar
-  // applied to the body context. Outer 3 rings tint gold, middle 2 teal,
-  // inner 2 violet — the Joy-Spark "charge" spectrum mapped radially.
+  // applied to the body context. Outer 3 rings tint gold, middle 3 teal,
+  // innermost 1 violet — the Joy-Spark "charge" spectrum mapped radially.
+  // Plan §3: r_n = R * 0.618^n (true golden ratio decay), groups [0,1,2] /
+  // [3,4,5] / [6], stagger +0 / +1.4s / +2.8s.
   const auraCx = 160, auraCy = 250;
-  // 7 radii, decaying by ~0.85 per step (gentle golden-feel without
-  // collapsing the inner rings into the chakra cores). Outermost ring is
-  // the labeled boundary added separately below.
-  const auraRadii = [156, 132, 112, 95, 81, 69, 58];
+  const auraOuterR = Math.max(120, Math.min(220, 80 + auricMeters * 9)); // matches boundary
+  // 7 radii: r_n = R * 0.618^n. Skip rings smaller than ~26 SVG units so
+  // they don't visually merge with the chakra column.
+  const PHI_INV = 0.618;
+  const auraRadii = [];
+  for (let n = 0; n < 7; n++) {
+    const r = auraOuterR * Math.pow(PHI_INV, n);
+    if (r < 26) break;
+    auraRadii.push(r);
+  }
   const auraColors = [
-    'rgba(255,215,100,0.55)', // gold
-    'rgba(255,215,100,0.42)', // gold
-    'rgba(255,215,100,0.30)', // gold→teal
-    'rgba(106,223,217,0.30)', // teal
-    'rgba(106,223,217,0.22)', // teal
-    'rgba(123,111,168,0.18)', // violet
-    'rgba(123,111,168,0.12)'  // violet
+    'rgba(255,215,100,0.55)', // gold (outer 3)
+    'rgba(255,215,100,0.42)',
+    'rgba(255,215,100,0.30)',
+    'rgba(106,223,217,0.30)', // teal (middle 3)
+    'rgba(106,223,217,0.22)',
+    'rgba(106,223,217,0.16)',
+    'rgba(123,111,168,0.18)'  // violet (innermost 1)
   ];
-  // Triadic groups [0,1,2] / [3,4] / [5,6] with stagger offsets in seconds.
-  const auraGroup = [0, 0, 0, 1, 1, 2, 2];
+  // Plan groups: [0,1,2] / [3,4,5] / [6]
+  const auraGroup = [0, 0, 0, 1, 1, 1, 2];
   auraRadii.forEach((r, i) => {
     root.appendChild(svg('circle', {
       class: 'bf-aura-ring bf-aura-ring--group-' + auraGroup[i],
       cx: String(auraCx), cy: String(auraCy),
-      r: String(r),
+      r: r.toFixed(1),
       fill: 'none',
-      stroke: auraColors[i],
-      'stroke-width': i < 3 ? '0.8' : (i < 5 ? '0.6' : '0.4')
+      stroke: auraColors[i] || 'rgba(123,111,168,0.10)',
+      'stroke-width': i < 3 ? '0.8' : (i < 6 ? '0.5' : '0.4')
     }));
   });
 
@@ -2618,6 +2699,32 @@ function buildSilhouetteSVG() {
     r: auricR.toFixed(1),
     fill: 'none'
   }));
+  // Leader tick + in-SVG label at the 1-o'clock position of the boundary.
+  // Lives within viewBox bounds (clamps to keep label readable on small fields).
+  const leaderAngle = -Math.PI / 3.5; // ~ -51° (upper-right of ring)
+  const tickInner = {
+    x: auraCx + Math.cos(leaderAngle) * auricR,
+    y: auraCy + Math.sin(leaderAngle) * auricR
+  };
+  const tickOuter = {
+    x: auraCx + Math.cos(leaderAngle) * (auricR + 8),
+    y: auraCy + Math.sin(leaderAngle) * (auricR + 8)
+  };
+  // Clamp label position so it stays inside viewBox 0..320 / 0..480
+  const labelX = Math.min(310, Math.max(10, tickOuter.x + 4));
+  const labelY = Math.min(470, Math.max(14, tickOuter.y));
+  root.appendChild(svg('line', {
+    class: 'bf-aura-boundary-tick',
+    x1: tickInner.x.toFixed(1), y1: tickInner.y.toFixed(1),
+    x2: tickOuter.x.toFixed(1), y2: tickOuter.y.toFixed(1)
+  }));
+  const auraLabel = svg('text', {
+    class: 'bf-aura-boundary-label',
+    x: labelX.toFixed(1), y: labelY.toFixed(1),
+    'text-anchor': 'start'
+  });
+  auraLabel.textContent = auricMeters.toFixed(1) + ' m';
+  root.appendChild(auraLabel);
 
   // Body anchor (root-upward luminance gradient inside silhouette)
   root.appendChild(svg('rect', {
@@ -2629,21 +2736,9 @@ function buildSilhouetteSVG() {
   // Body silhouette outline
   root.appendChild(svg('path', { class: 'bf-body', d: SILHOUETTE_PATH }));
 
-  // Unifying golden axial line — a single quiet thread down the spine that
-  // tells the eye "these are one column" before it reads any individual chakra.
-  root.appendChild(svg('line', {
-    class: 'bf-chakra-axis',
-    x1: '160', y1: '36', x2: '160', y2: '460'
-  }));
-
-  // Golden spiral — sources at the heart (Ramon's radiant centroid), threads
-  // up through throat, third-eye, crown, exits past the auric perimeter at
-  // upper-right. Each segment picks up the chakra-state character of its
-  // endpoint: throat consolidating → dashed; third-eye clear → brighter;
-  // crown carrying-a-lot → bowed (containment-respecting). Rendered as
-  // multiple paths so per-segment style can vary. Decoration earning its
-  // pixels: the reading literally says "a subtle golden spiral is emerging".
-  buildGoldenSpiral(root);
+  // Calibration-row hairline — the only place the Hawkins ladder and the
+  // Solfeggio scale visually touch, drawn at y = valToY(hawkinsLevel).
+  root.appendChild(buildCalibrationHairline(view));
 
   // Damped block wave: solar (y=290) → throat-solar midpoint (y=145) → throat (y=110).
   // Faster decay so the wave dies into the throat (not the crown). For Ramon's
@@ -2685,6 +2780,19 @@ function buildSilhouetteSVG() {
     class: 'bf-block-knot', cx: '160', cy: '145', r: '7'
   }));
 
+  // Unifying golden axial line — a single quiet thread down the spine that
+  // tells the eye "these are one column" before it reads any individual chakra.
+  // Rendered AFTER the block wave so the axis sits visually in front of the
+  // shadow weather (per plan §7 layer order).
+  root.appendChild(svg('line', {
+    class: 'bf-chakra-axis',
+    x1: '160', y1: '36', x2: '160', y2: '460'
+  }));
+
+  // Golden spiral — sources at the heart, threads up through chakras, exits
+  // past the auric perimeter. Per-segment style picks up each chakra's state.
+  buildGoldenSpiral(root);
+
   // Chakra hot-spots positioned on body anatomy.
   // Each chakra is a Joy-Spark mini-nucleus:
   //   - core dot at constant 5px (the seed)
@@ -2720,8 +2828,9 @@ function buildSilhouetteSVG() {
     }));
     // Glow halo — size = haloRadius from CHAKRA_VISUAL
     spot.appendChild(svg('circle', { class: 'bf-chakra-glow', r: String(v.haloRadius), 'fill-opacity': '0.55' }));
-    // Joy-Spark mini-nucleus rings: count = round(amp * 5)
-    const ringCount = Math.max(1, Math.round(v.amp * 5));
+    // Joy-Spark mini-nucleus rings: count from CHAKRA_VISUAL[state].rings.
+    // Radii at 5, 9, 13, 17, 21 (then halo at 23 for radiant).
+    const ringCount = Math.max(1, v.rings || Math.round(v.amp * 5));
     for (let i = 0; i < ringCount; i++) {
       const ringR = 5 + i * 4; // 5, 9, 13, 17, 21
       if (ringR > v.haloRadius) continue; // ring would exceed halo — skip
@@ -2930,10 +3039,11 @@ function buildHawkinsLadder() {
     }));
   }
 
-  // The gold beam itself
+  // The gold beam itself — extends to the right edge of this ladder's viewBox
+  // so it visually connects across to the Solfeggio scale's matching hairline.
   root.appendChild(svg('line', {
     class: 'bf-ladder-beam',
-    x1: '4', x2: '20',
+    x1: '4', x2: '60',
     y1: yLevel.toFixed(1), y2: yLevel.toFixed(1)
   }));
   const lvlText = svg('text', {
@@ -2943,6 +3053,21 @@ function buildHawkinsLadder() {
   root.appendChild(lvlText);
 
   return root;
+}
+
+/* The horizontal "calibration row" hairline that joins the two vertical
+   scales. Drawn inside the silhouette SVG at y = valToY(level), spanning
+   the full silhouette viewBox width with overflow:visible so it bleeds
+   slightly into the ladder gutters. The ladders draw their own short
+   matching hairlines so the eye reads one continuous line. */
+function buildCalibrationHairline(view) {
+  const level = Number(view && view.hawkinsLevel) || 525;
+  const y = 460 - (level - 200) / 800 * 436;
+  return svg('line', {
+    class: 'bf-calib-hairline',
+    x1: '0', x2: '320',
+    y1: y.toFixed(1), y2: y.toFixed(1)
+  });
 }
 
 /* ---- Vertical Solfeggio Hz scale ----
@@ -2970,6 +3095,17 @@ function buildSolfeggioScale() {
   const hzMin = 174, hzMax = 963;
   const logMin = Math.log(hzMin), logMax = Math.log(hzMax);
   const hzToY = (hz) => 460 - (Math.log(hz) - logMin) / (logMax - logMin) * 436;
+
+  // Calibration-row hairline coming in from the left (matches the silhouette's
+  // version at the same y, so the eye reads them as one line)
+  const view = getView();
+  const level = Number(view && view.hawkinsLevel) || 525;
+  const calY = 460 - (level - 200) / 800 * 436;
+  root.appendChild(svg('line', {
+    class: 'bf-calib-hairline',
+    x1: '0', x2: '12',
+    y1: calY.toFixed(1), y2: calY.toFixed(1)
+  }));
 
   // Track
   root.appendChild(svg('line', {
@@ -3020,8 +3156,10 @@ function buildWaveformSVG(week) {
 
   // We sample N points across the width.
   const N = 240;
-  const carrierCycles = 12; // visual: ~12 carrier peaks across the stripe
-  const envelopeCycles = 1.5; // breath envelope across the stripe
+  const carrierCycles = 3;  // v1.6.0: reduced from 12 — too many peaks read as
+                             // visual noise. The silhouette already breathes;
+                             // the waveform now reads as a single, slow sweep.
+  const envelopeCycles = 1.0; // single breath envelope across the stripe
   const pts = [];
   for (let i = 0; i <= N; i++) {
     const t = i / N;
@@ -3758,6 +3896,10 @@ function buildSnapshot(weekN, text, ts, source) {
   const hawkins = parsed.level ? parseInt(parsed.level, 10) : (baseline.hawkinsLevel || 525);
   const hawkinsTarget = baseline.hawkinsTarget || 528;
 
+  // Primary block + archetype text frames (best-effort)
+  const primaryBlock = (frames.block && frames.block.body) || baseline.primaryBlockQuote || '';
+  const archetype = (frames.archetype && frames.archetype.body) || baseline.archetype || '';
+
   // DNA counts
   let dna = Object.assign({ phaseLocked: 9, consolidating: 3, of: 12 }, baseline.dna || {});
   const dnaBody = (frames.dna && frames.dna.body) || '';
@@ -3814,26 +3956,58 @@ function buildSnapshot(weekN, text, ts, source) {
     hawkinsTarget: hawkinsTarget,
     dna: dna,
     chakraStates: chakraStates,
-    chakras: chakras
+    chakras: chakras,
+    primaryBlock: primaryBlock,
+    archetype: archetype
   };
 }
 
 /* Get all available snapshots sparsely keyed by weekN. Walks LS.field (week 0)
-   and LS.weekFields[1..4]. */
+   and LS.weekFields[1..4]. Results are cached in LS.snapshots and invalidated
+   per-week by `ts` mismatch — i.e., if a week's reading text/ts changes since
+   the last cache write, that week's snapshot is rebuilt. */
 function getSnapshots() {
+  let cache = {};
+  try { cache = JSON.parse(localStorage.getItem(LS.snapshots)) || {}; }
+  catch { cache = {}; }
+
   const out = {};
-  // Week 0 — baseline. Use USER (already structured) merged with parsed raw text.
+  let dirty = false;
+
+  // Week 0 — baseline
   const baselineText = localStorage.getItem(LS.field) || (USER && USER.reading) || '';
+  const baselineTs = +localStorage.getItem(LS.field + '.ts') || 0;
   if (baselineText) {
-    out['0'] = buildSnapshot(0, baselineText, +localStorage.getItem(LS.field + '.ts') || 0, 'baseline');
+    if (cache['0'] && cache['0'].ts === baselineTs && cache['0'].raw === baselineText) {
+      out['0'] = cache['0'];
+    } else {
+      out['0'] = buildSnapshot(0, baselineText, baselineTs, 'baseline');
+      dirty = true;
+    }
   }
+
   // Weeks 1..4 from LS.weekFields
   const wf = getWeekFields();
-  Object.keys(wf).forEach(w => {
-    const entry = wf[w];
-    if (!entry || !entry.text) return;
-    out[String(w)] = buildSnapshot(parseInt(w, 10), entry.text, entry.ts || 0, 'weekField');
-  });
+  for (let w = 1; w <= 4; w++) {
+    const key = String(w);
+    const entry = wf[key];
+    if (!entry || !entry.text) {
+      // If a previously-cached week has been cleared, drop it from cache too
+      if (cache[key]) dirty = true;
+      continue;
+    }
+    if (cache[key] && cache[key].ts === entry.ts && cache[key].raw === entry.text) {
+      out[key] = cache[key];
+    } else {
+      out[key] = buildSnapshot(w, entry.text, entry.ts || 0, 'weekField');
+      dirty = true;
+    }
+  }
+
+  if (dirty) {
+    try { localStorage.setItem(LS.snapshots, JSON.stringify(out)); }
+    catch { /* quota exceeded — silently skip caching */ }
+  }
   return out;
 }
 
@@ -3897,7 +4071,7 @@ function morphActiveSnapshot(weekN) {
 
     // Rebuild the nucleus rings — count is data-driven so they can't tween.
     spot.querySelectorAll('.bf-chakra-ring').forEach(r => r.remove());
-    const ringCount = Math.max(1, Math.round(v.amp * 5));
+    const ringCount = Math.max(1, v.rings || Math.round(v.amp * 5));
     const insertBefore = spot.querySelector('.bf-chakra-core');
     for (let i = 0; i < ringCount; i++) {
       const ringR = 5 + i * 4;
@@ -4038,38 +4212,124 @@ function applyActiveSnapshot() {
   }
 }
 
-/* Timeline strip: 0..4 dots showing which weeks have captures, click to switch. */
+/* Apply a transient ghost overlay of `weekN`'s chakra ring sizes. Used on
+   hover/long-press of timeline dots to peek at a different week without
+   committing. Disabled under prefers-reduced-motion. */
+function showTimelineGhost(weekN) {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const all = getSnapshots();
+  const sn = all[String(weekN)];
+  if (!sn || !sn.parseOk || !Array.isArray(sn.chakraStates)) return;
+  // Add a CSS class to the silhouette body so we can tone-down the active
+  // chakras to clarify "this is a peek."
+  const sil = document.querySelector('.bf-silhouette');
+  if (sil) sil.classList.add('ghost-peek');
+  // Remove any existing ghost
+  document.querySelectorAll('.bf-chakra-ghost').forEach(n => n.remove());
+  // Render a ghost ring per chakra at the haloRadius for that week's state
+  sn.chakraStates.forEach(c => {
+    const v = CHAKRA_VISUAL[c.state];
+    if (!v) return;
+    const cy = (c.yPct / 100) * 480 + 12;
+    const cx = 160 + v.radialOffset;
+    const ghost = svg('circle', {
+      class: 'bf-chakra-ghost',
+      cx: String(cx), cy: cy.toFixed(0),
+      r: String(v.haloRadius),
+      fill: 'none'
+    });
+    if (sil) sil.appendChild(ghost);
+  });
+}
+function hideTimelineGhost() {
+  const sil = document.querySelector('.bf-silhouette');
+  if (sil) sil.classList.remove('ghost-peek');
+  document.querySelectorAll('.bf-chakra-ghost').forEach(n => {
+    n.style.transition = 'opacity 240ms ease';
+    n.style.opacity = '0';
+    setTimeout(() => n.remove(), 260);
+  });
+}
+
+/* Timeline strip: 0..4 dots showing which weeks have captures, click to switch.
+   Hover/long-press shows transient ghost overlay; arrow keys cycle, Home/End
+   jump to baseline/latest. */
 function buildTimelineStrip() {
   const all = getSnapshots();
   const active = getActiveSnapshotWeek();
   const wrap = el('div', { class: 'bf-timeline' });
-  const strip = el('div', { class: 'bf-timeline-strip' });
+  const strip = el('div', { class: 'bf-timeline-strip', role: 'tablist', 'aria-label': 'Biofield reading timeline' });
+
+  // Compute available weeks (for keyboard cycling)
+  const availableWeeks = [];
+  for (let w = 0; w <= 4; w++) if (all[String(w)]) availableWeeks.push(w);
+
   for (let w = 0; w <= 4; w++) {
     const has = !!all[String(w)];
     const isActive = (w === active);
     const dot = el('button', {
       class: 'bf-timeline-dot' + (has ? ' has' : ' empty') + (isActive ? ' active' : ''),
       type: 'button',
+      role: 'tab',
       'aria-label': w === 0 ? 'Baseline reading' : ('Week ' + w + ' reading'),
       'aria-pressed': isActive ? 'true' : 'false',
+      tabindex: isActive ? '0' : '-1',
       'data-week': String(w)
     });
     dot.appendChild(el('span', { class: 'bf-timeline-num', text: String(w) }));
+    // Click: switch (or scroll to capture for empty)
     dot.addEventListener('click', () => {
       if (has) setActiveSnapshot(w);
       else {
-        // No reading captured for this week — scroll to the Map's week panel
-        // and open its capture details.
         const target = document.querySelector('.phase-panel[data-week="' + w + '"] .week-reading-capture details');
         if (target) {
           target.open = true;
           target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
-          // Fall back to scrolling to the map section
           const map = document.getElementById('map');
           if (map) map.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }
+    });
+    // Hover: ghost overlay
+    if (has && !isActive) {
+      dot.addEventListener('mouseenter', () => showTimelineGhost(w));
+      dot.addEventListener('mouseleave', hideTimelineGhost);
+      dot.addEventListener('focus', () => showTimelineGhost(w));
+      dot.addEventListener('blur', hideTimelineGhost);
+      // Long-press for touch
+      let touchTimer = null;
+      dot.addEventListener('touchstart', (e) => {
+        touchTimer = setTimeout(() => showTimelineGhost(w), 380);
+      }, { passive: true });
+      dot.addEventListener('touchend', () => {
+        if (touchTimer) clearTimeout(touchTimer);
+        hideTimelineGhost();
+      });
+      dot.addEventListener('touchcancel', () => {
+        if (touchTimer) clearTimeout(touchTimer);
+        hideTimelineGhost();
+      });
+    }
+    // Keyboard nav: ←/→ cycles available weeks, Home/End jumps
+    dot.addEventListener('keydown', (e) => {
+      if (availableWeeks.length === 0) return;
+      let target = null;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        const idx = availableWeeks.indexOf(active);
+        target = availableWeeks[Math.min(idx + 1, availableWeeks.length - 1)];
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        const idx = availableWeeks.indexOf(active);
+        target = availableWeeks[Math.max(idx - 1, 0)];
+      } else if (e.key === 'Home') {
+        target = availableWeeks[0];
+      } else if (e.key === 'End') {
+        target = availableWeeks[availableWeeks.length - 1];
+      } else {
+        return;
+      }
+      e.preventDefault();
+      if (target != null && target !== active) setActiveSnapshot(target);
     });
     strip.appendChild(dot);
   }
