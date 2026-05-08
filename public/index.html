@@ -1114,7 +1114,7 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   font-size: 14px; line-height: 1.65; color: var(--light); opacity: 0.85;
   white-space: pre-line;
 }
-.reading-frame .chip-row { margin-top: 10px; }
+/* v1.6.2: .chip-row + .read-chip styles removed along with the pill UI. */
 .reading-frame.frame-level { border-left-color: var(--gold); background: rgba(255,215,100,0.04); }
 .reading-frame.frame-block { border-left-color: rgba(240,147,94,0.55); }
 .reading-frame.frame-archetype { border-left-color: rgba(194,47,205,0.55); }
@@ -1131,18 +1131,6 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .quadrant .prefix { font-size: 10.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-top: 2px; opacity: 0.92; }
 .parsed-honesty-footer { margin-top: 18px; font-size: 11.5px; color: var(--mid); font-style: italic; line-height: 1.5; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
 .quadrant .empty { font-size: 12px; color: var(--dim); font-style: italic; }
-.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.read-chip {
-  font-size: 11px; padding: 6px 11px; border-radius: 6px;
-  background: rgba(106,223,217,0.06); border: 1px solid rgba(106,223,217,0.18);
-  color: var(--light); letter-spacing: 0.01em;
-  cursor: pointer;
-  transition: all .25s;
-  font-family: var(--sans);
-}
-.read-chip:hover, .read-chip.pinned, .read-chip:focus-visible { background: rgba(106,223,217,0.14); border-color: rgba(106,223,217,0.42); outline: none; }
-.read-chip.systems { background: rgba(194,47,205,0.06); border-color: rgba(194,47,205,0.18); }
-.read-chip.systems:hover, .read-chip.systems:focus-visible { background: rgba(194,47,205,0.14); border-color: rgba(194,47,205,0.42); }
 .read-value-large {
   font-family: var(--serif); font-weight: 300;
   font-size: 36px; line-height: 1; color: var(--gold);
@@ -1925,7 +1913,7 @@ window.__userDataPromise = (function() {
   <details class="input-collapse">
     <summary class="input-collapse-summary">
       <span class="input-collapse-icon" aria-hidden="true"></span>
-      <span class="input-collapse-text">Read the practitioner's words</span>
+      <span class="input-collapse-text" data-baseline-reading-label>Biofield reading 0</span>
     </summary>
     <div class="input-panel-wrap" id="input-panel-wrap">
       <div class="field-panel">
@@ -2008,7 +1996,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.6.1';
+const VERSION = '1.6.2';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3524,26 +3512,11 @@ function renderParsedReading(parsed) {
     } else {
       const body = el('div', { class: 'frame-body', text: frame.body });
       block.appendChild(body);
-      if (fid === 'chakras' && parsed.chakras.length) {
-        const row = el('div', { class: 'chip-row' });
-        parsed.chakras.forEach(c => {
-          const chip = el('button', { class: 'read-chip', type: 'button', text: c.phrase });
-          chip.addEventListener('keydown', (e) => handleChipKeyNav(e, chip));
-          chip.addEventListener('click', () => chip.classList.toggle('pinned'));
-          row.appendChild(chip);
-        });
-        block.appendChild(row);
-      }
-      if (fid === 'organs' && parsed.organs.length) {
-        const row = el('div', { class: 'chip-row' });
-        parsed.organs.forEach(s => {
-          const chip = el('button', { class: 'read-chip systems', type: 'button', text: s.phrase });
-          chip.addEventListener('keydown', (e) => handleChipKeyNav(e, chip));
-          chip.addEventListener('click', () => chip.classList.toggle('pinned'));
-          row.appendChild(chip);
-        });
-        block.appendChild(row);
-      }
+      // v1.6.2: Removed the .chip-row pill UI under chakras + organs frames.
+      // The pills toggled a .pinned class on click but nothing else listened
+      // for it, so they read as interactive while doing nothing. The
+      // parsed.chakras / parsed.organs arrays remain populated for use by
+      // the snapshot delta pipeline.
     }
     framesWrap.appendChild(block);
   });
@@ -3582,15 +3555,7 @@ function renderParsedReading(parsed) {
   // No auto-focus on initial render; the Input is pre-loaded, no save event to announce.
 }
 
-function handleChipKeyNav(e, chip) {
-  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-  e.preventDefault();
-  const allChips = Array.from(document.querySelectorAll('.parsed-reading .read-chip'));
-  const idx = allChips.indexOf(chip);
-  if (idx < 0) return;
-  const nextIdx = (idx + (e.key === 'ArrowRight' ? 1 : -1) + allChips.length) % allChips.length;
-  allChips[nextIdx].focus();
-}
+// v1.6.2: handleChipKeyNav removed along with the .read-chip pill UI.
 
 function highlightLine(idx, on) {
   const line = document.querySelector('.raw-line[data-line-idx="' + idx + '"]');
@@ -4588,8 +4553,8 @@ function buildSessionReadingCapture(slug) {
   const ta = el('textarea', {
     class: 'srcap-textarea',
     rows: '6',
-    placeholder: 'Paste the practitioner\'s words. Or write what you noticed in your own field afterward.',
-    'aria-label': 'Reading after ' + slug
+    placeholder: 'Paste the new reading text. Or write what you noticed in your own field afterward.',
+    'aria-label': 'Biofield reading after ' + slug
   });
   const meta = el('div', { class: 'srcap-meta' });
   const saveBtn = el('button', { class: 'btn btn-primary srcap-save', type: 'button', text: 'Save reading' });
@@ -4609,10 +4574,16 @@ function buildSessionReadingCapture(slug) {
       ta.value = stored.text;
       meta.textContent = 'Saved · ' + new Date(stored.ts).toLocaleString();
       clearBtn.hidden = false;
+      // Saved state: summary shows the session + capture date so the user
+      // can identify this reading at a glance later.
+      const heading = (SESSIONS[slug] && SESSIONS[slug].heading) || slug;
+      label.textContent = 'Biofield reading · after ' + heading + ' · ' + new Date(stored.ts).toLocaleDateString();
     } else {
       ta.value = '';
       meta.textContent = '';
       clearBtn.hidden = true;
+      // Unsaved state: stay generic — no capture date is known yet.
+      label.textContent = 'Capture a fresh Biofield reading after this session (optional)';
     }
   }
   saveBtn.addEventListener('click', () => {
@@ -4634,13 +4605,13 @@ function buildSessionReadingCapture(slug) {
 function buildWeekReadingCapture(week) {
   const wrap = el('div', { class: 'week-reading-capture' });
   const det = el('details');
-  det.appendChild(el('summary', { class: 'wrcap-summary', text: 'Add Week ' + week + ' Biofield reading (after the week)' }));
+  det.appendChild(el('summary', { class: 'wrcap-summary', text: 'Add Biofield reading ' + week }));
   const inner = el('div', { class: 'wrcap-inner' });
   const ta = el('textarea', {
     class: 'wrcap-textarea',
     rows: '8',
-    placeholder: 'Paste the new reading from your practitioner. Same shape as the original Input. We\'ll route reflections from this point forward through it.',
-    'aria-label': 'Week ' + week + ' Biofield reading'
+    placeholder: 'Paste the new reading text. Same shape as the original Input. We\'ll route reflections from this point forward through it.',
+    'aria-label': 'Biofield reading ' + week
   });
   const meta = el('div', { class: 'wrcap-meta' });
   const actions = el('div', { class: 'wrcap-actions' });
@@ -4661,12 +4632,12 @@ function buildWeekReadingCapture(week) {
       ta.value = stored.text;
       meta.textContent = 'Saved · ' + new Date(stored.ts).toLocaleString();
       clearBtn.hidden = false;
-      summary.textContent = 'Week ' + week + ' reading captured · ' + new Date(stored.ts).toLocaleDateString();
+      summary.textContent = 'Biofield reading ' + week + ' · ' + new Date(stored.ts).toLocaleDateString();
     } else {
       ta.value = '';
       meta.textContent = '';
       clearBtn.hidden = true;
-      summary.textContent = 'Add Week ' + week + ' Biofield reading (after the week)';
+      summary.textContent = 'Add Biofield reading ' + week;
     }
   }
   saveBtn.addEventListener('click', () => {
@@ -5176,6 +5147,9 @@ function applyUserToDOM() {
   document.querySelectorAll('[data-user-name]').forEach(el => { el.textContent = name; });
   document.querySelectorAll('[data-user-possessive]').forEach(el => { el.textContent = possessive; });
   document.querySelectorAll('[data-user-period]').forEach(el => { el.textContent = period; });
+  // Baseline reading label on the Input section's collapse pill (v1.6.2)
+  const baselineLabel = period ? ('Biofield reading 0 · ' + period) : 'Biofield reading 0';
+  document.querySelectorAll('[data-baseline-reading-label]').forEach(el => { el.textContent = baselineLabel; });
   const v = document.getElementById('footer-version');
   if (v) v.textContent = 'v' + VERSION;
 }
