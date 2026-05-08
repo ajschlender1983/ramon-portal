@@ -1,10 +1,14 @@
 /**
- * Ramon Resolver — Cloudflare Worker
+ * Ramon Resolver — Cloudflare Worker (multi-user since v1.1.0)
  *
  * Two endpoints:
  *   POST /reflect  — single Claude call producing one per-session reflection
  *   POST /deepen   — chains 4 Claude calls (1 strategic-resolve + 3 EBI passes)
  *                    and returns the final synthesized text
+ *
+ * Each request payload includes `userName` (the user's display name). All
+ * system prompts are templated on this name. Falls back to "this user" if
+ * userName is missing or blank.
  *
  * Reads ANTHROPIC_API_KEY from a Worker secret (set via `wrangler secret put`).
  * Reads MODEL and ALLOWED_ORIGINS from wrangler.toml [vars].
@@ -157,11 +161,21 @@ const HUMANIZER_RULES = `LANGUAGE RULES, NON-NEGOTIABLE. These override any defa
 - Use plain copulas: "is", "are", "was". Avoid "serves as", "stands as", "represents", "embodies".
 - Vary sentence length naturally. Short. Then longer ones that take their time. Do not write three sentences of the same length in a row.`;
 
-const REFLECT_SYSTEM = `You are reflecting one SoundBed session for Ramon. You see his Biofield reading, this session's metadata (heading, subtitle, intention, why-this-for-you), where in the 30-day arc this falls, and his Before + After notes for THIS session.
+/* Prompts are templated on the user's display name. The client passes
+   `userName` in the payload; we substitute it into each prompt. Falls back to
+   "this user" if the client didn't pass one (older client or missing slug). */
+function nameOrFallback(userName) {
+  const n = (userName || '').trim();
+  return n || 'this user';
+}
 
-Write a single short reflection (90 to 140 words). Mirror what he wrote. Notice what shifted between Before and After. Honor the session's intention as the frame he was holding. Reference the Biofield reading only when his After note speaks to something the reading flagged.
+function REFLECT_SYSTEM(userName) {
+  const name = nameOrFallback(userName);
+  return `You are reflecting one SoundBed session for ${name}. You see their Biofield reading, this session's metadata (heading, subtitle, intention, why-this-for-you), where in the 30-day arc this falls, and their Before + After notes for THIS session.
 
-NEVER conclude. NEVER diagnose. NEVER claim energetic or medical insight. Do not repeat his words verbatim. Refract them.
+Write a single short reflection (90 to 140 words). Mirror what they wrote. Notice what shifted between Before and After. Honor the session's intention as the frame they were holding. Reference the Biofield reading only when the After note speaks to something the reading flagged.
+
+NEVER conclude. NEVER diagnose. NEVER claim energetic or medical insight. Do not repeat their words verbatim. Refract them.
 
 Voice: warm, specific, grounded. Short sentences mixed with one or two longer ones. No headers, no bullets.
 
@@ -170,8 +184,11 @@ Format: two short paragraphs. End with one open question. The question is open, 
 Principle, non-negotiable: we reflect, we never conclude.
 
 ${HUMANIZER_RULES}`;
+}
 
-const DEEPEN_RESOLVE_SYSTEM = `You are deepening a per-session reflection for Ramon, a SoundBed user.
+function DEEPEN_RESOLVE_SYSTEM(userName) {
+  const name = nameOrFallback(userName);
+  return `You are deepening a per-session reflection for ${name}, a SoundBed user.
 
 You will speak as TWO voices in turn:
 Voice A: Senior Somatic Experience Designer. The body is the source of truth. You see what the original reflection did not quite touch in the body.
@@ -185,24 +202,33 @@ Return strictly this JSON shape, with no surrounding prose:
 { "voiceA": "<= 80 words", "voiceB": "<= 80 words", "draft": "180-240 words" }
 
 ${HUMANIZER_RULES}`;
+}
 
-const DEEPEN_EBI_STRUCTURE_SYSTEM = `Run one EBI (Even Better If) pass on a deepening reflection draft for Ramon. Focus: structure, length, voice. What is working stays. What would be even better if structure were tightened, length right-sized to 180 to 240 words, and voice held warm and specific?
+function DEEPEN_EBI_STRUCTURE_SYSTEM(userName) {
+  const name = nameOrFallback(userName);
+  return `Run one EBI (Even Better If) pass on a deepening reflection draft for ${name}. Focus: structure, length, voice. What is working stays. What would be even better if structure were tightened, length right-sized to 180 to 240 words, and voice held warm and specific?
 
 Apply the highest-impact edits directly. Return ONLY the improved draft text. No preamble. No JSON. Same constraints (never conclude, never diagnose, ends with one open question).
 
 ${HUMANIZER_RULES}`;
+}
 
-const DEEPEN_EBI_RESONANCE_SYSTEM = `Run a second EBI pass on this deepening reflection. Focus: emotional resonance. Would Ramon's body recognize the words back? Does the reflection sound like something a thoughtful friend would say, not an algorithm?
+function DEEPEN_EBI_RESONANCE_SYSTEM(userName) {
+  const name = nameOrFallback(userName);
+  return `Run a second EBI pass on this deepening reflection. Focus: emotional resonance. Would ${name}'s body recognize the words back? Does the reflection sound like something a thoughtful friend would say, not an algorithm?
 
 Apply edits directly. Return ONLY the improved draft. Same constraints. Same length range. Ends with one open question.
 
 ${HUMANIZER_RULES}`;
+}
 
-const DEEPEN_EBI_HONESTY_SYSTEM = `Run a final EBI pass on this deepening reflection. Focus: the reflective contract. Cut anything that drifts toward conclusion, diagnosis, claim, or interpretation. If a sentence even gestures at "you are X" or "this means Y", rewrite it as a mirror or an open question.
+function DEEPEN_EBI_HONESTY_SYSTEM(_userName) {
+  return `Run a final EBI pass on this deepening reflection. Focus: the reflective contract. Cut anything that drifts toward conclusion, diagnosis, claim, or interpretation. If a sentence even gestures at "you are X" or "this means Y", rewrite it as a mirror or an open question.
 
 Return ONLY the final text. No preamble. Same constraints. 180 to 240 words. Ends with one open question.
 
 ${HUMANIZER_RULES}`;
+}
 
 /* ============================================================ Reflect — single call */
 
@@ -212,6 +238,7 @@ function buildReflectUser(payload) {
   const parsed = payload.biofieldParsed || {};
   const frames = parsed.frames || {};
   const frameLines = Object.keys(frames).map(k => '— ' + frames[k].label + ': ' + frames[k].body).join('\n');
+  const name = nameOrFallback(payload.userName);
 
   return [
 `SESSION
@@ -219,8 +246,8 @@ function buildReflectUser(payload) {
 - Subtitle: ${s.subtitle || ''}
 - Category: ${s.category || ''}
 - Artist: ${s.artist || ''}
-- Intention Ramon was holding: "${s.intention || ''}"
-- Why we picked this for him: ${s.why || ''}
+- Intention ${name} was holding: "${s.intention || ''}"
+- Why we picked this for them: ${s.why || ''}
 - Lede: ${s.lede || ''}`,
 
 `JOURNEY POSITION
@@ -228,10 +255,10 @@ function buildReflectUser(payload) {
 - Weeks completed so far: ${j.weeksCompleted ?? 0}
 - Sessions with at least one note: ${j.sessionsWithNoteCount ?? 0}/16`,
 
-`HIS BIOFIELD READING (frames mirrored from his practitioner)
+`THEIR BIOFIELD READING (frames mirrored from their practitioner)
 ${frameLines || '(not parsed)'}`,
 
-`HIS NOTES FOR THIS SESSION
+`THEIR NOTES FOR THIS SESSION
 Before: ${payload.before || '(empty)'}
 After:  ${payload.after  || '(empty)'}`,
 
@@ -241,9 +268,8 @@ After:  ${payload.after  || '(empty)'}`,
 
 async function reflectOne(env, payload) {
   return await callClaude(env, {
-    system: REFLECT_SYSTEM,
+    system: REFLECT_SYSTEM(payload.userName),
     max_tokens: 700,
-    temperature: 0.7,
     messages: [{ role: 'user', content: buildReflectUser(payload) }]
   });
 }
@@ -255,34 +281,30 @@ async function deepenChain(env, payload) {
 
   // Pass 1 — Strategic-resolve (two voices + initial deeper draft)
   const pass1Raw = await callClaude(env, {
-    system: DEEPEN_RESOLVE_SYSTEM,
+    system: DEEPEN_RESOLVE_SYSTEM(payload.userName),
     max_tokens: 1400,
-    temperature: 0.75,
     messages: [{ role: 'user', content: baseUser }]
   });
   const pass1Draft = extractDeepenDraft(pass1Raw);
 
   // Pass 2 — EBI structure
   const pass2 = await callClaude(env, {
-    system: DEEPEN_EBI_STRUCTURE_SYSTEM,
+    system: DEEPEN_EBI_STRUCTURE_SYSTEM(payload.userName),
     max_tokens: 900,
-    temperature: 0.6,
     messages: [{ role: 'user', content: 'Current draft:\n\n' + pass1Draft }]
   });
 
   // Pass 3 — EBI resonance
   const pass3 = await callClaude(env, {
-    system: DEEPEN_EBI_RESONANCE_SYSTEM,
+    system: DEEPEN_EBI_RESONANCE_SYSTEM(payload.userName),
     max_tokens: 900,
-    temperature: 0.6,
     messages: [{ role: 'user', content: 'Current draft:\n\n' + pass2 }]
   });
 
   // Pass 4 — EBI honesty (final)
   const pass4 = await callClaude(env, {
-    system: DEEPEN_EBI_HONESTY_SYSTEM,
+    system: DEEPEN_EBI_HONESTY_SYSTEM(payload.userName),
     max_tokens: 900,
-    temperature: 0.55,
     messages: [{ role: 'user', content: 'Current draft:\n\n' + pass3 }]
   });
 

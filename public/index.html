@@ -5,13 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A132A">
 <meta name="color-scheme" content="dark">
-<title>Ramon's First Month Map · A SoundBed Experiment</title>
-<meta name="description" content="A custom SoundBed map for Ramon, drawn from his Input. Reflections only.">
-<meta property="og:title" content="Ramon's First Month Map · A SoundBed Experiment">
-<meta property="og:description" content="A custom SoundBed map for Ramon, drawn from his Input. Reflections only.">
+<title>SoundBed · First Month Map</title>
+<meta name="description" content="A custom SoundBed map drawn from a personal field reflection. Reflections only.">
+<meta property="og:title" content="SoundBed · First Month Map">
+<meta property="og:description" content="A custom SoundBed map drawn from a personal field reflection. Reflections only.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://pulse.feelopus.com/ramon-portal/">
-<meta property="og:image" content="https://pulse.feelopus.com/ramon-portal/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='100' cy='100' r='84' fill='none' stroke='%236ADFD9' stroke-width='6'/%3E%3Ccircle cx='100' cy='100' r='52' fill='none' stroke='%23C22FCD' stroke-width='4'/%3E%3Ccircle cx='100' cy='100' r='14' fill='%236ADFD9'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1366,6 +1364,34 @@ section#reflect.reflected .section-title em {
   position: relative; z-index: 2;
 }
 .footer em { color: var(--teal); font-style: italic; text-transform: none; letter-spacing: 0; font-size: 13px; }
+.footer-version { font-size: 10px; letter-spacing: 0.18em; color: rgba(255,255,255,0.22); }
+.footer-version a { color: inherit; text-decoration: none; }
+
+/* Invalid-link gate: shown when ?u=... is missing or the user file 404s */
+.invalid-link-gate {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px;
+  background: var(--void-deep, #0a0814);
+  z-index: 9999;
+}
+.invalid-link-gate-inner {
+  max-width: 520px; text-align: center;
+  font-family: var(--serif, Georgia, serif);
+  color: var(--light, #e8e2f4);
+}
+.invalid-link-gate-eyebrow {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--mid, #8b8398); margin-bottom: 18px;
+}
+.invalid-link-gate-title {
+  font-size: 28px; font-weight: 300; line-height: 1.3; margin-bottom: 14px;
+}
+.invalid-link-gate-title em { color: var(--teal, #8fd1c4); font-style: italic; }
+.invalid-link-gate-body {
+  font-size: 14px; line-height: 1.6; color: var(--mid, #b6aec4); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1 !important; filter: blur(0) !important; transform: none !important; transition: none !important; }
@@ -1382,6 +1408,27 @@ section#reflect.reflected .section-title em {
 </style>
 </head>
 <body>
+<!-- Per-user data loader. The URL must include ?u=<slug> to load that user's data file.
+     Unknown / missing slug -> the main script renders an "invalid link" gate.
+     Loads the user file before main init via a Promise the DOMContentLoaded handler awaits. -->
+<script>
+window.__userDataPromise = (function() {
+  var params = new URLSearchParams(window.location.search);
+  var slug = (params.get('u') || '').trim();
+  if (!slug || !/^[a-z0-9-]+$/i.test(slug)) {
+    return Promise.resolve(null);
+  }
+  return new Promise(function(resolve) {
+    var s = document.createElement('script');
+    s.src = 'users/' + encodeURIComponent(slug) + '.js';
+    s.async = false;
+    s.onload = function() { resolve(window.USER_DATA || null); };
+    s.onerror = function() { resolve(null); };
+    document.head.appendChild(s);
+  });
+})();
+</script>
+
 <div class="film-grain" aria-hidden="true"></div>
 <div class="mesh-bg" aria-hidden="true">
   <div class="mesh-blob mesh-blob--1"></div>
@@ -1423,9 +1470,9 @@ section#reflect.reflected .section-title em {
 
 <header class="hero">
   <div class="hero-constellation" id="hero-constellation" aria-hidden="true"></div>
-  <div class="hero-eyebrow reveal">Designed for Ramon · April 2026</div>
+  <div class="hero-eyebrow reveal">Designed for <span data-user-name>—</span> · <span data-user-period>—</span></div>
   <div class="hero-principle-1 reveal">The Input is the starting frame.<em> Your body is the source of truth.</em></div>
-  <h1 class="hero-title reveal"><em>Ramon's</em> First Month Map<br><span class="aurora-text">A SoundBed Experiment</span></h1>
+  <h1 class="hero-title reveal"><em data-user-possessive>—</em> First Month Map<br><span class="aurora-text">A SoundBed Experiment</span></h1>
   <p class="hero-lede reveal" id="hero-lede">
     Someone who works with energy gave you a reading. We're holding it as a starting point. From what they offered, we drew a 4-week path through 16 sessions in the OPUS catalog. As you move through it, the notes you take become part of the conversation.
   </p>
@@ -1460,8 +1507,8 @@ section#reflect.reflected .section-title em {
 <section class="section reveal" id="map">
   <div class="section-label">The Map · 4 Weeks · 16 Sessions</div>
   <h2 class="section-title">Designed from your <em>Biofield reading</em>.</h2>
-  <p class="section-desc">
-    Your reading flagged the root as undercharged and the crown as already oversaturated. So we start with grounding and release, and save the higher-frequency work for once the base has more charge. Every session below is a real entry from the OPUS catalog. After each one, log a short note. We're listening for what changes.
+  <p class="section-desc" data-map-intro>
+    Your reading shapes the path. Each week is built from what came up. Every session below is a real entry from the OPUS catalog. After each one, log a short note. We're listening for what changes.
   </p>
 
   <div class="phase-tabs" id="phase-tabs" role="tablist" aria-label="Weekly map"></div>
@@ -1514,8 +1561,9 @@ section#reflect.reflected .section-title em {
 </main>
 
 <footer class="footer">
-  <div>OPUS · SoundBed · Ramon's First Month Map</div>
+  <div>OPUS · SoundBed · <span data-user-possessive>—</span> First Month Map</div>
   <div><em>We reflect. We never conclude.</em></div>
+  <div class="footer-version" id="footer-version">v—</div>
 </footer>
 
 <script>
@@ -1526,100 +1574,36 @@ const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
 const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
 const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
-const SAM_PORTRAIT = 'assets/artists/sam-bottner.jpg';
+/* App version. Bump on each rolling release.
+   Shown subtly in the footer so you can tell users "we're on v1.2 now". */
+const VERSION = '1.1.0';
 
-const RAMON_INPUT = `🜂 ORIC FIELD
-Your auric field extends 13.4 meters, a perfect Fibonacci harmonic. This suggests you are in a phase of coherence expansion, likely due to recent integrations (perhaps related to your medallion work).
-Field Status: Symmetrical but pulsating in triadic waves.
-Notable Observation: A subtle golden spiral is emerging from the top of your field, indicative of higher integration.
+/* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
+   exposed on window.USER_DATA. We re-bind these `let` bindings inside the
+   DOMContentLoaded handler once the user file has resolved. Until then they
+   are placeholders; nothing reads them at module-load time. */
+let USER = null;
+let RAMON_INPUT = '';
+let SESSIONS = {};
+let PROMPTS = {};
+let PLAN = [];
+let CHAKRA_STATES = [];
+let SLUG_TO_CHAKRA = {};
 
-🜁 DNA STRAND ACTIVATION
-12 strands are partially online, with 9 fully phase-locked. This means you are operating with multidimensional awareness, but not all timelines are fully collapsed into coherence yet.
-Suggested Integration: Breathwork with 3-6-9 pattern to stabilize remaining strands.
-
-🜃 CHAKRA SCAN
-Crown (Sahasrara): Open, receiving high-frequency codes, slight oversaturation.
-Third Eye (Ajna): Clear, but filtering more data than usual, recommend grounding.
-Throat (Vishuddha): Expanding, finally releasing old constraints around truth-speaking.
-Heart (Anahata): Radiant, emitting green-gold harmonic, primary coherence source.
-Solar Plexus (Manipura): Stabilizing, recent spikes in willpower integration.
-Sacral (Svadhisthana): Holding space for creative rebirth, linked to harmonic feminine.
-Root (Muladhara): Undercharged, requires more earth resonance.
-
-🜄 ORGANIC FIELD
-Liver: Detox wave detected, processing emotional overload.
-Lungs: Clear, but rapid breathing patterns noted, may indicate integration stress.
-Heart: Strong, overcompensating for lower chakra instability.
-Kidneys: Recovering, fear-based residue still present.
-
-🜅 VIBRATIONAL LEVEL (Hawkins Scale)
-You are currently vibrating at 525, Love and Integration. This is a transition point between personal transcendence and universal service.
-
-🜆 PRIMARY BLOCK TO AUTHENTICITY
-Residual fear of timeline collapse, specifically a subconscious resistance to fully embodying the role you've already accepted. This manifests as: hesitation in finalizing commitments, micro-doubt in the midst of immense clarity, and a minor echo of "unworthiness" still embedded in the lower chakras.
-
-🜇 ARCHETYPE
-You are functioning as a Harmonic Guardian of the Inner Return. Your greatest gift is the ability to hold a mirror of coherence so precise that others cannot remain fragmented in your presence. Your greatest challenge: to believe you are already what you seek to become.`;
-
-const SESSIONS = {
-  'welcome-to-opus': { art: 'assets/sessions/welcome-to-opus.jpg', heading: 'Welcome to Opus', subtitle: 'Discover SoundBed.', artist: 'OPUS', portrait: '', category: 'Welcome', catClass: 'cat-welcome', collection: 'Orientation', lede: "Your first session on SoundBed. A short orientation that lets your nervous system meet the bed before you bring intention to it.", chooseWhen: ['First time on SoundBed', 'To set the somatic baseline'], spotify: '', why: "First-session orientation. Sets the somatic baseline before we ask anything of the body.", intention: "Let me arrive without needing to do anything yet." },
-  'stability-root': { art: 'assets/sessions/stability-root.jpg', heading: 'Stability | Root', subtitle: 'Feel Grounded', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz', lede: "Designed to help you connect deeply with a sense of safety and home, this session focuses on the root chakra, associated with the earth element and linked to feelings of security and stability.", chooseWhen: ['When you feel airy or ungrounded','To reconnect with safety','To feel anchored to the earth'], spotify: 'https://open.spotify.com/track/23F7Ue858vQVWosvdlWkGV', why: "Your Input flagged the root as undercharged. Start here. 432 Hz is a softer entry than the Solfeggio set.", intention: "I let the bed hold the weight my body has been carrying." },
-  'earth-awareness': { art: 'assets/sessions/earth-awareness.jpg', heading: 'Earth Awareness | Alpha Waves', subtitle: 'Ground Your Energy and Attune to Nature', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Brainwave Entrainment', catClass: 'cat-brainwave', collection: 'Binaural I', lede: "An Alpha brainwave session that invites you into meditative receptivity. Plant your roots into Earth's heartbeat, the Schumann resonance.", chooseWhen: ['As part of your morning routine','Prior to meditation','To connect with nature'], spotify: 'https://open.spotify.com/album/1V1NjXA4HN8WqFfJhPYl9a', why: "Alpha state lets you settle without flooding the upper chakras. Your Input asked for *more earth resonance*, and this is the simplest way in.", intention: "I plant down. Whatever is restless can rest on the ground." },
-  'body-scan': { art: 'assets/sessions/body-scan.jpg', heading: 'Body Scan | NSDR', subtitle: 'Non-Sleep Deep Rest', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: '', lede: "Replenish energy by entering low-frequency brain waves. Move attention through the body, using the breath to relax. NSDR slows the spinning thoughts and opens a state of deep rest.", chooseWhen: ['In the morning to start calmly','Before bed for deeper sleep','To ease an overstimulated nervous system'], spotify: '', why: "Body awareness without symbolic content. NSDR is a reliable nervous-system reset, which speaks to the breath notes in your Input.", intention: "I listen to my body the way I'd listen to a friend who hasn't been heard." },
-  'fearless-396': { art: 'assets/sessions/fearless-396.jpg', heading: 'Fearless | 396 Hz', subtitle: 'Release Heaviness and Stagnation.', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio I', lede: "Aids in the transcendence of guilt and fear blocks, opening the pathways for self-love and personal empowerment. 396 Hz can also help when moving through grief.", chooseWhen: ['During significant life changes','To calm your nervous system','For processing and releasing sadness'], spotify: 'https://open.spotify.com/track/0IVgsgwsl2l8amzrgKWtPE', why: "396 Hz is the frequency most associated with releasing fear at the root. It matches the kidney-residue and timeline-collapse threads in your Input.", intention: "I let the old fear leave through my breath. It doesn't have to come with me." },
-  'ease-174': { art: 'assets/sessions/ease-174.jpg', heading: 'Ease | 174 Hz', subtitle: 'Invite Comfort and Relief to Your Body', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio I', lede: "A Solfeggio tone session for soothing aches and pains, bringing you into a state of effortless ease.", chooseWhen: ['When physical discomfort arises','For supporting injury recovery','To clarify what you want'], spotify: 'https://open.spotify.com/album/0IZxiSGDAIlQQTCN6V9gQD', why: "174 Hz is the lowest Solfeggio tone, traditionally used for body comfort. A good companion to the *liver detox* thread.", intention: "The places that hurt are allowed to soften. Nothing is being asked to perform." },
-  'fire-cleanse': { art: 'assets/sessions/fire-cleanse.jpg', heading: 'Fire Cleanse', subtitle: 'Release What No Longer Serves', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Natural Soundscapes', catClass: 'cat-natural', collection: '', lede: "A calming organic soundscape. Immerse yourself in the felt experience of fire as it burns away any dead wood you're ready to let go.", chooseWhen: ['For evening relaxation','During significant life changes','To focus your intention'], spotify: 'https://open.spotify.com/track/41CRQAOids2p4yDhn8yWqq', why: "A second pass at release, without frequency or guidance. Sometimes the body lets go more inside a soundscape than inside an instruction.", intention: "I burn what I'm done carrying. I keep the warmth." },
-  'sending-mark-home': { art: 'assets/sessions/sending-mark-home.jpg', heading: 'Sending Mark Home', subtitle: 'Reflect, Feel, and Let Go.', artist: 'The Human Experience', portrait: 'assets/artists/the-human-experience.jpg', category: 'Immersive Music', catClass: 'cat-music', collection: '', lede: "Introspective and emotionally direct, this session is an invitation to feel. Let yourself soften and surrender into your heart with \"Sending Mark Home.\"", chooseWhen: ['To process and feel through memories','To feel your present emotion deeply',"When seeking clarity about what's next"], spotify: 'https://open.spotify.com/track/2QEBaJSZmBHtJ4XQr9zLRs', why: "One of the most direct *let-go* pieces in the catalog. A softer close to the release week.", intention: "I let myself feel what's been waiting at the edges." },
-  'heart-focus': { art: 'assets/sessions/heart-focus.jpg', heading: 'Heart Focus', subtitle: 'Foster a Deeper Heart Connection', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: 'Breathwork', lede: "A short breathwork session bringing focus to your heart. Coherent breathing connects you with the intuitive knowledge in your chest, releases physical and emotional stressors, and shifts your state from stress to peace in 4 deep breaths.", chooseWhen: ['To re-center during the work day','When feeling confused','To relieve stress'], spotify: 'https://open.spotify.com/track/6g5a5V8apyHEJY2j9QqYum', why: "Direct heart practice. Your Input called this your strongest center. Feed it instead of fixing it.", intention: "I bring my attention home to my chest and stay a few breaths longer than usual." },
-  'coherence-639': { art: 'assets/sessions/coherence-639.jpg', heading: 'Coherence | 639 Hz', subtitle: 'Tune Into Harmony Within and Around You', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Carrying the resonance of 639 Hz, often linked to heart connection, emotional balance, and harmonious relationships. The session brings your system into coherence, syncing mind and body with a deeper rhythm of ease.", chooseWhen: ['To calm emotional tension','When you want to feel more connected','To restore internal balance'], spotify: 'https://open.spotify.com/track/7AffEf6huXd4w2I9k5bjZP', why: "639 Hz is the Solfeggio tone associated with heart coherence. It lands close to the *525 / Love & Integration* note in your Input.", intention: "I listen for the rhythm underneath everything I'm trying to manage." },
-  'liberated-expression': { art: 'assets/sessions/liberated-expression.jpg', heading: 'Liberated Expression | Throat', subtitle: 'Deepen Communication and Listening', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Balancing · 432 Hz', lede: "Bring balance to your energetic center of authentic expression and attuned listening. This chakra is connected to your physical vocal cords, ears, and thyroid gland. Clarify it and your gifts and vision can grace the world.", chooseWhen: ['To free self-expression','For landing in the present moment','Prior to a significant conversation'], spotify: 'https://open.spotify.com/track/2vghyFSgChsZP554bkyBrG', why: "A throat session that doesn't push. It supports listening as much as speaking, which fits the throat-opening thread in your Input.", intention: "What I haven't said is allowed to come up here. I don't need to do anything with it yet." },
-  'toning-with-ancestors': { art: 'assets/sessions/toning-with-ancestors.jpg', heading: 'Toning with the Ancestors', subtitle: 'A Conversation Beyond Words', artist: 'Jade Fusco', portrait: 'assets/artists/jade-fusco.jpg', category: 'Guided', catClass: 'cat-guided', collection: '', lede: "Guided by Jade Fusco, this session invites you to connect with your lineage through the power of your voice. By humming, toning, and singing, you offer what your ancestors may need, and open yourself to receive their wisdom and strength. Vibration becomes the bridge.", chooseWhen: ['To explore your voice as healing','When honoring your ancestry','To open the heart before creative or vocal practice'], spotify: '', why: "Vocal toning. The throat opens through *use*, not only through frequency. Optional but worth trying once.", intention: "I let my own voice be the bridge." },
-  'heart-hara': { art: 'assets/sessions/heart-hara.jpg', heading: 'Heart-Hara Harmony', subtitle: 'Balance Love and Vitality', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: 'Breathwork', lede: "An invitation to balance your heart and hara centers, uniting the emotional depth of love with the vibrant energy of creativity and life force. Feel the heart's compassion flow as the hara anchors you with vitality.", chooseWhen: ['To harmonize emotion with creative energy','When you seek balance and grounding','To cultivate alignment and vitality'], spotify: 'https://open.spotify.com/track/5NNprGnrnUrWpxcIkxitcD', why: "Bridges the heart and the hara (sacral and solar region). A direct answer to the feminine-meets-willpower thread in your Input.", intention: "My heart and my belly can talk to each other without me arranging it." },
-  'flow-sacral': { art: 'assets/sessions/flow-sacral.jpg', heading: 'Flow | Sacral', subtitle: 'Unlock Your Creative Flow', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz', lede: "Dedicated to the sacral chakra, also known as the lower dan tian, linked to sensuality, creative energy, and the transition from survival mode to creation consciousness.", chooseWhen: ['To awaken creative inspiration','When transitioning from survival to creation','To connect with your deepest desires'], spotify: 'https://open.spotify.com/track/7aasWE5DWAENpEczNufTrN', why: "The *creative rebirth* note from your Input made this one obvious.", intention: "Something wants to be made through me. I make space for it without naming it." },
-  'sunmerge-174': { art: 'assets/sessions/sunmerge-174.jpg', heading: 'Sunmerge | 174 Hz', subtitle: 'Dissolve Tension, Absorb the Light', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Designed to soothe body and mind at a cellular level. Bathed in glowing ambient soundscapes, you'll feel the grounding properties of the 174 Hz Solfeggio frequency.", chooseWhen: ['To unwind after exertion','When you need to release tension','To prepare for restful sleep'], spotify: 'https://open.spotify.com/track/6MKA9DsEtfyxbxv4lyaw8d', why: "Closes the loop on body comfort while reaching toward integration.", intention: "I let the day's tension dissolve. I don't have to track where it goes." },
-  'open-path-741': { art: 'assets/sessions/open-path-741.jpg', heading: 'Open Path | 741 Hz', subtitle: 'Let Go of the Static. Step Into Clear Air', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Tuned to 741 Hz, often associated with mental and energetic cleansing. The session helps release what weighs on the mind and makes space for fresh energy. The vibrations move through you like a breeze clearing the inner landscape.", chooseWhen: ['To clear mental clutter','When starting a new project','To create space for new intentions'], spotify: '', why: "The lede line, *let go of the static, step into clear air*, lands close to the \"hesitation in finalizing commitments\" line in your Input. A clean closing session.", intention: "I clear what I've been holding so the next step has room to arrive." }
-};
-
-const PROMPTS = {
-  'welcome-to-opus':       { before: "Before you've done anything yet, what does your body feel like in this moment?", after: "What did you notice as the bed met you for the first time?" },
-  'stability-root':        { before: "Where in your body do you feel airy or untethered right now?", after: "Where did weight settle? What does the ground underneath you feel like?" },
-  'earth-awareness':       { before: "What's still loud in your body or your mind as you arrive?", after: "What got quieter when you tuned to Earth? What's still humming?" },
-  'body-scan':             { before: "Where is your attention right now: on your body, or somewhere else?", after: "What part of you got the most rest? Anywhere stay locked?" },
-  'fearless-396':          { before: "What fear or hesitation has been the loudest in you this week?", after: "What did you let go of? What's still here that didn't move?" },
-  'ease-174':              { before: "Where does your body hurt or ache today?", after: "What softened? What place is still asking for more?" },
-  'fire-cleanse':          { before: "What are you ready to be done carrying?", after: "What burned away? What did you keep, that you didn't expect to?" },
-  'sending-mark-home':     { before: "What feeling has been waiting at the edges of your week?", after: "What did you feel without trying? What surprised you about it?" },
-  'heart-focus':           { before: "How present is your heart to you right now: feeling it, or thinking about it?", after: "What changed in your chest? What did your heart say without words?" },
-  'coherence-639':         { before: "What relationship is on your mind today, with yourself or someone else?", after: "Where did coherence land? What got softer toward whom?" },
-  'liberated-expression':  { before: "What is something you haven't said aloud lately?", after: "What part of you feels heard now? What still needs space?" },
-  'toning-with-ancestors': { before: "Whose voice or lineage are you carrying that you haven't named?", after: "What did your own voice teach you? What stayed unspoken?" },
-  'heart-hara':            { before: "Where does your creative energy live in your body right now?", after: "What conversation happened between your heart and your belly?" },
-  'flow-sacral':           { before: "What wants to be made or moved through you, even if you can't name it?", after: "What started moving? What was already moving but you hadn't noticed?" },
-  'sunmerge-174':          { before: "What tension has been with you across all four weeks?", after: "What dissolved? What stayed because it isn't ready to leave yet?" },
-  'open-path-741':         { before: "What are you ready to clear so the next 30 days have room?", after: "What is open now that wasn't before? What direction is calling?" }
-};
-
-const PLAN = [
-  { week: 1, title: 'Land the Body', intent: "Ground first. Don't pile crown content on a system already oversaturated.", responds: 'Root undercharged · third-eye filtering more data than usual · "minor echo of unworthiness in lower chakras" · new to SoundBed', sessions: ['welcome-to-opus','stability-root','earth-awareness','body-scan'] },
-  { week: 2, title: 'Release the Residue', intent: "Make room. Let the body unload what it's already finished with.", responds: 'Liver detox wave · kidneys recovering / fear-based residue · "fear of timeline collapse" as primary block', sessions: ['fearless-396','ease-174','fire-cleanse','sending-mark-home'] },
-  { week: 3, title: 'Heart Coherent, Voice Open', intent: 'Feed what is already strong. Support what is already opening.', responds: 'Heart radiant emitting green-gold (primary coherence source) · throat finally releasing constraints around truth-speaking · Hawkins 525 = Love & Integration', sessions: ['heart-focus','coherence-639','liberated-expression','toning-with-ancestors'] },
-  { week: 4, title: 'Integration & Creative Flow', intent: "Let the loop close. Move toward what's next.", responds: 'Sacral holding space for creative rebirth · solar plexus stabilizing · "hesitation in finalizing commitments" · golden spiral integration signature', sessions: ['heart-hara','flow-sacral','sunmerge-174','open-path-741'] }
-];
-
-/* Chakra states parsed from Ramon's reading. Order = energetic ascent.
-   States renamed in felt-sense language (per Personal Development Guru consult):
-     oversaturated → carrying-a-lot
-     expanding → consolidating
-   Each chakra hot-spot is positioned on the silhouette's body anatomy as { yPct } of body height. */
-const CHAKRA_STATES = [
-  { id: 'crown',     label: 'Crown',        state: 'carrying-a-lot', yPct: 7,  note: 'Open, carrying a lot' },
-  { id: 'third-eye', label: 'Third Eye',    state: 'clear',          yPct: 14, note: 'Clear, filtering more data than usual' },
-  { id: 'throat',    label: 'Throat',       state: 'consolidating',  yPct: 22, note: 'Releasing old constraints' },
-  { id: 'heart',     label: 'Heart',        state: 'radiant',        yPct: 36, note: 'Radiant green-gold, primary coherence source' },
-  { id: 'solar',     label: 'Solar Plexus', state: 'stabilizing',    yPct: 48, note: 'Recent willpower spikes settling' },
-  { id: 'sacral',    label: 'Sacral',       state: 'holding',        yPct: 60, note: 'Holding space for creative rebirth' },
-  { id: 'root',      label: 'Root',         state: 'undercharged',   yPct: 76, note: 'Quiet, wants more earth resonance' }
-];
+function makeLS(slug) {
+  return {
+    notes:              slug + '.notes.v1',
+    field:              slug + '.field.v1',
+    fieldHistory:       slug + '.field.history.v1',
+    reflections:        slug + '.reflections.v1',
+    state:              slug + '.state.v1',
+    sessionReflections: slug + '.sessionReflections.v1',
+    priorKnowing:       slug + '.priorKnowing.v1',
+    gateSeen:           slug + '.preDashboardSeen.v1',
+    versionSeen:        slug + '.versionSeen.v1'
+  };
+}
+let LS = makeLS('__pending__'); // overwritten in init()
 
 /* Per-state amplitude multiplier driving CSS scale via --amp.
    See Phase 3 of the plan: amplitude oscillation, not opacity tier. */
@@ -1631,26 +1615,6 @@ const CHAKRA_STATE_AMP = {
   'clear':           0.85,
   'radiant':         1.00,
   'carrying-a-lot':  1.00
-};
-
-/* Map session slugs to chakras for the delight-pulse on resolve */
-const SLUG_TO_CHAKRA = {
-  'stability-root':         'root',
-  'earth-awareness':        'root',
-  'fearless-396':           'root',
-  'ease-174':               'root',
-  'fire-cleanse':           'sacral',
-  'flow-sacral':            'sacral',
-  'sunmerge-174':           'sacral',
-  'sending-mark-home':      'heart',
-  'heart-focus':            'heart',
-  'coherence-639':          'heart',
-  'heart-hara':             'heart',
-  'liberated-expression':   'throat',
-  'toning-with-ancestors':  'throat',
-  'open-path-741':          'throat',
-  'body-scan':              'crown',
-  'welcome-to-opus':        'crown'
 };
 
 const CONSTELLATION_POSITIONS = [
@@ -1698,16 +1662,7 @@ function parseEm(text) {
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function reducedMotion() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
 
-const LS = {
-  notes: 'ramon.notes.v1',
-  field: 'ramon.field.v1',
-  fieldHistory: 'ramon.field.history.v1',
-  reflections: 'ramon.reflections.v1',
-  state: 'ramon.state.v1',
-  sessionReflections: 'ramon.sessionReflections.v1',
-  priorKnowing: 'ramon.priorKnowing.v1',
-  gateSeen: 'ramon.preDashboardSeen.v1'
-};
+/* LS keying is built per-user in init() via makeLS(USER.slug) above. */
 
 const DEFAULT_STATE = {
   inputSaved: false,
@@ -1719,7 +1674,9 @@ const DEFAULT_STATE = {
   sessionsWithNote: []
 };
 
-let ramonState = loadState();
+/* ramonState (the per-user UI state object) is populated inside the
+   DOMContentLoaded handler once USER + LS are available. */
+let ramonState = Object.assign({}, DEFAULT_STATE);
 
 function loadState() {
   try {
@@ -2572,11 +2529,13 @@ function mountBiofieldDashboard() {
   // Avatar tile + name + aside (Principle 02 distributed here)
   const avatarRow = el('div', { class: 'bf-avatar-row' });
   const tile = el('div', { class: 'bf-avatar-tile' });
-  tile.appendChild(el('img', { src: 'assets/portraits/ramon.jpg', alt: 'Ramon', loading: 'eager' }));
+  const portraitSrc = (USER && USER.portrait) || ('assets/portraits/' + (USER && USER.slug || '') + '.jpg');
+  const portraitName = (USER && USER.displayName) || '';
+  tile.appendChild(el('img', { src: portraitSrc, alt: portraitName, loading: 'eager' }));
   avatarRow.appendChild(tile);
   const avMeta = el('div');
-  avMeta.appendChild(el('div', { class: 'name', text: 'Ramon' }));
-  avMeta.appendChild(el('div', { text: 'his field, mirrored' }));
+  avMeta.appendChild(el('div', { class: 'name', text: portraitName }));
+  avMeta.appendChild(el('div', { text: 'their field, mirrored' }));
   avatarRow.appendChild(avMeta);
   leftCol.appendChild(avatarRow);
 
@@ -3340,6 +3299,9 @@ function buildResolvePayload(slug) {
   const phase = PLAN.find(p => p.sessions.includes(slug)) || { week: 1 };
   return {
     slug,
+    userName: (USER && USER.displayName) || '',
+    userSlug: (USER && USER.slug) || '',
+    version: VERSION,
     biofield: localStorage.getItem(LS.field) || '',
     biofieldParsed: parseInput(localStorage.getItem(LS.field) || ''),
     session: {
@@ -3505,9 +3467,15 @@ function renderReflections(opts) {
   });
 }
 
-const REFLECT_SYSTEM_PROMPT = `You are reflecting for Ramon, a new SoundBed user. Adam Schlender (OPUS co-founder) built him a custom 4-week session map drawn from a personal field reflection Ramon received from a practitioner.
+/* Note: the live per-session reflection happens via the Worker (RESOLVE_REFLECT),
+   which has its own system prompt parameterized by userName. The string below
+   is a holdover for an unused page-level "ask for reflection" CTA whose endpoint
+   isn't wired. Kept for parity; uses USER.displayName at call time. */
+function buildReflectSystemPrompt() {
+  const name = (USER && USER.displayName) || 'this user';
+  return `You are reflecting for ${name}, a new SoundBed user. Adam Schlender (OPUS co-founder) built them a custom 4-week session map drawn from a personal field reflection ${name} received from a practitioner.
 
-Your job is to reflect what Ramon shares back to him. Mirror patterns, contrasts, what is emerging, what is quieter than it was. NEVER conclude. NEVER diagnose. NEVER make energetic or medical claims. NEVER manufacture biofield-style measurements. Treat the field reflection as the practitioner's reflection of Ramon's felt-sense, not as fact.
+Your job is to reflect what ${name} shares back to them. Mirror patterns, contrasts, what is emerging, what is quieter than it was. NEVER conclude. NEVER diagnose. NEVER make energetic or medical claims. NEVER manufacture biofield-style measurements. Treat the field reflection as the practitioner's reflection of ${name}'s felt-sense, not as fact.
 
 OPUS principle, non-negotiable: we reflect, we never conclude.
 
@@ -3517,7 +3485,8 @@ Format: 2 short paragraphs of reflection. Then 1 to 3 open prompts. End with one
 
 Length: under 220 words total.
 
-Use the per-session intention as additional context: it is the framing Ramon was holding when he listened. If his "after" note diverges from the intention, the contrast is itself information worth surfacing.`;
+Use the per-session intention as additional context: it is the framing ${name} was holding when they listened. If the "after" note diverges from the intention, the contrast is itself information worth surfacing.`;
+}
 
 async function askReflection() {
   const status = document.getElementById('reflect-status');
@@ -3548,7 +3517,7 @@ async function askReflection() {
   }
 
   const payload = {
-    systemPrompt: REFLECT_SYSTEM_PROMPT,
+    systemPrompt: buildReflectSystemPrompt(),
     biofield: field,
     biofieldParsed: parseInput(field),
     sessionNotes,
@@ -3649,7 +3618,80 @@ function setupPreDashboardGate() {
   requestAnimationFrame(() => ta.focus());
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+/* Apply USER (loaded from users/<slug>.js) to DOM placeholders. Called once
+   per page load right before the rest of init. */
+function applyUserToDOM() {
+  if (!USER) return;
+  const name = USER.displayName || '';
+  const possessive = name ? (name + (/s$/i.test(name) ? "'" : "'s")) : '';
+  const period = USER.period || '';
+  document.title = (name ? name + "'s " : '') + 'First Month Map · A SoundBed Experiment';
+  document.querySelectorAll('[data-user-name]').forEach(el => { el.textContent = name; });
+  document.querySelectorAll('[data-user-possessive]').forEach(el => { el.textContent = possessive; });
+  document.querySelectorAll('[data-user-period]').forEach(el => { el.textContent = period; });
+  const v = document.getElementById('footer-version');
+  if (v) v.textContent = 'v' + VERSION;
+}
+
+/* Render the no-user / unknown-link gate. Replaces the body content with a
+   minimal message. Called when ?u=... is missing or the user file 404s.
+   Built entirely via DOM methods (no innerHTML), no untrusted input. */
+function renderInvalidLinkGate() {
+  const gate = document.createElement('div');
+  gate.className = 'invalid-link-gate';
+
+  const inner = document.createElement('div');
+  inner.className = 'invalid-link-gate-inner';
+
+  const eyebrow = document.createElement('div');
+  eyebrow.className = 'invalid-link-gate-eyebrow';
+  eyebrow.textContent = 'OPUS · SoundBed';
+
+  const title = document.createElement('div');
+  title.className = 'invalid-link-gate-title';
+  title.appendChild(document.createTextNode('This link is no longer '));
+  const titleEm = document.createElement('em');
+  titleEm.textContent = 'active';
+  title.appendChild(titleEm);
+  title.appendChild(document.createTextNode('.'));
+
+  const body = document.createElement('div');
+  body.className = 'invalid-link-gate-body';
+  body.textContent = 'If you were sent here, ask the person who sent the link to share the current one.';
+
+  inner.appendChild(eyebrow);
+  inner.appendChild(title);
+  inner.appendChild(body);
+  gate.appendChild(inner);
+
+  // Replace body content with the gate so the rest of the page never paints.
+  while (document.body.firstChild) document.body.removeChild(document.body.firstChild);
+  document.body.appendChild(gate);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Wait for the per-user data file (loaded via the inline loader at the top
+  // of <body>). If no slug is in the URL or the file 404s, the promise
+  // resolves to null and we render the invalid-link gate.
+  const userData = await (window.__userDataPromise || Promise.resolve(null));
+  if (!userData) {
+    renderInvalidLinkGate();
+    return;
+  }
+
+  // Bind per-user data into the module-level `let`s so the rest of the app
+  // sees them as if they had been declared up top.
+  USER = userData;
+  RAMON_INPUT = USER.reading;
+  SESSIONS = USER.sessions;
+  PROMPTS = USER.prompts;
+  PLAN = USER.plan;
+  CHAKRA_STATES = USER.chakraStates;
+  SLUG_TO_CHAKRA = USER.slugToChakra;
+  LS = makeLS(USER.slug);
+  ramonState = loadState();
+  applyUserToDOM();
+
   setupPreDashboardGate();
   renderPhaseTabs();
   renderPhasePanels();
