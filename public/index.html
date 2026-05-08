@@ -2748,13 +2748,13 @@ function findMatches(text, pattern) {
 }
 
 const FRAME_DEFS = [
-  { id: 'oric', label: 'Auric Field', rx: /(?:🜂\s*)?ORIC\s+FIELD\s*[:\-]?\s*/i, prefix: 'as offered:' },
-  { id: 'dna', label: 'DNA Strand Activation', rx: /(?:🜁\s*)?DNA\s+STRAND\s+ACTIVATION\s*[:\-]?\s*/i, prefix: 'as offered:' },
-  { id: 'chakras', label: 'Chakra Scan', rx: /(?:🜃\s*)?CHAKRA\s*(?:SCAN)?\s*[:\-]?\s*/i, prefix: 'you wrote:' },
-  { id: 'organs', label: 'Organic Field', rx: /(?:🜄\s*)?ORGANIC\s+FIELD\s*[:\-]?\s*/i, prefix: 'you wrote:' },
-  { id: 'level', label: 'Vibrational Level (Hawkins Scale)', rx: /(?:🜅\s*)?VIBRATIONAL\s+LEVEL[^\n]*\n?/i, prefix: 'as offered:' },
-  { id: 'block', label: 'Primary Block', rx: /(?:🜆\s*)?PRIMARY\s+BLOCK[^\n]*\n?/i, prefix: 'as offered:' },
-  { id: 'archetype', label: 'Archetype', rx: /(?:🜇\s*)?ARCHETYPE\s*[:\-]?\s*/i, prefix: 'as offered:' }
+  { id: 'oric',      label: 'Auric Field',                       rx: /(?:🜂\s*)?ORIC\s+FIELD\s*[:\-]?\s*/i },
+  { id: 'dna',       label: 'DNA Strand Activation',             rx: /(?:🜁\s*)?DNA\s+STRAND\s+ACTIVATION\s*[:\-]?\s*/i },
+  { id: 'chakras',   label: 'Chakra Scan',                       rx: /(?:🜃\s*)?CHAKRA\s*(?:SCAN)?\s*[:\-]?\s*/i },
+  { id: 'organs',    label: 'Organic Field',                     rx: /(?:🜄\s*)?ORGANIC\s+FIELD\s*[:\-]?\s*/i },
+  { id: 'level',     label: 'Vibrational Level (Hawkins Scale)', rx: /(?:🜅\s*)?VIBRATIONAL\s+LEVEL[^\n]*\n?/i },
+  { id: 'block',     label: 'Primary Block',                     rx: /(?:🜆\s*)?PRIMARY\s+BLOCK[^\n]*\n?/i },
+  { id: 'archetype', label: 'Archetype',                         rx: /(?:🜇\s*)?ARCHETYPE\s*[:\-]?\s*/i }
 ];
 
 function parseInput(text) {
@@ -2774,7 +2774,7 @@ function parseInput(text) {
     const next = anchors[i + 1];
     const bodyEnd = next ? next.start : text.length;
     const body = text.slice(a.headerEnd, bodyEnd).trim();
-    frames[a.def.id] = { label: a.def.label, prefix: a.def.prefix, body };
+    frames[a.def.id] = { label: a.def.label, body };
   });
 
   // Chip extraction for chakras and organs
