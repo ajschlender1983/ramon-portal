@@ -302,6 +302,24 @@ main { position: relative; z-index: 2; }
   aspect-ratio: 320 / 480;
   max-width: 380px;
 }
+/* Aura: 7 nested rings in 3 triadic breathing groups. Each group breathes
+   on the master 10.91s cycle with staggered phase offsets so the field reads
+   as layered (not flat). Reduced motion disables the animation. */
+.bf-aura-ring {
+  fill: none;
+  transform-origin: 160px 250px;
+  animation: bf-aura-breath 10910ms ease-in-out infinite;
+  animation-delay: 0s;
+}
+.bf-aura-ring--group-1 { animation-delay: -7273ms; }
+.bf-aura-ring--group-2 { animation-delay: -3637ms; }
+@keyframes bf-aura-breath {
+  0%, 100% { opacity: 0.55; transform: scale(1.000); }
+  50%      { opacity: 0.92; transform: scale(1.018); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-aura-ring { animation: none; opacity: 0.7; }
+}
 /* Vertical scales flanking the silhouette. Same height as silhouette so
    their y-axis aligns with the body anatomy. */
 .bf-silhouette-stage > svg.bf-ladder {
@@ -368,14 +386,9 @@ main { position: relative; z-index: 2; }
   .bf-silhouette-stage > svg.bf-ladder--solfeggio { width: 56px; }
   .bf-ladder-name { display: none; }
 }
-.bf-aura-band {
-  fill: none;
-  stroke-width: 1;
-  opacity: calc(0.85 + 0.15 * var(--breath-phase));
-  transform-origin: 50% 56%;
-  transform: scale(calc(1 + 0.02 * var(--breath-phase)));
-  transition: transform 200ms linear;
-}
+/* The 4-ellipse `.bf-aura-band` was replaced in v1.4.0 by the 7-ring system
+   above (`.bf-aura-ring`). The gold dashed boundary still sits outside that
+   stack as a labeled `bf-aura-boundary`. */
 /* Auric-extent boundary: the gold dashed ring. Radius driven by USER.auricMeters
    in buildSilhouetteSVG. The matching numeric label lives in the aura caption. */
 .bf-aura-boundary {
@@ -386,12 +399,40 @@ main { position: relative; z-index: 2; }
   filter: drop-shadow(0 0 4px rgba(255,215,100,0.35));
   opacity: calc(0.62 + 0.18 * var(--breath-phase));
 }
-.bf-fibonacci {
+/* Unifying golden axial line — quiet thread along the spine. Tells the eye
+   "these are one column" before reading any individual chakra. */
+.bf-chakra-axis {
+  stroke: rgba(255,215,100,0.10);
+  stroke-width: 0.6;
+  filter: drop-shadow(0 0 3px rgba(255,215,100,0.18));
+  opacity: calc(0.65 + 0.25 * var(--breath-pulse));
+}
+/* Golden spiral — replaces the static .bf-fibonacci with data-driven
+   segments. Each segment picks up the chakra-state character of its
+   destination. */
+.bf-spiral-seg {
   fill: none;
-  stroke: rgba(255,215,100,0.55);
+  stroke: rgba(255,215,100,0.78);
   stroke-width: 1;
-  opacity: calc(0.55 + 0.25 * var(--breath-pulse));
-  filter: drop-shadow(0 0 6px rgba(255,215,100,0.35));
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(255,215,100,0.45));
+  opacity: calc(0.70 + 0.18 * var(--breath-pulse));
+}
+.bf-spiral-seg--consolidating { stroke-dasharray: 4 2; }
+.bf-spiral-seg--clear { stroke-width: 1.4; }
+.bf-spiral-seg--carrying-a-lot { /* bow handled in path */ }
+.bf-spiral-seg--exit { stroke-width: 1.2; }
+.bf-spiral-terminal-ring {
+  stroke: rgba(255,215,100,0.78);
+  stroke-width: 0.6;
+  fill: none;
+}
+.bf-spiral-terminal-core {
+  fill: rgba(255,215,100,0.95);
+  filter: drop-shadow(0 0 4px rgba(255,215,100,0.65));
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-chakra-axis, .bf-spiral-seg { opacity: 0.7; }
 }
 .bf-body {
   fill: url(#bf-body-grad);
@@ -409,14 +450,21 @@ main { position: relative; z-index: 2; }
   /* No size scaling — halo radius is data-driven via the `r` attribute.
      Breath modulates halo opacity instead. */
 }
-.bf-chakra-spot circle.bf-chakra-core { transition: fill 400ms ease; }
-.bf-chakra-spot[data-id="root"]      circle.bf-chakra-core { fill: var(--red); }
-.bf-chakra-spot[data-id="sacral"]    circle.bf-chakra-core { fill: var(--orange); }
-.bf-chakra-spot[data-id="solar"]     circle.bf-chakra-core { fill: var(--gold); }
-.bf-chakra-spot[data-id="heart"]     circle.bf-chakra-core { fill: var(--green); }
-.bf-chakra-spot[data-id="throat"]    circle.bf-chakra-core { fill: var(--teal); }
-.bf-chakra-spot[data-id="third-eye"] circle.bf-chakra-core { fill: var(--accent-bright); }
-.bf-chakra-spot[data-id="crown"]     circle.bf-chakra-core { fill: var(--magenta); }
+/* Per-chakra hue var so cores AND rings pick up the same color via a single rule */
+.bf-chakra-spot[data-id="root"]      { --hue: var(--red); }
+.bf-chakra-spot[data-id="sacral"]    { --hue: var(--orange); }
+.bf-chakra-spot[data-id="solar"]     { --hue: var(--gold); }
+.bf-chakra-spot[data-id="heart"]     { --hue: var(--green); }
+.bf-chakra-spot[data-id="throat"]    { --hue: var(--teal); }
+.bf-chakra-spot[data-id="third-eye"] { --hue: var(--accent-bright); }
+.bf-chakra-spot[data-id="crown"]     { --hue: var(--magenta); }
+.bf-chakra-spot circle.bf-chakra-core { fill: var(--hue); transition: fill 400ms ease; }
+.bf-chakra-spot circle.bf-chakra-glow { fill: var(--hue); }
+/* Joy-Spark mini-nucleus rings: count is data-driven, color follows --hue.
+   Innermost ring picks up gold when amp ≥ 0.85 (threshold activation). */
+.bf-chakra-spot .bf-chakra-ring { stroke: var(--hue); }
+.bf-chakra-spot .bf-chakra-ring--gold { stroke: rgba(255,215,100,0.85); }
+.bf-chakra-spot .bf-chakra-ring--dashed { stroke-dasharray: 2 3; }
 .bf-chakra-glow {
   filter: blur(4px);
   /* Breath-coupled opacity (size is static from data) */
@@ -438,35 +486,27 @@ main { position: relative; z-index: 2; }
   100% { opacity: 0.55; filter: blur(4px); }
 }
 
-/* Block: damped wave on silhouette body + ghost + tether */
+/* Block: damped wave + ghost + knot. Recolored violet-grey (different
+   chromatic register from gold spiral and chakra hues — reads as shadow
+   weather, not hot signal). Wave amplitude decays as breath fills (the
+   literal felt-sense of breath dissolving the block). */
 .bf-block-wave {
   fill: none;
-  stroke: rgba(240,180,90,0.62);
-  stroke-width: 1.5;
+  stroke: rgba(123,111,168,0.55);
+  stroke-width: 1.4;
   stroke-linecap: round;
-  opacity: calc(0.78 + 0.18 * var(--breath-pulse));
+  opacity: calc(0.85 + 0.15 * (1 - var(--breath-pulse)));
 }
 .bf-block-ghost {
   fill: none;
-  stroke: rgba(123,111,168,0.32);
-  stroke-width: 0.8;
+  stroke: rgba(123,111,168,0.22);
+  stroke-width: 0.7;
   stroke-dasharray: 2 4;
 }
-.bf-block-tether {
-  fill: none;
-  stroke: rgba(123,111,168,0.4);
-  stroke-width: 0.6;
-  stroke-dasharray: 1 3;
-  opacity: calc(0.45 + 0.15 * var(--breath-pulse));
-}
 .bf-block-knot {
-  fill: rgba(86,76,112,0.55);
-  filter: blur(2px);
-  opacity: calc(0.65 + 0.20 * var(--breath-pulse));
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: rotate(calc(var(--breath-phase) * 6deg));
-  transition: transform 220ms linear;
+  fill: rgba(123,111,168,0.55);
+  filter: blur(1.5px);
+  opacity: calc(0.55 + 0.20 * (1 - var(--breath-pulse)));
 }
 
 /* Avatar tile (medium) + meta line below silhouette */
@@ -568,8 +608,12 @@ main { position: relative; z-index: 2; }
 .bf-helix .rail.solid { stroke: url(#dna-grad); }
 .bf-helix .rail.ghost { stroke: rgba(123,111,168,0.4); stroke-dasharray: 2 4; stroke-width: 1; }
 .bf-helix .rung { stroke: rgba(255,215,100,0.45); stroke-width: 1; stroke-linecap: round; }
-.bf-helix .rung.locked { stroke: rgba(255,215,100,0.80); opacity: calc(0.55 + 0.40 * var(--breath-pulse)); }
-.bf-helix .rung.partial { stroke: rgba(123,111,168,0.55); stroke-dasharray: 1 2; opacity: calc(0.30 + 0.25 * var(--breath-pulse)); }
+/* Locked rungs are STILL — polyvagal: stillness below, becoming above. */
+.bf-helix .rung.locked  { stroke: rgba(255,215,100,0.80); opacity: 0.85; }
+.bf-helix .rung.partial { stroke: rgba(123,111,168,0.55); stroke-dasharray: 1 2; opacity: 0.42; }
+/* Only the topmost consolidating rung breathes — the becoming edge. */
+.bf-helix .rung.partial.breathing { opacity: calc(0.32 + 0.30 * var(--breath-pulse)); }
+.bf-helix .rung.notyet  { stroke: rgba(123,111,168,0.40); stroke-width: 0.5; opacity: 0.18; }
 .bf-helix-meta {
   display: flex; flex-direction: column; gap: 8px;
   min-width: 0;
@@ -1708,7 +1752,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -2258,6 +2302,79 @@ const SILHOUETTE_PATH =
   'C 182 80 188 70 188 56 ' +
   'C 188 38 178 24 160 24 Z';
 
+/* Golden spiral built from chakra anchors. Renders into the silhouette SVG.
+   Each segment is a quadratic bezier that bows away from the spine on
+   alternating sides (a stylized golden-spiral approximation that visits
+   each chakra in order, then exits past the auric perimeter at -70° from
+   vertical — upper right). Per-segment style picks up the destination
+   chakra's state. */
+function buildGoldenSpiral(root) {
+  if (!Array.isArray(CHAKRA_STATES)) return;
+  // Find each chakra's position. Use yPct from CHAKRA_STATES to compute y.
+  const byId = {};
+  CHAKRA_STATES.forEach(c => { byId[c.id] = c; });
+  const yOf = (id) => {
+    const c = byId[id];
+    if (!c) return null;
+    return (c.yPct / 100) * 480 + 12;
+  };
+  const stateOf = (id) => (byId[id] && byId[id].state) || '';
+
+  // Anchor points on the spine (x=160, y=chakra-y).
+  const heart = { x: 160, y: yOf('heart') || 174, state: stateOf('heart') };
+  const throat = { x: 160, y: yOf('throat') || 110, state: stateOf('throat') };
+  const thirdEye = { x: 160, y: yOf('third-eye') || 72, state: stateOf('third-eye') };
+  const crown = { x: 160, y: yOf('crown') || 40, state: stateOf('crown') };
+  // Exit point: upper-right past auric perimeter
+  const exit = { x: 312, y: -10 };
+
+  // Helper: build a quadratic bezier path string from p0 → p1 with a control
+  // point laterally offset. `bow` is positive=right, negative=left.
+  function qpath(p0, p1, bow) {
+    const cx = 160 + bow;
+    const cy = (p0.y + p1.y) / 2;
+    return 'M ' + p0.x + ' ' + p0.y.toFixed(1) +
+           ' Q ' + cx + ' ' + cy.toFixed(1) +
+           ' ' + p1.x + ' ' + p1.y.toFixed(1);
+  }
+
+  // Per-segment: bow direction + state-derived class
+  const segs = [
+    { p0: heart,    p1: throat,   bow:  20, state: throat.state,   name: 'heart-throat' },
+    { p0: throat,   p1: thirdEye, bow: -22, state: thirdEye.state, name: 'throat-third-eye' },
+    { p0: thirdEye, p1: crown,    bow:  18, state: crown.state,    name: 'third-eye-crown' }
+  ];
+  segs.forEach(s => {
+    const cls = 'bf-spiral-seg bf-spiral-seg--' + s.state;
+    root.appendChild(svg('path', { class: cls, d: qpath(s.p0, s.p1, s.bow) }));
+  });
+
+  // Final exit segment: cubic bezier from crown → upper-right exit, with the
+  // bow respecting carrying-a-lot containment if crown is in that state.
+  const crownBow = (crown.state === 'carrying-a-lot') ? 8 : 0; // outward push
+  const exitPath = 'M ' + crown.x + ' ' + crown.y.toFixed(1) +
+                   ' C ' + (180 + crownBow) + ' 18, 270 -8, ' +
+                   exit.x + ' ' + exit.y.toFixed(1);
+  root.appendChild(svg('path', { class: 'bf-spiral-seg bf-spiral-seg--exit', d: exitPath }));
+
+  // Terminal mini-nucleus at the exit point: 3 gold border rings + dot.
+  // Names the spiral as an "emerging coherence event" (the reading: "golden
+  // spiral emerging from the top of the field").
+  const term = svg('g', {
+    class: 'bf-spiral-terminal',
+    transform: 'translate(' + exit.x + ' ' + exit.y + ')'
+  });
+  [4, 8, 12].forEach((rr, i) => {
+    term.appendChild(svg('circle', {
+      class: 'bf-spiral-terminal-ring',
+      r: String(rr), fill: 'none',
+      'stroke-opacity': (0.65 - i * 0.18).toFixed(2)
+    }));
+  });
+  term.appendChild(svg('circle', { class: 'bf-spiral-terminal-core', r: '1.6' }));
+  root.appendChild(term);
+}
+
 function buildSilhouetteSVG() {
   const root = svg('svg', {
     class: 'bf-silhouette',
@@ -2289,21 +2406,35 @@ function buildSilhouetteSVG() {
   });
   root.appendChild(defs);
 
-  // Aura: 4 concentric ellipses centered around silhouette mass.
-  // Phase B will replace this with 7 golden-ratio rings.
+  // Aura: 7 nested border-only rings in three triadic groups, breathing on
+  // the master 10.91s clock with staggered group delays. Joy-Spark grammar
+  // applied to the body context. Outer 3 rings tint gold, middle 2 teal,
+  // inner 2 violet — the Joy-Spark "charge" spectrum mapped radially.
   const auraCx = 160, auraCy = 250;
-  const auraBase = 165;
-  [1.55, 1.30, 1.15, 1.05].forEach((mult, idx) => {
-    const fillId = 'bf-aura-' + (4 - idx);
-    const ellipse = svg('ellipse', {
-      class: 'bf-aura-band',
+  // 7 radii, decaying by ~0.85 per step (gentle golden-feel without
+  // collapsing the inner rings into the chakra cores). Outermost ring is
+  // the labeled boundary added separately below.
+  const auraRadii = [156, 132, 112, 95, 81, 69, 58];
+  const auraColors = [
+    'rgba(255,215,100,0.55)', // gold
+    'rgba(255,215,100,0.42)', // gold
+    'rgba(255,215,100,0.30)', // gold→teal
+    'rgba(106,223,217,0.30)', // teal
+    'rgba(106,223,217,0.22)', // teal
+    'rgba(123,111,168,0.18)', // violet
+    'rgba(123,111,168,0.12)'  // violet
+  ];
+  // Triadic groups [0,1,2] / [3,4] / [5,6] with stagger offsets in seconds.
+  const auraGroup = [0, 0, 0, 1, 1, 2, 2];
+  auraRadii.forEach((r, i) => {
+    root.appendChild(svg('circle', {
+      class: 'bf-aura-ring bf-aura-ring--group-' + auraGroup[i],
       cx: String(auraCx), cy: String(auraCy),
-      rx: String((auraBase * mult * 0.92).toFixed(1)),
-      ry: String((auraBase * mult * 1.08).toFixed(1)),
-      fill: 'url(#' + fillId + ')',
-      stroke: idx === 3 ? 'rgba(123,111,168,0.18)' : 'none'
-    });
-    root.appendChild(ellipse);
+      r: String(r),
+      fill: 'none',
+      stroke: auraColors[i],
+      'stroke-width': i < 3 ? '0.8' : (i < 5 ? '0.6' : '0.4')
+    }));
   });
 
   // Auric extent boundary — the gold dashed ring whose radius is driven by
@@ -2330,23 +2461,34 @@ function buildSilhouetteSVG() {
   // Body silhouette outline
   root.appendChild(svg('path', { class: 'bf-body', d: SILHOUETTE_PATH }));
 
-  // Fibonacci spiral rising from crown (single golden curve, translucent)
-  // Approximation: cubic bezier sweep starting near crown going up + right with taper
-  root.appendChild(svg('path', {
-    class: 'bf-fibonacci',
-    d: 'M 160 30 C 154 8 200 -10 230 8 C 280 28 295 86 250 110'
+  // Unifying golden axial line — a single quiet thread down the spine that
+  // tells the eye "these are one column" before it reads any individual chakra.
+  root.appendChild(svg('line', {
+    class: 'bf-chakra-axis',
+    x1: '160', y1: '36', x2: '160', y2: '460'
   }));
 
-  // Damped block wave: solar (y=290) → heart (y=174) → throat (y=110)
-  // We construct a vertical sine path along x ≈ 160 with amplitude decaying upward.
+  // Golden spiral — sources at the heart (Ramon's radiant centroid), threads
+  // up through throat, third-eye, crown, exits past the auric perimeter at
+  // upper-right. Each segment picks up the chakra-state character of its
+  // endpoint: throat consolidating → dashed; third-eye clear → brighter;
+  // crown carrying-a-lot → bowed (containment-respecting). Rendered as
+  // multiple paths so per-segment style can vary. Decoration earning its
+  // pixels: the reading literally says "a subtle golden spiral is emerging".
+  buildGoldenSpiral(root);
+
+  // Damped block wave: solar (y=290) → throat-solar midpoint (y=145) → throat (y=110).
+  // Faster decay so the wave dies into the throat (not the crown). For Ramon's
+  // "fear of finalizing commitments", the block lives at the decision→declaration
+  // transition, biased ⅔ toward the throat — that's where the knot sits.
   const blockPath = (function() {
     const yStart = 290, yEnd = 110;
     const steps = 32;
     const path = [];
     for (let i = 0; i <= steps; i++) {
       const t = i / steps;
-      const y = yStart - (yStart - yEnd) * t; // top of body up
-      const decay = Math.exp(-0.9 * t * 2.2);
+      const y = yStart - (yStart - yEnd) * t;
+      const decay = Math.exp(-0.6 * t * 2.5);
       const amp = 14 * decay;
       const phase = t * Math.PI * 4;
       const x = 160 + amp * Math.sin(phase);
@@ -2370,23 +2512,22 @@ function buildSilhouetteSVG() {
   })();
   root.appendChild(svg('path', { class: 'bf-block-ghost', d: ghostPath }));
   root.appendChild(svg('path', { class: 'bf-block-wave', d: blockPath }));
-  // Tether: a soft dashed curve trailing behind the silhouette to the right
-  root.appendChild(svg('path', {
-    class: 'bf-block-tether',
-    d: 'M 160 174 C 220 180 260 196 290 232'
-  }));
-  // Knot at the heart (center of damping) - small filled circle
+  // Knot: throat-solar midpoint, biased toward throat. Shadow weather, not hot signal.
   root.appendChild(svg('circle', {
-    class: 'bf-block-knot', cx: '160', cy: '174', r: '7'
+    class: 'bf-block-knot', cx: '160', cy: '145', r: '7'
   }));
 
   // Chakra hot-spots positioned on body anatomy.
-  // Each chakra encodes its felt-sense in geometry, not amplitude scale:
-  //   - radialOffset shifts the chakra perpendicular to the spinal axis
-  //     (radiant projects forward, undercharged collapses inward)
-  //   - haloRadius is the *physical-distance* signal (the size of the field)
-  //   - core dot stays a constant 5px for all states
-  // The `--amp` style var is preserved for the celebration pulse animation.
+  // Each chakra is a Joy-Spark mini-nucleus:
+  //   - core dot at constant 5px (the seed)
+  //   - N concentric border-only rings, count = round(amp * 5), encoding
+  //     amplitude via ring count (not size of any single shape)
+  //   - radialOffset shifts the whole nucleus perpendicular to the spine
+  //     (radiant projects forward, undercharged collapses inward, etc.)
+  //   - haloRadius drives a soft glow halo enclosing the nucleus —
+  //     the *physical-distance* signal of the field around that chakra
+  //   - innermost ring gains a gold tint when amp ≥ 0.85 (Joy-Spark
+  //     threshold-activation rule)
   CHAKRA_STATES.forEach(c => {
     const cy = (c.yPct / 100) * 480 + 12;
     const v = CHAKRA_VISUAL[c.state] || { radialOffset: 0, haloRadius: 12, amp: 0.7 };
@@ -2398,8 +2539,33 @@ function buildSilhouetteSVG() {
       'data-state': c.state,
       style: '--amp:' + v.amp.toFixed(2) + ';--halo:' + v.haloRadius + ';'
     });
-    // Glow layer — size carries the data
-    spot.appendChild(svg('circle', { class: 'bf-chakra-glow bf-chakra-core', r: String(v.haloRadius), 'fill-opacity': '0.55' }));
+    // Anchoring downward bloom (only visible for undercharged) — render first
+    // so it sits BEHIND the nucleus rings.
+    spot.appendChild(svg('ellipse', {
+      class: 'bf-chakra-anchor',
+      cx: '0', cy: '14', rx: '14', ry: '8',
+      fill: 'rgba(222,21,69,0.30)'
+    }));
+    // Glow halo — size = haloRadius from CHAKRA_VISUAL
+    spot.appendChild(svg('circle', { class: 'bf-chakra-glow', r: String(v.haloRadius), 'fill-opacity': '0.55' }));
+    // Joy-Spark mini-nucleus rings: count = round(amp * 5)
+    const ringCount = Math.max(1, Math.round(v.amp * 5));
+    for (let i = 0; i < ringCount; i++) {
+      const ringR = 5 + i * 4; // 5, 9, 13, 17, 21
+      if (ringR > v.haloRadius) continue; // ring would exceed halo — skip
+      const isInnermost = (i === 0);
+      const isConsolidating = (c.state === 'consolidating');
+      const ringCls = 'bf-chakra-ring'
+        + (isInnermost && v.amp >= 0.85 ? ' bf-chakra-ring--gold' : '')
+        + (isConsolidating ? ' bf-chakra-ring--dashed' : '');
+      spot.appendChild(svg('circle', {
+        class: ringCls,
+        r: String(ringR),
+        fill: 'none',
+        'stroke-width': Math.max(0.3, (0.7 - i * 0.06)).toFixed(2),
+        'stroke-opacity': (0.55 * Math.pow(0.72, i)).toFixed(2)
+      }));
+    }
     // Core dot — constant 5px across all states
     spot.appendChild(svg('circle', { class: 'bf-chakra-core', r: '5' }));
     // Containing ring (only visible for carrying-a-lot) — sits just inside halo
@@ -2407,12 +2573,6 @@ function buildSilhouetteSVG() {
       class: 'bf-chakra-contain',
       r: String(Math.max(v.haloRadius - 4, 8)), fill: 'none',
       stroke: 'rgba(255,255,255,0.6)', 'stroke-width': '0.6'
-    }));
-    // Anchoring downward bloom (only visible for undercharged)
-    spot.appendChild(svg('ellipse', {
-      class: 'bf-chakra-anchor',
-      cx: '0', cy: '14', rx: '14', ry: '8',
-      fill: 'rgba(222,21,69,0.30)'
     }));
     positioner.appendChild(spot);
     root.appendChild(positioner);
@@ -2422,10 +2582,22 @@ function buildSilhouetteSVG() {
 }
 
 function buildHelixSVG() {
-  /* 6 pair-bonds stacked vertically. Pairs 0-3 phase-locked (4 pairs * 2 = 8 strands)
-     Pair 4 asymmetric (1 locked + 1 partial = 1 strand consolidating)
-     Pair 5 asymmetric (0 locked + 2 partial = 2 strands consolidating)
-     Total: 9 phase-locked + 3 consolidating of 12 ✓ */
+  /* DNA helix driven by USER.dna = { phaseLocked, consolidating, of }.
+     - Bottom `phaseLocked` rungs: solid gold, still (no breath-pulse) — the
+       polyvagal "stillness below" cue.
+     - Next `consolidating` rungs: dashed/ghosted; only the TOPMOST breathes.
+     - Remaining `(of - phaseLocked - consolidating)` rungs: hairline at 12%
+       opacity so the user sees they exist.
+     The two rails follow the same locked/consolidating split: rail A solid
+     all the way (we treat its full length as locked baseline); rail B is
+     solid for the bottom `(phaseLocked + consolidating) / of` portion and
+     ghost above (the not-yet-anchored region). */
+  const dna = (USER && USER.dna) || { phaseLocked: 9, consolidating: 3, of: 12 };
+  const total = Number(dna.of) || 12;
+  const locked = Math.max(0, Math.min(total, Number(dna.phaseLocked) || 0));
+  const consolidating = Math.max(0, Math.min(total - locked, Number(dna.consolidating) || 0));
+  const notYet = Math.max(0, total - locked - consolidating);
+
   const root = svg('svg', {
     viewBox: '0 0 110 320',
     preserveAspectRatio: 'xMidYMid meet',
@@ -2443,64 +2615,37 @@ function buildHelixSVG() {
   const cx = W / 2;
   const padTop = 12, padBot = 12;
   const innerH = H - padTop - padBot;
-  const cycles = 3.0; // 3 full sine cycles top to bottom for visible helix
+  const cycles = 3.0;
   const amp = 28;
   const samples = 100;
 
-  // Two rails (left and right). Each rail is a sequence of points along sine.
-  const railPoints = (phaseOffset, locked) => {
-    const pts = [];
-    for (let i = 0; i <= samples; i++) {
-      const t = i / samples;
-      const y = padTop + t * innerH;
-      const phase = t * Math.PI * 2 * cycles + phaseOffset;
-      const x = cx + amp * Math.sin(phase);
-      pts.push([x.toFixed(2), y.toFixed(2)]);
-    }
-    return 'M ' + pts.map(p => p.join(' ')).join(' L ');
-  };
-  // Pair definitions:
-  // Pairs 0..3 (root, sacral, solar, heart): both rails locked
-  // Pairs 4..5 (throat, third-eye/crown bands): one rail solid, other ghost
-  // We render rails segment-by-segment per pair so we can mix locked/partial:
-  // But simpler: render two full continuous rails (always solid for the locked one);
-  // overlay ghost overlay for the upper portion of the second rail.
-  // For visual integrity, render two rails: rail A is solid the whole way,
-  // rail B is solid for pairs 0..4 (bottom 5/6) and ghost for pair 5 (top 1/6).
-  // Actually we want 9 locked + 3 consolidating. Let's render rail A solid full,
-  // rail B solid for the bottom 4 pairs and ghost for the top 2 pairs.
-  // That makes the bottom 4 pairs fully locked (8 locked rails) + the upper 1 ratio
-  // = each of the top 2 pairs has 1 solid + 1 ghost = 2 locked rails + 2 consolidating rails
-  // → 8 + 2 = 10 locked, 2 consolidating. Not quite right.
-  // Adjust: rail A solid full, rail B solid only for the bottom 9/12 of its length.
-  // That gives 12 locked rail-segments + 3 consolidating rail-segments at the top of B.
-  // The path geometry: render rail A as one solid path. Render rail B as TWO paths:
-  //   B-solid for y from (padTop + (3/12)*innerH) to (padTop + innerH)  // bottom 9/12
-  //   B-ghost for y from (padTop) to (padTop + (3/12)*innerH)           // top 3/12
-
-  const railA = railPoints(0, true);
-  const railBSolidY0 = padTop + (3 / 12) * innerH;
-  // sample B solid
-  const bSolidPts = [];
+  // Rail A: solid full length
+  const railAPts = [];
   for (let i = 0; i <= samples; i++) {
     const t = i / samples;
     const y = padTop + t * innerH;
-    if (y < railBSolidY0) continue;
-    const phase = t * Math.PI * 2 * cycles + Math.PI;
+    const phase = t * Math.PI * 2 * cycles;
     const x = cx + amp * Math.sin(phase);
-    bSolidPts.push([x.toFixed(2), y.toFixed(2)]);
+    railAPts.push([x.toFixed(2), y.toFixed(2)]);
   }
+  root.appendChild(svg('path', {
+    class: 'rail solid',
+    d: 'M ' + railAPts.map(p => p.join(' ')).join(' L ')
+  }));
+
+  // Rail B: solid for the bottom (locked + consolidating) / total fraction; ghost above.
+  const splitFrac = (locked + consolidating) / total;
+  const railBSolidY0 = padTop + (1 - splitFrac) * innerH; // top of solid region
+  const bSolidPts = [];
   const bGhostPts = [];
   for (let i = 0; i <= samples; i++) {
     const t = i / samples;
     const y = padTop + t * innerH;
-    if (y > railBSolidY0) continue;
     const phase = t * Math.PI * 2 * cycles + Math.PI;
     const x = cx + amp * Math.sin(phase);
-    bGhostPts.push([x.toFixed(2), y.toFixed(2)]);
+    if (y >= railBSolidY0) bSolidPts.push([x.toFixed(2), y.toFixed(2)]);
+    else bGhostPts.push([x.toFixed(2), y.toFixed(2)]);
   }
-
-  root.appendChild(svg('path', { class: 'rail solid', d: railA }));
   if (bSolidPts.length) {
     root.appendChild(svg('path', { class: 'rail solid', d: 'M ' + bSolidPts.map(p => p.join(' ')).join(' L ') }));
   }
@@ -2508,16 +2653,29 @@ function buildHelixSVG() {
     root.appendChild(svg('path', { class: 'rail ghost', d: 'M ' + bGhostPts.map(p => p.join(' ')).join(' L ') }));
   }
 
-  // Rungs: 12 evenly spaced. 9 locked (bottom 9), 3 partial (top 3).
-  for (let i = 0; i < 12; i++) {
-    const t = (i + 0.5) / 12;
+  // Rungs: total rungs evenly spaced. Bottom = locked, middle = consolidating,
+  // top = not-yet. Index 0 is the TOPMOST rung visually.
+  for (let i = 0; i < total; i++) {
+    const t = (i + 0.5) / total;
     const y = padTop + t * innerH;
     const phase = t * Math.PI * 2 * cycles;
     const xA = cx + amp * Math.sin(phase);
     const xB = cx + amp * Math.sin(phase + Math.PI);
-    const isPartial = i < 3; // top 3 are consolidating
+
+    let cls;
+    if (i >= total - locked) {
+      // bottom band — phase-locked
+      cls = 'rung locked';
+    } else if (i >= notYet) {
+      // middle band — consolidating; topmost-of-this-group breathes
+      const isTopmostConsolidating = (i === notYet);
+      cls = 'rung partial' + (isTopmostConsolidating ? ' breathing' : '');
+    } else {
+      // top band — not-yet anchored
+      cls = 'rung notyet';
+    }
     root.appendChild(svg('line', {
-      class: 'rung ' + (isPartial ? 'partial' : 'locked'),
+      class: cls,
       x1: xA.toFixed(2), y1: y.toFixed(2),
       x2: xB.toFixed(2), y2: y.toFixed(2)
     }));
@@ -2773,7 +2931,8 @@ function mountBiofieldDashboard() {
   calBlock.appendChild(el('div', { class: 'felt', text: 'A felt-sense map. One frame among many.' }));
   right.appendChild(calBlock);
 
-  // DNA helix + meta
+  // DNA helix + meta — counts driven by USER.dna
+  const dnaInfo = (USER && USER.dna) || { phaseLocked: 9, consolidating: 3, of: 12 };
   const dna = el('div', { class: 'bf-helix' });
   const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
   helixWrap.appendChild(buildHelixSVG());
@@ -2781,8 +2940,8 @@ function mountBiofieldDashboard() {
   const dnaMeta = el('div', { class: 'bf-helix-meta' });
   dnaMeta.appendChild(el('div', { class: 'helix-label', text: 'DNA Strand Activation' }));
   const cnt = el('div', { class: 'helix-count' });
-  cnt.appendChild(el('strong', { text: '9 phase-locked' }));
-  cnt.appendChild(document.createTextNode(' · 3 consolidating · of 12'));
+  cnt.appendChild(el('strong', { text: dnaInfo.phaseLocked + ' phase-locked' }));
+  cnt.appendChild(document.createTextNode(' · ' + dnaInfo.consolidating + ' consolidating · of ' + dnaInfo.of));
   dnaMeta.appendChild(cnt);
   dnaMeta.appendChild(el('div', { class: 'helix-sub', text: 'The lower pairs anchor first. The upper pairs are on their way.' }));
   dna.appendChild(dnaMeta);
