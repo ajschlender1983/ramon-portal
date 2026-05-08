@@ -385,16 +385,16 @@ main { position: relative; z-index: 2; }
   transition: transform 220ms linear;
 }
 
-/* Avatar tile (small) + meta line below silhouette */
+/* Avatar tile (medium) + meta line below silhouette */
 .bf-avatar-row {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 16px;
   font-size: 11px; color: var(--mid); letter-spacing: 0.04em;
 }
 .bf-avatar-tile {
-  width: 44px; height: 44px; border-radius: 50%;
+  width: 84px; height: 84px; border-radius: 50%;
   overflow: hidden; flex-shrink: 0;
-  border: 1px solid rgba(106,223,217,0.32);
-  box-shadow: 0 0 16px rgba(123,111,168,0.30);
+  border: 1px solid rgba(106,223,217,0.36);
+  box-shadow: 0 0 22px rgba(123,111,168,0.32);
 }
 .bf-avatar-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .bf-avatar-row .name { color: var(--light); font-weight: 500; font-family: var(--serif); font-size: 18px; font-style: italic; }
@@ -836,7 +836,7 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .phase-tabs::-webkit-scrollbar { display: none; }
 .ptab {
   padding: 12px 18px; border-radius: 9px;
-  font-size: 12px; letter-spacing: 0.06em; cursor: pointer;
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer;
   transition: color .25s, background .25s, border-color .25s;
   color: var(--dim);
   border: 1px solid transparent; background: transparent;
@@ -850,8 +850,12 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .ptab:hover { color: var(--light); }
 .ptab:focus-visible { outline: 1px solid rgba(106,223,217,0.5); outline-offset: 2px; }
 .ptab .ptab-name {
-  display: block; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--dim); margin-top: 3px; font-weight: 400;
+  display: block;
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 13px; letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--dim);
+  margin-top: 4px;
 }
 .ptab.completed::before {
   content: '✓';
@@ -1000,7 +1004,7 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .session-body { min-width: 0; }
 .session-cat {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase;
+  font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
   color: var(--dim); margin-bottom: 8px;
 }
 .session-cat .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
@@ -1046,7 +1050,7 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   padding: 12px 14px; border-radius: 0 8px 8px 0;
   margin-bottom: 14px;
 }
-.session-why-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; display: block; }
+.session-why-label { font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; display: block; }
 .session-why-text { font-size: 13px; color: var(--light); line-height: 1.6; opacity: 0.9; }
 .session-why-text em { font-style: italic; color: var(--teal); }
 .session-intention {
@@ -1101,6 +1105,88 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   color: var(--light);
   box-shadow: 0 0 24px rgba(255,215,100,0.18);
 }
+/* Collapsible card — head is the click target; expand panel hides by default. */
+.session-head { position: relative; padding-right: 36px; cursor: pointer; user-select: none; }
+.session-head:hover .session-toggle { color: var(--teal); }
+.session-toggle {
+  position: absolute; top: -2px; right: -4px;
+  background: transparent; border: none; cursor: pointer;
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--mid);
+  transition: color .2s, transform .2s;
+  border-radius: 8px;
+}
+.session-toggle:hover { background: rgba(255,255,255,0.04); }
+.session-toggle:focus-visible { outline: 1px solid rgba(106,223,217,0.5); outline-offset: 2px; }
+.session-toggle-icon::before {
+  content: '▾';
+  font-size: 14px;
+  display: inline-block;
+  transition: transform .25s cubic-bezier(.2,.8,.2,1);
+}
+.session-card.expanded .session-toggle-icon::before { transform: rotate(180deg); }
+.session-expand { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border); }
+.session-card.expanded .session-expand { display: block; animation: session-expand-in 320ms cubic-bezier(.2,.8,.2,1); }
+@keyframes session-expand-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Pulse the chevron once the user has notes but the card is collapsed */
+.session-card.has-note:not(.expanded) .session-toggle { color: var(--teal); }
+
+/* Per-session reading capture (inside expand) */
+.session-reading-capture { margin: 14px 0; }
+.session-reading-capture details { background: rgba(123,111,168,0.04); border: 1px dashed var(--glass-border); border-radius: 10px; }
+.session-reading-capture summary {
+  cursor: pointer; padding: 10px 14px;
+  font-size: 11px; letter-spacing: 0.10em; color: var(--mid);
+  list-style: none;
+}
+.session-reading-capture summary::-webkit-details-marker { display: none; }
+.session-reading-capture summary::before { content: '+ '; color: var(--teal); }
+.session-reading-capture details[open] summary::before { content: '− '; }
+.srcap-inner { padding: 4px 14px 14px; }
+.srcap-textarea {
+  width: 100%; min-height: 100px;
+  background: rgba(11,8,15,0.55); border: 1px solid rgba(123,111,168,0.30);
+  border-radius: 8px; padding: 10px 12px;
+  font-family: var(--sans); font-size: 13px; line-height: 1.55; color: var(--light);
+  resize: vertical;
+}
+.srcap-textarea:focus { outline: none; border-color: rgba(106,223,217,0.5); }
+.srcap-meta { font-size: 10.5px; color: var(--dim); margin-top: 8px; letter-spacing: 0.04em; }
+.srcap-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+/* Per-week reading capture (lives at bottom of each phase panel) */
+.week-reading-capture {
+  margin: 32px 0 8px;
+  background: rgba(106,223,217,0.04);
+  border: 1px solid rgba(106,223,217,0.18);
+  border-radius: 14px;
+}
+.week-reading-capture details { padding: 0; }
+.wrcap-summary {
+  cursor: pointer; padding: 16px 20px;
+  font-family: var(--serif); font-style: italic; font-size: 15px;
+  color: var(--light);
+  list-style: none;
+}
+.wrcap-summary::-webkit-details-marker { display: none; }
+.wrcap-summary::before { content: '+ '; color: var(--teal); font-style: normal; }
+.week-reading-capture details[open] .wrcap-summary::before { content: '− '; }
+.wrcap-inner { padding: 6px 20px 20px; }
+.wrcap-textarea {
+  width: 100%; min-height: 160px;
+  background: rgba(11,8,15,0.55); border: 1px solid rgba(123,111,168,0.30);
+  border-radius: 10px; padding: 12px 14px;
+  font-family: var(--sans); font-size: 13px; line-height: 1.6; color: var(--light);
+  resize: vertical;
+}
+.wrcap-textarea:focus { outline: none; border-color: rgba(106,223,217,0.55); }
+.wrcap-meta { font-size: 10.5px; color: var(--dim); margin-top: 10px; letter-spacing: 0.04em; }
+.wrcap-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
 .session-card.collapsed-reflected .session-art,
 .session-card.collapsed-reflected .session-lede,
 .session-card.collapsed-reflected .choose-when,
@@ -1231,13 +1317,35 @@ textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
   cursor: not-allowed;
 }
 
-.reserve-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 24px; }
+.reserve-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 24px; }
 .reserve-item {
+  display: flex; gap: 14px; align-items: center;
   background: var(--glass); border: 1px dashed var(--glass-border);
-  border-radius: 10px; padding: 14px 16px;
-  font-size: 12.5px; color: var(--mid); line-height: 1.45;
+  border-radius: 12px; padding: 12px 14px;
+  font-size: 13px; color: var(--mid); line-height: 1.45;
 }
-.reserve-item strong { color: var(--light); font-weight: 500; display: block; margin-bottom: 2px; }
+.reserve-art {
+  flex-shrink: 0;
+  width: 64px; height: 64px; border-radius: 8px;
+  background: linear-gradient(135deg, rgba(123,111,168,0.45), rgba(31,24,36,0.85));
+  border: 1px solid rgba(255,255,255,0.06);
+  position: relative; overflow: hidden;
+}
+.reserve-art[data-chakra="crown"]    { background: linear-gradient(135deg, rgba(220,200,255,0.55), rgba(40,28,60,0.85)); }
+.reserve-art[data-chakra="third-eye"]{ background: linear-gradient(135deg, rgba(123,111,168,0.55), rgba(28,24,52,0.85)); }
+.reserve-art[data-chakra="throat"]   { background: linear-gradient(135deg, rgba(106,223,217,0.50), rgba(18,40,46,0.85)); }
+.reserve-art[data-chakra="heart"]    { background: linear-gradient(135deg, rgba(120,210,140,0.50), rgba(20,40,28,0.85)); }
+.reserve-art[data-chakra="solar"]    { background: linear-gradient(135deg, rgba(255,215,100,0.55), rgba(50,38,18,0.85)); }
+.reserve-art[data-chakra="sacral"]   { background: linear-gradient(135deg, rgba(240,147,94,0.55), rgba(48,26,18,0.85)); }
+.reserve-art[data-chakra="root"]     { background: linear-gradient(135deg, rgba(220,90,90,0.50), rgba(40,18,18,0.85)); }
+.reserve-art::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.18), transparent 60%);
+}
+.reserve-item-meta { min-width: 0; flex: 1; }
+.reserve-item-meta strong { color: var(--light); font-weight: 500; display: block; margin-bottom: 2px; font-size: 13.5px; }
+.reserve-item-meta .artist { color: var(--dim); font-size: 11px; letter-spacing: 0.04em; margin-bottom: 4px; }
+.reserve-item-meta .note { color: var(--mid); font-size: 12px; font-style: italic; line-height: 1.45; }
 
 .reflect-cta {
   background: linear-gradient(135deg, rgba(106,223,217,0.10), rgba(194,47,205,0.06));
@@ -1462,13 +1570,7 @@ window.__userDataPromise = (function() {
     <p style="font-size:14px; color:var(--mid); max-width:680px; line-height:1.7;">
       These fit the reading well, but we held them back. The crown and third-eye were flagged as already oversaturated. Once the root has more charge, these become useful.
     </p>
-    <div class="reserve-list">
-      <div class="reserve-item"><strong>Rest in Love · 852 Hz</strong>third-eye / universal love</div>
-      <div class="reserve-item"><strong>Pure Awareness · Crown</strong>direct crown work</div>
-      <div class="reserve-item"><strong>Pineal Aperture</strong>third-eye attunement</div>
-      <div class="reserve-item"><strong>AUM · 136 Hz</strong>cosmic attune</div>
-      <div class="reserve-item"><strong>Bridging Worlds</strong>Earth / Spirit bridge</div>
-    </div>
+    <div class="reserve-list" id="reserve-list"></div>
   </div>
 </section>
 
@@ -1516,7 +1618,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.1.1';
+const VERSION = '1.2.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -1538,7 +1640,10 @@ function makeLS(slug) {
     reflections:        slug + '.reflections.v1',
     state:              slug + '.state.v1',
     sessionReflections: slug + '.sessionReflections.v1',
-    versionSeen:        slug + '.versionSeen.v1'
+    versionSeen:        slug + '.versionSeen.v1',
+    weekFields:         slug + '.weekFields.v1',     // { 1: {text, ts}, 2: ... }
+    sessionFields:      slug + '.sessionFields.v1',  // { <slug>: {text, ts} }
+    expandedSessions:   slug + '.expanded.v1'        // [<slug>, <slug>, ...]
   };
 }
 let LS = makeLS('__pending__'); // overwritten in init()
@@ -2711,7 +2816,6 @@ function renderParsedReading(parsed) {
     const frame = parsed.frames[fid];
     if (!frame) return;
     const block = el('div', { class: 'reading-frame frame-' + fid });
-    block.appendChild(el('span', { class: 'prefix', text: frame.prefix }));
     block.appendChild(el('h5', { text: frame.label }));
 
     if (fid === 'level' && parsed.level) {
@@ -2852,12 +2956,15 @@ function renderSessionCard(slug, s) {
   card.appendChild(artWrap);
 
   const body = el('div', { class: 'session-body' });
+
+  // The "head" zone is always visible and is the click target for expand/collapse.
+  const head = el('div', { class: 'session-head' });
   const cat = el('div', { class: 'session-cat ' + s.catClass });
   cat.appendChild(el('span', { class: 'pip' }));
   cat.appendChild(el('span', { text: s.category + (s.collection ? ' · ' + s.collection : '') }));
-  body.appendChild(cat);
-  body.appendChild(el('div', { class: 'session-heading', text: s.heading }));
-  body.appendChild(el('div', { class: 'session-subtitle', text: s.subtitle }));
+  head.appendChild(cat);
+  head.appendChild(el('div', { class: 'session-heading', text: s.heading }));
+  head.appendChild(el('div', { class: 'session-subtitle', text: s.subtitle }));
 
   if (s.artist) {
     const artistRow = el('div', { class: 'artist-row' });
@@ -2870,20 +2977,33 @@ function renderSessionCard(slug, s) {
     }
     artistRow.appendChild(el('span', { class: 'by', text: 'by' }));
     artistRow.appendChild(el('span', { class: 'name', text: s.artist }));
-    body.appendChild(artistRow);
+    head.appendChild(artistRow);
   }
 
-  body.appendChild(el('div', { class: 'session-lede', text: s.lede }));
+  // Chevron toggle in the head; pulses on hover to suggest the affordance.
+  const toggle = el('button', {
+    class: 'session-toggle',
+    type: 'button',
+    'aria-label': 'Expand session details',
+    'aria-expanded': 'false'
+  });
+  toggle.appendChild(el('span', { class: 'session-toggle-icon', 'aria-hidden': 'true' }));
+  head.appendChild(toggle);
+  body.appendChild(head);
+
+  // Everything below this point is hidden when the card is collapsed.
+  const expand = el('div', { class: 'session-expand' });
+  expand.appendChild(el('div', { class: 'session-lede', text: s.lede }));
   const cw = el('div', { class: 'choose-when' });
   (s.chooseWhen || []).forEach(c => cw.appendChild(el('span', { class: 'cw-chip', text: c })));
-  body.appendChild(cw);
+  expand.appendChild(cw);
 
   const why = el('div', { class: 'session-why' });
   why.appendChild(el('span', { class: 'session-why-label', text: 'Why this, for you' }));
   const whyText = el('div', { class: 'session-why-text' });
   whyText.appendChild(parseEm(s.why));
   why.appendChild(whyText);
-  body.appendChild(why);
+  expand.appendChild(why);
 
   if (s.intention) {
     const intent = el('div', { class: 'session-intention' });
@@ -2891,7 +3011,7 @@ function renderSessionCard(slug, s) {
     const intentText = el('div', { class: 'session-intention-text' });
     intentText.appendChild(parseEm(s.intention));
     intent.appendChild(intentText);
-    body.appendChild(intent);
+    expand.appendChild(intent);
   }
 
   const promptsForSession = PROMPTS[slug] || { before: 'What state are you arriving in?', after: 'What shifted?' };
@@ -2915,7 +3035,11 @@ function renderSessionCard(slug, s) {
     block.appendChild(ta);
     notes.appendChild(block);
   });
-  body.appendChild(notes);
+  expand.appendChild(notes);
+
+  // Optional per-session reading capture (closes the loop on "Biofield scan
+  // after each session"; weekly capture lives on the phase panel).
+  expand.appendChild(buildSessionReadingCapture(slug));
 
   // Resolve action row: hint + button. Button enabled only when both notes have content.
   const actionsRow = el('div', { class: 'note-actions' });
@@ -2930,7 +3054,18 @@ function renderSessionCard(slug, s) {
   resolveBtn.addEventListener('click', () => resolveSession(slug));
   actionsRow.appendChild(hint);
   actionsRow.appendChild(resolveBtn);
-  body.appendChild(actionsRow);
+  expand.appendChild(actionsRow);
+  body.appendChild(expand);
+
+  // Click anywhere on the head (except interactive elements) toggles expand/collapse.
+  head.addEventListener('click', (e) => {
+    if (e.target.closest('a,button,input,textarea')) return;
+    toggleSessionExpand(slug);
+  });
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleSessionExpand(slug);
+  });
 
   // Resolved reflection block (hidden by default, shown when card is collapsed-reflected)
   const refl = el('div', { class: 'resolved-reflection' });
@@ -2985,6 +3120,28 @@ function renderPhaseTabs() {
   });
 }
 
+/* Held-in-reserve list. Reads USER.heldInReserve. Each entry: name, artist,
+   chakra (used to tint the art tile), note. Renders to #reserve-list. */
+function renderReserveList() {
+  const mount = document.getElementById('reserve-list');
+  if (!mount || !USER || !Array.isArray(USER.heldInReserve)) return;
+  while (mount.firstChild) mount.removeChild(mount.firstChild);
+  USER.heldInReserve.forEach((item) => {
+    const row = el('div', { class: 'reserve-item' });
+    const art = el('div', { class: 'reserve-art', dataset: { chakra: item.chakra || '' } });
+    if (item.art) {
+      art.appendChild(el('img', { src: item.art, alt: '', loading: 'lazy', style: 'width:100%;height:100%;object-fit:cover;display:block;' }));
+    }
+    row.appendChild(art);
+    const meta = el('div', { class: 'reserve-item-meta' });
+    meta.appendChild(el('strong', { text: item.name }));
+    if (item.artist) meta.appendChild(el('div', { class: 'artist', text: item.artist }));
+    if (item.note) meta.appendChild(el('div', { class: 'note', text: item.note }));
+    row.appendChild(meta);
+    mount.appendChild(row);
+  });
+}
+
 function renderPhasePanels() {
   const root = document.getElementById('phases');
   PLAN.forEach((phase) => {
@@ -3017,6 +3174,10 @@ function renderPhasePanels() {
       grid.appendChild(renderSessionCard(slug, s));
     });
     phaseEl.appendChild(grid);
+
+    // End-of-week Biofield capture sits below the session grid for this week.
+    phaseEl.appendChild(buildWeekReadingCapture(phase.week));
+
     panel.appendChild(phaseEl);
     root.appendChild(panel);
   });
@@ -3051,6 +3212,199 @@ function getNotes() {
   catch { return {}; }
 }
 function saveNotes(n) { localStorage.setItem(LS.notes, JSON.stringify(n)); }
+
+/* ---- Per-week and per-session Biofield captures ----
+   The original Input is the "week 0" baseline (LS.field). After each week
+   the user can capture a fresh reading; per session is optional. The most
+   recent capture is what reflections see going forward, falling back to the
+   baseline reading. */
+function getWeekFields() {
+  try { return JSON.parse(localStorage.getItem(LS.weekFields)) || {}; }
+  catch { return {}; }
+}
+function saveWeekField(week, text) {
+  const all = getWeekFields();
+  all[String(week)] = { text: text, ts: Date.now() };
+  localStorage.setItem(LS.weekFields, JSON.stringify(all));
+}
+function clearWeekField(week) {
+  const all = getWeekFields();
+  delete all[String(week)];
+  localStorage.setItem(LS.weekFields, JSON.stringify(all));
+}
+function getSessionFields() {
+  try { return JSON.parse(localStorage.getItem(LS.sessionFields)) || {}; }
+  catch { return {}; }
+}
+function saveSessionField(slug, text) {
+  const all = getSessionFields();
+  all[slug] = { text: text, ts: Date.now() };
+  localStorage.setItem(LS.sessionFields, JSON.stringify(all));
+}
+function clearSessionField(slug) {
+  const all = getSessionFields();
+  delete all[slug];
+  localStorage.setItem(LS.sessionFields, JSON.stringify(all));
+}
+/* The "current" Biofield is the most recent capture, walking newest -> oldest:
+   1. session field for THIS slug (if a session is the context)
+   2. week field for the highest week available
+   3. baseline LS.field (the original reading from the practitioner) */
+function getCurrentBiofield(forSlug) {
+  if (forSlug) {
+    const sf = getSessionFields()[forSlug];
+    if (sf && sf.text) return sf.text;
+  }
+  const wf = getWeekFields();
+  for (let w = 4; w >= 1; w--) {
+    if (wf[String(w)] && wf[String(w)].text) return wf[String(w)].text;
+  }
+  return localStorage.getItem(LS.field) || '';
+}
+
+/* ---- Collapsible session cards ----
+   Default is collapsed. The set of expanded slugs persists across reloads so
+   a session you opened to write notes stays open. */
+function getExpandedSessions() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LS.expandedSessions));
+    return new Set(Array.isArray(raw) ? raw : []);
+  } catch { return new Set(); }
+}
+function saveExpandedSessions(set) {
+  localStorage.setItem(LS.expandedSessions, JSON.stringify(Array.from(set)));
+}
+function toggleSessionExpand(slug) {
+  const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+  if (!card) return;
+  const set = getExpandedSessions();
+  if (set.has(slug)) {
+    set.delete(slug);
+    card.classList.remove('expanded');
+  } else {
+    set.add(slug);
+    card.classList.add('expanded');
+  }
+  const t = card.querySelector('.session-toggle');
+  if (t) t.setAttribute('aria-expanded', set.has(slug) ? 'true' : 'false');
+  saveExpandedSessions(set);
+}
+function applyExpandedStates() {
+  const set = getExpandedSessions();
+  document.querySelectorAll('.session-card[data-slug]').forEach(card => {
+    const slug = card.dataset.slug;
+    const expanded = set.has(slug);
+    card.classList.toggle('expanded', expanded);
+    const t = card.querySelector('.session-toggle');
+    if (t) t.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  });
+}
+
+/* Per-session "capture a reading after this session" UI. Lives inside the
+   expandable area of each card. Optional. */
+function buildSessionReadingCapture(slug) {
+  const wrap = el('div', { class: 'session-reading-capture' });
+  const label = el('summary', { class: 'srcap-summary', text: 'Capture a fresh Biofield reading after this session (optional)' });
+  const det = el('details');
+  det.appendChild(label);
+  const inner = el('div', { class: 'srcap-inner' });
+  const ta = el('textarea', {
+    class: 'srcap-textarea',
+    rows: '6',
+    placeholder: 'Paste the practitioner\'s words. Or write what you noticed in your own field afterward.',
+    'aria-label': 'Reading after ' + slug
+  });
+  const meta = el('div', { class: 'srcap-meta' });
+  const saveBtn = el('button', { class: 'btn btn-primary srcap-save', type: 'button', text: 'Save reading' });
+  const clearBtn = el('button', { class: 'btn btn-skip srcap-clear', type: 'button', text: 'Clear', hidden: 'true' });
+  inner.appendChild(ta);
+  inner.appendChild(meta);
+  const actions = el('div', { class: 'srcap-actions' });
+  actions.appendChild(saveBtn);
+  actions.appendChild(clearBtn);
+  inner.appendChild(actions);
+  det.appendChild(inner);
+  wrap.appendChild(det);
+
+  function refresh() {
+    const stored = getSessionFields()[slug];
+    if (stored && stored.text) {
+      ta.value = stored.text;
+      meta.textContent = 'Saved · ' + new Date(stored.ts).toLocaleString();
+      clearBtn.hidden = false;
+    } else {
+      ta.value = '';
+      meta.textContent = '';
+      clearBtn.hidden = true;
+    }
+  }
+  saveBtn.addEventListener('click', () => {
+    const v = ta.value.trim();
+    if (!v) return;
+    saveSessionField(slug, v);
+    refresh();
+  });
+  clearBtn.addEventListener('click', () => {
+    clearSessionField(slug);
+    refresh();
+  });
+  refresh();
+  return wrap;
+}
+
+/* Per-week "capture a reading at end of week" UI. Lives at top of each phase
+   panel below the phase head. */
+function buildWeekReadingCapture(week) {
+  const wrap = el('div', { class: 'week-reading-capture' });
+  const det = el('details');
+  det.appendChild(el('summary', { class: 'wrcap-summary', text: 'Add Week ' + week + ' Biofield reading (after the week)' }));
+  const inner = el('div', { class: 'wrcap-inner' });
+  const ta = el('textarea', {
+    class: 'wrcap-textarea',
+    rows: '8',
+    placeholder: 'Paste the new reading from your practitioner. Same shape as the original Input. We\'ll route reflections from this point forward through it.',
+    'aria-label': 'Week ' + week + ' Biofield reading'
+  });
+  const meta = el('div', { class: 'wrcap-meta' });
+  const actions = el('div', { class: 'wrcap-actions' });
+  const saveBtn = el('button', { class: 'btn btn-primary wrcap-save', type: 'button', text: 'Save Week ' + week + ' reading' });
+  const clearBtn = el('button', { class: 'btn btn-skip wrcap-clear', type: 'button', text: 'Clear', hidden: 'true' });
+  inner.appendChild(ta);
+  inner.appendChild(meta);
+  actions.appendChild(saveBtn);
+  actions.appendChild(clearBtn);
+  inner.appendChild(actions);
+  det.appendChild(inner);
+  wrap.appendChild(det);
+
+  function refresh() {
+    const stored = getWeekFields()[String(week)];
+    const summary = wrap.querySelector('.wrcap-summary');
+    if (stored && stored.text) {
+      ta.value = stored.text;
+      meta.textContent = 'Saved · ' + new Date(stored.ts).toLocaleString();
+      clearBtn.hidden = false;
+      summary.textContent = 'Week ' + week + ' reading captured · ' + new Date(stored.ts).toLocaleDateString();
+    } else {
+      ta.value = '';
+      meta.textContent = '';
+      clearBtn.hidden = true;
+      summary.textContent = 'Add Week ' + week + ' Biofield reading (after the week)';
+    }
+  }
+  saveBtn.addEventListener('click', () => {
+    const v = ta.value.trim();
+    if (!v) return;
+    saveWeekField(week, v);
+    refresh();
+  });
+  clearBtn.addEventListener('click', () => {
+    clearWeekField(week);
+    refresh();
+  });
+  refresh();
+  return wrap;
+}
 
 function loadNotesIntoUI() {
   const notes = getNotes();
@@ -3235,13 +3589,15 @@ function buildResolvePayload(slug) {
   const notes = getNotes();
   const sess = SESSIONS[slug];
   const phase = PLAN.find(p => p.sessions.includes(slug)) || { week: 1 };
+  // Most recent reading available for this slug, walking session -> week -> baseline.
+  const currentField = getCurrentBiofield(slug);
   return {
     slug,
     userName: (USER && USER.displayName) || '',
     userSlug: (USER && USER.slug) || '',
     version: VERSION,
-    biofield: localStorage.getItem(LS.field) || '',
-    biofieldParsed: parseInput(localStorage.getItem(LS.field) || ''),
+    biofield: currentField,
+    biofieldParsed: parseInput(currentField),
     session: {
       heading: sess.heading,
       subtitle: sess.subtitle,
@@ -3600,6 +3956,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderPhaseTabs();
   renderPhasePanels();
+  renderReserveList();
   setActivePhase(readWeekFromHash(), false);
   loadNotesIntoUI();
   bindNoteAutosave();
@@ -3612,6 +3969,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   refreshAllResolveButtons();
+  applyExpandedStates();
   loadField();
   renderReflections();
   bindReveal();

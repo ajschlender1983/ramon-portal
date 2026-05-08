@@ -8,4 +8,4 @@ compatibility_date = "2026-04-15"
 
 [vars]
 MODEL = "claude-sonnet-4-5"
-ALLOWED_ORIGINS = "https://pulse.feelopus.com,http://localhost:8201,http://127.0.0.1:8201"
+ALLOWED_ORIGINS = "https://ramon-portal.pages.dev,https://pulse.feelopus.com,http://localhost:8201,http://127.0.0.1:8201"

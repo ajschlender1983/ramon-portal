@@ -16,6 +16,7 @@ window.USER_DATA = {
   slug: 'ramon-r9k2x',
   displayName: 'Ramon',
   period: 'April 2026',
+  portrait: 'assets/portraits/ramon.jpg',
 
   reading: `🜂 ORIC FIELD
 Your auric field extends 13.4 meters, a perfect Fibonacci harmonic. This suggests you are in a phase of coherence expansion, likely due to recent integrations (perhaps related to your medallion work).
@@ -108,6 +109,18 @@ You are functioning as a Harmonic Guardian of the Inner Return. Your greatest gi
     { id: 'solar',     label: 'Solar Plexus', state: 'stabilizing',    yPct: 48, note: 'Recent willpower spikes settling' },
     { id: 'sacral',    label: 'Sacral',       state: 'holding',        yPct: 60, note: 'Holding space for creative rebirth' },
     { id: 'root',      label: 'Root',         state: 'undercharged',   yPct: 76, note: 'Quiet, wants more earth resonance' }
+  ],
+
+  /* Sessions intentionally not in Week 1-4. Each entry needs a name, artist,
+     and a chakra (used to tint the placeholder art tile). The OPUS catalog
+     entries here aren't part of Ramon's 30-day arc, so there's no album-art
+     asset for them in the repo; we render a chakra-tinted gradient tile. */
+  heldInReserve: [
+    { name: 'Rest in Love · 852 Hz', artist: 'Sam Bottner', chakra: 'third-eye', note: 'third-eye, universal love' },
+    { name: 'Pure Awareness · Crown', artist: 'Sam Bottner', chakra: 'crown',     note: 'direct crown work' },
+    { name: 'Pineal Aperture',        artist: 'Sam Bottner', chakra: 'third-eye', note: 'third-eye attunement' },
+    { name: 'AUM · 136 Hz',           artist: 'Sam Bottner', chakra: 'crown',     note: 'cosmic attune' },
+    { name: 'Bridging Worlds',        artist: 'Sam Bottner', chakra: 'crown',     note: 'Earth / Spirit bridge' }
   ],
 
   /* Map session slugs to chakras for the delight-pulse on resolve */
