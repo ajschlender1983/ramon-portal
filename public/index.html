@@ -528,55 +528,6 @@ main { position: relative; z-index: 2; }
   background: linear-gradient(180deg, transparent, rgba(31,24,36,0.5), transparent);
 }
 
-/* Pre-dashboard gate */
-.bf-gate {
-  position: fixed; inset: 0;
-  z-index: 200;
-  background:
-    radial-gradient(ellipse at 50% 35%, rgba(31,22,50,0.62), transparent 60%),
-    var(--void-deep);
-  display: flex; align-items: center; justify-content: center;
-  padding: clamp(24px, 6vw, 64px);
-  backdrop-filter: blur(28px) saturate(1.1);
-  -webkit-backdrop-filter: blur(28px) saturate(1.1);
-  animation: bf-gate-in 1200ms cubic-bezier(.2,.8,.2,1) forwards;
-}
-@keyframes bf-gate-in { from { opacity: 0; } to { opacity: 1; } }
-.bf-gate.dismissing { animation: bf-gate-out 1100ms cubic-bezier(.2,.8,.2,1) forwards; }
-@keyframes bf-gate-out { from { opacity: 1; } to { opacity: 0; pointer-events: none; } }
-.bf-gate-inner {
-  max-width: 640px; width: 100%;
-  display: flex; flex-direction: column; gap: 28px; align-items: center;
-}
-.bf-gate-question {
-  font-family: var(--serif); font-style: italic;
-  font-size: clamp(22px, 3.4vw, 32px); line-height: 1.4;
-  color: var(--light); text-align: center;
-}
-.bf-gate-textarea {
-  width: 100%; min-height: 96px;
-  background: rgba(11,8,15,0.55);
-  border: 1px solid rgba(123,111,168,0.30);
-  border-radius: 12px;
-  color: var(--light);
-  font-family: var(--sans); font-size: 14px; line-height: 1.65;
-  padding: 14px 16px;
-  resize: vertical;
-}
-.bf-gate-textarea:focus { outline: none; border-color: rgba(106,223,217,0.5); background: rgba(11,8,15,0.7); }
-.bf-gate-textarea::placeholder { color: var(--dim); font-style: italic; }
-.bf-gate-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.bf-gate-actions .btn-skip {
-  background: transparent;
-  border-color: var(--glass-border);
-  color: var(--mid);
-}
-.bf-gate-actions .btn-skip:hover { color: var(--light); }
-.bf-gate-meta {
-  font-size: 10.5px; color: var(--dim); letter-spacing: 0.06em;
-  font-style: italic; max-width: 480px; text-align: center; line-height: 1.55;
-}
-
 /* Mesh-blob ambient drift (CSS-only, complements the canvas) */
 .mesh-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .mesh-blob { position: absolute; border-radius: 50%; filter: blur(80px); will-change: transform; }
@@ -1441,17 +1392,6 @@ window.__userDataPromise = (function() {
 <div class="aurora-ring-overlay" id="aurora-ring" aria-hidden="true"></div>
 <div class="page-bloom" id="page-bloom" aria-hidden="true"></div>
 <div role="status" aria-live="polite" id="a11y-status" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;"></div>
-<div class="bf-gate" id="bf-gate" hidden>
-  <div class="bf-gate-inner">
-    <div class="bf-gate-question">Before you see what was reflected, what does your body already know is here?</div>
-    <textarea class="bf-gate-textarea" id="bf-gate-text" placeholder="A line is enough." rows="3" aria-label="What your body already knows"></textarea>
-    <div class="bf-gate-actions">
-      <button class="btn btn-primary" id="bf-gate-show" type="button">Show me what was reflected</button>
-      <button class="btn btn-skip" id="bf-gate-skip" type="button">Skip</button>
-    </div>
-    <div class="bf-gate-meta">Optional. Whatever you write stays in this browser. The reflection layer reads it alongside your notes.</div>
-  </div>
-</div>
 
 <nav class="top-nav" aria-label="Main">
   <a class="brand-lockup" href="#" aria-label="OPUS">
@@ -1576,7 +1516,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.1.0';
+const VERSION = '1.1.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -1598,8 +1538,6 @@ function makeLS(slug) {
     reflections:        slug + '.reflections.v1',
     state:              slug + '.state.v1',
     sessionReflections: slug + '.sessionReflections.v1',
-    priorKnowing:       slug + '.priorKnowing.v1',
-    gateSeen:           slug + '.preDashboardSeen.v1',
     versionSeen:        slug + '.versionSeen.v1'
   };
 }
@@ -3321,7 +3259,6 @@ function buildResolvePayload(slug) {
       weeksCompleted: ramonState.weeksCompleted,
       sessionsWithNoteCount: (ramonState.sessionsWithNote || []).length
     },
-    priorKnowing: localStorage.getItem(LS.priorKnowing) || ''
   };
 }
 
@@ -3587,37 +3524,6 @@ function bindReveal() {
   }
 }
 
-function setupPreDashboardGate() {
-  const gate = document.getElementById('bf-gate');
-  const ta = document.getElementById('bf-gate-text');
-  const show = document.getElementById('bf-gate-show');
-  const skip = document.getElementById('bf-gate-skip');
-  if (!gate || !ta || !show || !skip) return;
-  // If already dismissed, do nothing
-  if (localStorage.getItem(LS.gateSeen) === '1') {
-    gate.hidden = true;
-    return;
-  }
-  // Pre-fill if already saved (return-after-skip case)
-  const prior = localStorage.getItem(LS.priorKnowing) || '';
-  if (prior) ta.value = prior;
-  gate.hidden = false;
-
-  function dismiss(save) {
-    if (save) {
-      const v = ta.value.trim();
-      if (v) localStorage.setItem(LS.priorKnowing, v);
-    }
-    localStorage.setItem(LS.gateSeen, '1');
-    gate.classList.add('dismissing');
-    setTimeout(() => { gate.hidden = true; gate.classList.remove('dismissing'); }, 1100);
-  }
-  show.addEventListener('click', () => dismiss(true));
-  skip.addEventListener('click', () => dismiss(false));
-  // Focus textarea after first paint
-  requestAnimationFrame(() => ta.focus());
-}
-
 /* Apply USER (loaded from users/<slug>.js) to DOM placeholders. Called once
    per page load right before the rest of init. */
 function applyUserToDOM() {
@@ -3692,7 +3598,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   ramonState = loadState();
   applyUserToDOM();
 
-  setupPreDashboardGate();
   renderPhaseTabs();
   renderPhasePanels();
   setActivePhase(readWeekFromHash(), false);
