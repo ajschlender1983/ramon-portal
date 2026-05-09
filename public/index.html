@@ -405,6 +405,272 @@ main { position: relative; z-index: 2; }
   .bf-silhouette-stage > svg.bf-ladder--solfeggio { width: 56px; }
   .bf-ladder-name { display: none; }
 }
+/* v1.7.0: silhouette becomes a quiet armature.
+   - .bf-body--washed lowers fill + stroke opacity so chakras can win
+     the figure-ground fight (the column is the subject, body is the key).
+   - .bf-aura-ring--solo: the single outer aura ring breathing on the
+     master clock. All other aura rings cut. */
+.bf-body--washed {
+  fill: url(#bf-body-grad);
+  stroke: rgba(106,223,217,0.28);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px rgba(123,111,168,0.18));
+  opacity: 0.55;
+}
+.bf-aura-ring--solo {
+  animation: bf-aura-breath 10910ms ease-in-out infinite;
+  transform-origin: 160px 250px;
+}
+.bf-chakra-anchor-dot {
+  /* Each anchor dot inherits its chakra color via currentColor + the per-id rule below */
+}
+.bf-chakra-anchor-dot[data-chakra-id="root"]      { color: var(--red); }
+.bf-chakra-anchor-dot[data-chakra-id="sacral"]    { color: var(--orange); }
+.bf-chakra-anchor-dot[data-chakra-id="solar"]     { color: var(--gold); }
+.bf-chakra-anchor-dot[data-chakra-id="heart"]     { color: var(--green); }
+.bf-chakra-anchor-dot[data-chakra-id="throat"]    { color: var(--teal); }
+.bf-chakra-anchor-dot[data-chakra-id="third-eye"] { color: var(--accent-bright); }
+.bf-chakra-anchor-dot[data-chakra-id="crown"]     { color: var(--magenta); }
+
+/* ============================================================
+   DOORWAY STATE — the settling default. Three animated surfaces:
+   outer aura ring, breath dot, slow aurora blob. Polyvagal-aligned.
+   ============================================================ */
+.bf-doorway {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 28px;
+  padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 64px);
+  text-align: center;
+  position: relative; z-index: 1;
+  min-height: 60vh;
+  justify-content: center;
+}
+.bf-doorway-hero {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.bf-avatar-tile--door {
+  width: 124px; height: 124px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(255,215,100,0.32);
+  box-shadow: 0 0 32px rgba(123,111,168,0.32);
+}
+.bf-avatar-tile--door img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bf-doorway-meta { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.bf-doorway-meta .name { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--light); }
+.bf-doorway-meta .dek {
+  font-family: var(--serif); font-style: italic; font-size: 13px;
+  color: var(--mid); letter-spacing: 0.04em;
+}
+.bf-doorway-holding {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(17px, 2.2vw, 22px);
+  line-height: 1.5;
+  color: var(--light); opacity: 0.92;
+  max-width: 540px;
+  letter-spacing: 0.01em;
+}
+.bf-doorway-silhouette {
+  position: relative;
+  width: 220px; aspect-ratio: 320 / 480;
+  margin: 8px auto;
+}
+.bf-doorway-silhouette > svg.bf-silhouette {
+  width: 100%; height: 100%; display: block; overflow: visible;
+}
+.bf-breath-dot {
+  position: absolute; right: -28px; bottom: 28px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(255,215,100,0.85);
+  box-shadow: 0 0 8px rgba(255,215,100,0.55);
+  opacity: calc(0.55 + 0.45 * var(--breath-pulse));
+  transform: scale(calc(0.85 + 0.15 * var(--breath-pulse)));
+  transition: opacity 200ms linear, transform 200ms linear;
+}
+.bf-doorway-open {
+  background: transparent;
+  border: 1px solid rgba(255,215,100,0.32);
+  border-radius: 999px;
+  padding: 12px 28px;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 11px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: var(--gold);
+  cursor: pointer;
+  transition: background .25s, border-color .25s;
+}
+.bf-doorway-open:hover {
+  background: rgba(255,215,100,0.08);
+  border-color: rgba(255,215,100,0.55);
+}
+.bf-doorway-open:focus-visible { outline: 1px solid rgba(106,223,217,0.55); outline-offset: 2px; }
+.bf-doorway-open-icon {
+  display: inline-block; width: 8px; height: 8px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+/* ============================================================
+   EXPANDED (SIDECAR) STATE — silhouette small + chakra column
+   subject + ladders + horizontal Solfeggio + headshot anchor.
+   ============================================================ */
+.bf-expanded { position: relative; padding-top: 8px; padding-bottom: 56px; }
+.bf-expanded-close {
+  position: absolute; top: 0; right: 0;
+  background: transparent; border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--mid);
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+.bf-expanded-close:hover { color: var(--light); border-color: var(--glass-border); }
+.bf-expanded-close:focus-visible { outline: 1px solid rgba(106,223,217,0.55); outline-offset: 2px; }
+
+.bf-sidecar {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: stretch;
+  margin: 24px 0 16px;
+}
+@media (max-width: 720px) {
+  .bf-sidecar { grid-template-columns: 1fr; gap: 18px; }
+}
+.bf-sidecar-left {
+  display: flex; flex-direction: row; gap: 8px;
+  align-items: stretch;
+  position: relative;
+}
+.bf-silhouette-stage--small {
+  flex: 1 1 auto;
+  width: auto;
+  aspect-ratio: 320 / 480;
+  max-width: 160px;
+}
+.bf-silhouette-stage--small > svg.bf-silhouette { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* Chakra column — the visual subject of the expanded state.
+   Each row: disc (size = amplitude) + meta (name + state word + 5-pip bar). */
+.bf-chakra-column {
+  display: flex; flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+.bf-chakra-row {
+  --amp: 0.6;
+  --threshold: 0;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.bf-chakra-row:last-child { border-bottom: none; }
+.bf-chakra-row[data-id="root"]      { --hue: var(--red); }
+.bf-chakra-row[data-id="sacral"]    { --hue: var(--orange); }
+.bf-chakra-row[data-id="solar"]     { --hue: var(--gold); }
+.bf-chakra-row[data-id="heart"]     { --hue: var(--green); }
+.bf-chakra-row[data-id="throat"]    { --hue: var(--teal); }
+.bf-chakra-row[data-id="third-eye"] { --hue: var(--accent-bright); }
+.bf-chakra-row[data-id="crown"]     { --hue: var(--magenta); }
+.bf-chakra-disc {
+  width: 64px; height: 64px; border-radius: 50%;
+  /* Disc size scales with amplitude (0.5 at undercharged → 1.0 at radiant)
+     while the row's grid-column stays 64px wide. The disc fills the cell
+     proportionally via transform: scale. */
+  transform: scale(calc(0.55 + 0.45 * var(--amp)));
+  background: var(--hue);
+  /* Saturation = vitality: undercharged reads desaturated, radiant reads full color */
+  filter: saturate(calc(0.30 + 0.70 * var(--amp))) brightness(calc(0.85 + 0.15 * var(--amp)));
+  box-shadow: 0 0 calc(8px + 16px * var(--amp)) color-mix(in srgb, var(--hue) calc(var(--amp) * 100%), transparent);
+  /* Threshold gold ring (ceremonial) when amp ≥ 0.85 */
+  border: calc(2px * var(--threshold)) solid rgba(255,215,100,0.85);
+  transition: transform 400ms cubic-bezier(.2,.8,.2,1),
+              filter 400ms cubic-bezier(.2,.8,.2,1),
+              border-width 400ms cubic-bezier(.2,.8,.2,1),
+              box-shadow 400ms cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-chakra-disc { transition: none; }
+}
+.bf-chakra-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.bf-chakra-name {
+  font-family: var(--serif);
+  font-size: 16px; line-height: 1.2;
+  color: var(--light);
+}
+.bf-chakra-threshold-star { color: var(--gold); font-size: 13px; vertical-align: 2px; }
+.bf-chakra-state-word {
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--mid);
+  font-style: italic;
+}
+.bf-chakra-row[data-state="radiant"]        .bf-chakra-state-word { color: var(--gold); }
+.bf-chakra-row[data-state="carrying-a-lot"] .bf-chakra-state-word { color: rgba(220,140,90,0.85); }
+.bf-chakra-row[data-state="undercharged"]   .bf-chakra-state-word { color: var(--dim); }
+.bf-chakra-bar {
+  display: inline-flex; gap: 4px;
+  margin-top: 2px;
+}
+.bf-chakra-pip {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  transition: background 400ms cubic-bezier(.2,.8,.2,1);
+}
+.bf-chakra-pip.filled { background: var(--hue); }
+.bf-chakra-note {
+  font-size: 11px; line-height: 1.5;
+  color: var(--dim);
+  font-style: italic;
+  margin-top: 2px;
+  max-width: 420px;
+}
+
+/* Horizontal Solfeggio strip below the chakra column */
+.bf-solfeggio-strip {
+  width: 100%; height: 36px;
+  display: block; overflow: visible;
+  margin: 18px 0 8px;
+}
+.bf-solfeggio-strip-track { stroke: rgba(255,255,255,0.10); stroke-width: 0.6; }
+.bf-solfeggio-strip-tick { stroke: rgba(255,255,255,0.32); stroke-width: 1; }
+.bf-solfeggio-strip-tick.dim { stroke: rgba(255,255,255,0.12); stroke-width: 0.5; }
+.bf-solfeggio-strip-tick.miracle { stroke: rgba(255,215,100,0.85); stroke-width: 1.5; }
+.bf-solfeggio-strip-label {
+  fill: rgba(106,223,217,0.75);
+  font: 10px var(--sans);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+.bf-solfeggio-strip-label.miracle {
+  fill: var(--gold);
+  font-style: italic;
+  font-family: var(--serif);
+  font-size: 11px;
+}
+
+/* Headshot at bottom of expanded view (thangka practitioner-anchor) */
+.bf-avatar-row--anchor {
+  margin: 18px auto 4px;
+  justify-content: center;
+}
+
+/* Avatar fallback when portrait image fails to load */
+.bf-avatar-fallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif);
+  font-size: 26px;
+  color: var(--gold);
+  background: rgba(255,215,100,0.08);
+  border-radius: 50%;
+}
+.bf-avatar-fallback--door { font-size: 38px; }
+
 /* The 4-ellipse `.bf-aura-band` was replaced in v1.4.0 by the 7-ring system
    above (`.bf-aura-ring`). The gold dashed boundary still sits outside that
    stack as a labeled `bf-aura-boundary`. */
@@ -1743,7 +2009,8 @@ textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
   margin-left: 8px;
   font-style: normal;
 }
-#ask-reflect.pulse-ready { animation: pulse-ready 2400ms ease-in-out infinite; }
+/* v1.7.0: pulse-ready coupled to master breath instead of its own 2.4s clock */
+#ask-reflect.pulse-ready { animation: pulse-ready 10910ms ease-in-out infinite; }
 @keyframes pulse-ready {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,100,0.0); }
   50%      { box-shadow: 0 0 0 8px rgba(255,215,100,0.18); }
@@ -1865,7 +2132,7 @@ window.__userDataPromise = (function() {
   <div class="mesh-blob mesh-blob--4"></div>
 </div>
 <canvas id="auroraCanvas" aria-hidden="true"></canvas>
-<canvas id="particleCanvas" aria-hidden="true"></canvas>
+<!-- v1.7.0: particle canvas removed (visual noise, expensive paint) -->
 <div class="aurora-ring-overlay" id="aurora-ring" aria-hidden="true"></div>
 <div class="page-bloom" id="page-bloom" aria-hidden="true"></div>
 <div role="status" aria-live="polite" id="a11y-status" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;"></div>
@@ -1996,7 +2263,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.6.2';
+const VERSION = '1.7.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -2031,7 +2298,8 @@ function makeLS(slug) {
     sessionFields:      slug + '.sessionFields.v1',  // { <slug>: {text, ts} }
     expandedSessions:   slug + '.expanded.v1',       // [<slug>, <slug>, ...]
     activeSnapshot:     slug + '.activeSnapshot.v1', // currently-viewed week (0..4)
-    snapshots:          slug + '.snapshots.v1'       // { '0': SnapshotV1, '1': ..., ... } (cached)
+    snapshots:          slug + '.snapshots.v1',      // { '0': SnapshotV1, '1': ..., ... } (cached)
+    dashOpen:           slug + '.dashOpen.v1'        // '1' if dashboard is in expanded (sidecar) state
   };
 }
 let LS = makeLS('__pending__'); // overwritten in init()
@@ -2269,12 +2537,20 @@ function startBreathClock() {
   requestAnimationFrame(tick);
 }
 
+/* v1.7.0: aurora reduced — 6 blobs → 2, SCALE 0.5 → 0.4, throttled to 30fps
+   on low-DPR devices (most laptops/phones). Single rAF loop pauses on
+   visibilitychange. Polyvagal goal: peripheral motion present but minimal,
+   so the page has field-presence without alerting the nervous system. */
 function mountAurora() {
   if (reducedMotion()) return;
   const canvas = document.getElementById('auroraCanvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   let w, h, blobs;
-  const SCALE = 0.5;
+  const SCALE = 0.4;
+  const lowDPR = (window.devicePixelRatio || 1) < 2;
+  const FRAME_MS = lowDPR ? 33 : 16; // ~30fps on low-DPR, ~60fps on Retina
+  let lastFrame = 0;
 
   function resize() {
     w = Math.floor(window.innerWidth * SCALE);
@@ -2286,33 +2562,32 @@ function mountAurora() {
   }
 
   function init() {
+    // Two blobs only: one warm (violet), one cool (teal). Soft field, not alerting.
     blobs = [
-      { x: 0.20, y: 0.30, r: 280, color: [123,111,168], speed: 0.0004, phase: 0,    weight: 1.0 },
-      { x: 0.80, y: 0.20, r: 220, color: [194, 47,205], speed: 0.0003, phase: 2,    weight: 0.7 },
-      { x: 0.50, y: 0.70, r: 260, color: [ 86, 76,112], speed: 0.00035, phase: 4,   weight: 0.9 },
-      { x: 0.10, y: 0.85, r: 240, color: [106,223,217], speed: 0.00045, phase: 1.5, weight: 0.5 },
-      { x: 0.90, y: 0.60, r: 200, color: [123,111,168], speed: 0.00038, phase: 3,   weight: 0.7 },
-      { x: 0.50, y: 0.10, r: 200, color: [255,215,100], speed: 0.0003, phase: 5,    weight: 0.0 }
+      { x: 0.30, y: 0.35, r: 280, color: [123,111,168], speed: 0.0003, phase: 0,   weight: 0.9 },
+      { x: 0.70, y: 0.65, r: 240, color: [106,223,217], speed: 0.00035, phase: 2.5, weight: 0.6 }
     ];
   }
 
   let intensity = 0.55;
-
   function notifyState(state, eng) {
-    const goldWeight = 0.0 + (state.weeksCompleted / 4) * 0.5;
-    blobs[5].weight = goldWeight;
-    intensity = 0.55 + (eng / 0.22) * 0.35;
+    intensity = 0.55 + (eng / 0.22) * 0.25;
   }
 
   let running = true;
   function draw(time) {
     if (!running) return;
+    if (time - lastFrame < FRAME_MS) {
+      requestAnimationFrame(draw);
+      return;
+    }
+    lastFrame = time;
     ctx.clearRect(0, 0, w, h);
     blobs.forEach(b => {
       const bx = w * b.x + Math.sin(time * b.speed + b.phase) * (80 * SCALE);
       const by = h * b.y + Math.cos(time * b.speed * 0.7 + b.phase) * (60 * SCALE);
       const grad = ctx.createRadialGradient(bx, by, 0, bx, by, b.r * SCALE);
-      const a = 0.12 * b.weight * intensity;
+      const a = 0.10 * b.weight * intensity;
       grad.addColorStop(0, 'rgba(' + b.color.join(',') + ',' + a.toFixed(3) + ')');
       grad.addColorStop(1, 'rgba(' + b.color.join(',') + ',0)');
       ctx.fillStyle = grad;
@@ -2333,9 +2608,15 @@ function mountAurora() {
   window.__aurora = { notifyState };
 }
 
+/* v1.7.0: particle canvas removed entirely. mountParticles is now a no-op
+   stub; it returns immediately. window.__particles is left undefined so
+   the few places that check `if (window.__particles)` skip gracefully. */
 function mountParticles() {
-  if (reducedMotion()) return;
+  return;
+}
+function _legacyMountParticlesNotUsed() {
   const canvas = document.getElementById('particleCanvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   let w, h;
   let particles = [];
@@ -2652,260 +2933,133 @@ function buildGoldenSpiral(root) {
   root.appendChild(term);
 }
 
-function buildSilhouetteSVG() {
+/* v1.7.0: Silhouette is now a quiet armature, not the visual subject.
+   Mode parameter:
+   - 'doorway'  — body wash + ONE outer aura ring breathing. That's it.
+                  Used in the collapsed door state pre-session.
+   - 'expanded' — body wash + outer aura ring + tiny chakra anchor dots
+                  on the spine (so the chakra column to the right has
+                  visible source points the eye can pair with).
+   Cuts vs v1.6.2: golden spiral, chakra-axis line, block wave, block
+   ghost, block knot, calibration hairline, 6 of 7 aura rings, in-body
+   chakra mini-nuclei, auric boundary tick + label, body-anchor gradient.
+   The chakras now live in the sidecar column (buildChakraColumn). */
+function buildSilhouetteSVG(mode) {
+  mode = mode || 'expanded';
   const root = svg('svg', {
-    class: 'bf-silhouette',
+    class: 'bf-silhouette bf-silhouette--' + mode,
     viewBox: '0 0 320 480',
     preserveAspectRatio: 'xMidYMid meet',
     'aria-hidden': 'true'
   });
 
-  // Defs: gradients used by silhouette + aura + block + spiral
+  // Body gradient — kept for the soft fill. Anchor + spiral gradients gone.
   const defs = svg('defs');
-  // Spiral gradient: gold → bright gold → faded gold along the path
-  const spiralGrad = svg('linearGradient', { id: 'bf-spiral-grad', x1: '0', y1: '1', x2: '1', y2: '0' });
-  spiralGrad.appendChild(svg('stop', { offset: '0%',  'stop-color': 'rgba(255,215,100,0.85)' }));
-  spiralGrad.appendChild(svg('stop', { offset: '50%', 'stop-color': 'rgba(255,242,180,0.95)' }));
-  spiralGrad.appendChild(svg('stop', { offset: '100%','stop-color': 'rgba(255,215,100,0.50)' }));
-  defs.appendChild(spiralGrad);
-  // Body gradient
   const bodyGrad = svg('linearGradient', { id: 'bf-body-grad', x1: '0', y1: '1', x2: '0', y2: '0' });
   bodyGrad.appendChild(svg('stop', { offset: '0%', 'stop-color': 'rgba(86,76,112,0.32)' }));
   bodyGrad.appendChild(svg('stop', { offset: '100%', 'stop-color': 'rgba(31,22,50,0.20)' }));
   defs.appendChild(bodyGrad);
-  // Anchor gradient (root upward bloom)
-  const anchorGrad = svg('radialGradient', { id: 'bf-anchor-grad', cx: '50%', cy: '90%', r: '40%' });
-  anchorGrad.appendChild(svg('stop', { offset: '0%', 'stop-color': 'rgba(222,21,69,0.30)' }));
-  anchorGrad.appendChild(svg('stop', { offset: '100%', 'stop-color': 'rgba(222,21,69,0)' }));
-  defs.appendChild(anchorGrad);
-  // Aura band gradients (3 layers + outermost)
-  ['bf-aura-1','bf-aura-2','bf-aura-3','bf-aura-4'].forEach((id, i) => {
-    const g = svg('radialGradient', { id, cx: '50%', cy: '50%', r: '50%' });
-    const opa = [0.18, 0.12, 0.08, 0.04][i];
-    g.appendChild(svg('stop', { offset: '0%', 'stop-color': 'rgba(123,111,168,' + (opa * 0.6).toFixed(3) + ')' }));
-    g.appendChild(svg('stop', { offset: '60%', 'stop-color': 'rgba(106,223,217,' + (opa * 0.5).toFixed(3) + ')' }));
-    g.appendChild(svg('stop', { offset: '100%', 'stop-color': 'rgba(194,47,205,0)' }));
-    defs.appendChild(g);
-  });
   root.appendChild(defs);
 
-  // Read the active view once for everything below — auric extent, hawkins
-  // level, etc. all live on this. Hoisted up because the aura ring math
-  // depends on auricMeters (TDZ guard).
+  // Read view once (auric extent drives the single aura ring).
   const view = getView();
   const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
-
-  // Aura: 7 nested border-only rings in three triadic groups, breathing on
-  // the master 10.91s clock with staggered group delays. Joy-Spark grammar
-  // applied to the body context. Outer 3 rings tint gold, middle 3 teal,
-  // innermost 1 violet — the Joy-Spark "charge" spectrum mapped radially.
-  // Plan §3: r_n = R * 0.618^n (true golden ratio decay), groups [0,1,2] /
-  // [3,4,5] / [6], stagger +0 / +1.4s / +2.8s.
-  const auraCx = 160, auraCy = 250;
-  const auraOuterR = Math.max(120, Math.min(220, 80 + auricMeters * 9)); // matches boundary
-  // 7 radii: r_n = R * 0.618^n. Skip rings smaller than ~26 SVG units so
-  // they don't visually merge with the chakra column.
-  const PHI_INV = 0.618;
-  const auraRadii = [];
-  for (let n = 0; n < 7; n++) {
-    const r = auraOuterR * Math.pow(PHI_INV, n);
-    if (r < 26) break;
-    auraRadii.push(r);
-  }
-  const auraColors = [
-    'rgba(255,215,100,0.55)', // gold (outer 3)
-    'rgba(255,215,100,0.42)',
-    'rgba(255,215,100,0.30)',
-    'rgba(106,223,217,0.30)', // teal (middle 3)
-    'rgba(106,223,217,0.22)',
-    'rgba(106,223,217,0.16)',
-    'rgba(123,111,168,0.18)'  // violet (innermost 1)
-  ];
-  // Plan groups: [0,1,2] / [3,4,5] / [6]
-  const auraGroup = [0, 0, 0, 1, 1, 1, 2];
-  auraRadii.forEach((r, i) => {
-    root.appendChild(svg('circle', {
-      class: 'bf-aura-ring bf-aura-ring--group-' + auraGroup[i],
-      cx: String(auraCx), cy: String(auraCy),
-      r: r.toFixed(1),
-      fill: 'none',
-      stroke: auraColors[i] || 'rgba(123,111,168,0.10)',
-      'stroke-width': i < 3 ? '0.8' : (i < 6 ? '0.5' : '0.4')
-    }));
-  });
-
-  // Auric extent boundary — the gold dashed ring whose radius is driven by
-  // the user's measured field extent (auricMeters declared at top of fn).
-  // R = 80 + auric_m * 9, clamped to [120, 220] so the ring is always
-  // generous but stays within the viewBox+gutter visual budget.
   const auricR = Math.max(120, Math.min(220, 80 + auricMeters * 9));
+
+  // ONE outer aura ring breathing on the master 10.91s clock. The whole field.
   root.appendChild(svg('circle', {
-    class: 'bf-aura-boundary',
-    cx: String(auraCx), cy: String(auraCy),
+    class: 'bf-aura-ring bf-aura-ring--solo',
+    cx: '160', cy: '250',
     r: auricR.toFixed(1),
-    fill: 'none'
-  }));
-  // Leader tick + in-SVG label at the 1-o'clock position of the boundary.
-  // Lives within viewBox bounds (clamps to keep label readable on small fields).
-  const leaderAngle = -Math.PI / 3.5; // ~ -51° (upper-right of ring)
-  const tickInner = {
-    x: auraCx + Math.cos(leaderAngle) * auricR,
-    y: auraCy + Math.sin(leaderAngle) * auricR
-  };
-  const tickOuter = {
-    x: auraCx + Math.cos(leaderAngle) * (auricR + 8),
-    y: auraCy + Math.sin(leaderAngle) * (auricR + 8)
-  };
-  // Clamp label position so it stays inside viewBox 0..320 / 0..480
-  const labelX = Math.min(310, Math.max(10, tickOuter.x + 4));
-  const labelY = Math.min(470, Math.max(14, tickOuter.y));
-  root.appendChild(svg('line', {
-    class: 'bf-aura-boundary-tick',
-    x1: tickInner.x.toFixed(1), y1: tickInner.y.toFixed(1),
-    x2: tickOuter.x.toFixed(1), y2: tickOuter.y.toFixed(1)
-  }));
-  const auraLabel = svg('text', {
-    class: 'bf-aura-boundary-label',
-    x: labelX.toFixed(1), y: labelY.toFixed(1),
-    'text-anchor': 'start'
-  });
-  auraLabel.textContent = auricMeters.toFixed(1) + ' m';
-  root.appendChild(auraLabel);
-
-  // Body anchor (root-upward luminance gradient inside silhouette)
-  root.appendChild(svg('rect', {
-    class: 'bf-body-anchor',
-    x: '70', y: '300', width: '180', height: '180',
-    fill: 'url(#bf-anchor-grad)'
+    fill: 'none',
+    stroke: 'rgba(255,215,100,0.40)',
+    'stroke-width': '0.8'
   }));
 
-  // Body silhouette outline
-  root.appendChild(svg('path', { class: 'bf-body', d: SILHOUETTE_PATH }));
+  // Body silhouette outline — flattened to a wash so chakras can win the
+  // figure-ground fight (per body-art lens). The .bf-body--washed CSS
+  // override drops the fill / stroke opacity for v1.7.
+  root.appendChild(svg('path', { class: 'bf-body bf-body--washed', d: SILHOUETTE_PATH }));
 
-  // Calibration-row hairline — the only place the Hawkins ladder and the
-  // Solfeggio scale visually touch, drawn at y = valToY(hawkinsLevel).
-  root.appendChild(buildCalibrationHairline(view));
-
-  // Damped block wave: solar (y=290) → throat-solar midpoint (y=145) → throat (y=110).
-  // Faster decay so the wave dies into the throat (not the crown). For Ramon's
-  // "fear of finalizing commitments", the block lives at the decision→declaration
-  // transition, biased ⅔ toward the throat — that's where the knot sits.
-  const blockPath = (function() {
-    const yStart = 290, yEnd = 110;
-    const steps = 32;
-    const path = [];
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const y = yStart - (yStart - yEnd) * t;
-      const decay = Math.exp(-0.6 * t * 2.5);
-      const amp = 14 * decay;
-      const phase = t * Math.PI * 4;
-      const x = 160 + amp * Math.sin(phase);
-      path.push((i === 0 ? 'M ' : 'L ') + x.toFixed(2) + ' ' + y.toFixed(2));
-    }
-    return path.join(' ');
-  })();
-  const ghostPath = (function() {
-    const yStart = 290, yEnd = 110;
-    const steps = 32;
-    const path = [];
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const y = yStart - (yStart - yEnd) * t;
-      const amp = 14;
-      const phase = t * Math.PI * 4;
-      const x = 160 + amp * Math.sin(phase);
-      path.push((i === 0 ? 'M ' : 'L ') + x.toFixed(2) + ' ' + y.toFixed(2));
-    }
-    return path.join(' ');
-  })();
-  root.appendChild(svg('path', { class: 'bf-block-ghost', d: ghostPath }));
-  root.appendChild(svg('path', { class: 'bf-block-wave', d: blockPath }));
-  // Knot: throat-solar midpoint, biased toward throat. Shadow weather, not hot signal.
-  root.appendChild(svg('circle', {
-    class: 'bf-block-knot', cx: '160', cy: '145', r: '7'
-  }));
-
-  // Unifying golden axial line — a single quiet thread down the spine that
-  // tells the eye "these are one column" before it reads any individual chakra.
-  // Rendered AFTER the block wave so the axis sits visually in front of the
-  // shadow weather (per plan §7 layer order).
-  root.appendChild(svg('line', {
-    class: 'bf-chakra-axis',
-    x1: '160', y1: '36', x2: '160', y2: '460'
-  }));
-
-  // Golden spiral — sources at the heart, threads up through chakras, exits
-  // past the auric perimeter. Per-segment style picks up each chakra's state.
-  buildGoldenSpiral(root);
-
-  // Chakra hot-spots positioned on body anatomy.
-  // Each chakra is a Joy-Spark mini-nucleus:
-  //   - core dot at constant 5px (the seed)
-  //   - N concentric border-only rings, count = round(amp * 5), encoding
-  //     amplitude via ring count (not size of any single shape)
-  //   - radialOffset shifts the whole nucleus perpendicular to the spine
-  //     (radiant projects forward, undercharged collapses inward, etc.)
-  //   - haloRadius drives a soft glow halo enclosing the nucleus —
-  //     the *physical-distance* signal of the field around that chakra
-  //   - innermost ring gains a gold tint when amp ≥ 0.85 (Joy-Spark
-  //     threshold-activation rule)
-  CHAKRA_STATES.forEach(c => {
-    const cy = (c.yPct / 100) * 480 + 12;
-    const v = CHAKRA_VISUAL[c.state] || { radialOffset: 0, haloRadius: 12, amp: 0.7 };
-    const cx = 160 + v.radialOffset;
-    const positioner = svg('g', {
-      class: 'bf-chakra-positioner',
-      'data-chakra-id': c.id,
-      transform: 'translate(' + cx + ' ' + cy.toFixed(0) + ')'
-    });
-    const spot = svg('g', {
-      class: 'bf-chakra-spot',
-      'data-id': c.id,
-      'data-state': c.state,
-      style: '--amp:' + v.amp.toFixed(2) + ';--halo:' + v.haloRadius + ';'
-    });
-    // Anchoring downward bloom (only visible for undercharged) — render first
-    // so it sits BEHIND the nucleus rings.
-    spot.appendChild(svg('ellipse', {
-      class: 'bf-chakra-anchor',
-      cx: '0', cy: '14', rx: '14', ry: '8',
-      fill: 'rgba(222,21,69,0.30)'
-    }));
-    // Glow halo — size = haloRadius from CHAKRA_VISUAL
-    spot.appendChild(svg('circle', { class: 'bf-chakra-glow', r: String(v.haloRadius), 'fill-opacity': '0.55' }));
-    // Joy-Spark mini-nucleus rings: count from CHAKRA_VISUAL[state].rings.
-    // Radii at 5, 9, 13, 17, 21 (then halo at 23 for radiant).
-    const ringCount = Math.max(1, v.rings || Math.round(v.amp * 5));
-    for (let i = 0; i < ringCount; i++) {
-      const ringR = 5 + i * 4; // 5, 9, 13, 17, 21
-      if (ringR > v.haloRadius) continue; // ring would exceed halo — skip
-      const isInnermost = (i === 0);
-      const isConsolidating = (c.state === 'consolidating');
-      const ringCls = 'bf-chakra-ring'
-        + (isInnermost && v.amp >= 0.85 ? ' bf-chakra-ring--gold' : '')
-        + (isConsolidating ? ' bf-chakra-ring--dashed' : '');
-      spot.appendChild(svg('circle', {
-        class: ringCls,
-        r: String(ringR),
-        fill: 'none',
-        'stroke-width': Math.max(0.3, (0.7 - i * 0.06)).toFixed(2),
-        'stroke-opacity': (0.55 * Math.pow(0.72, i)).toFixed(2)
+  // Expanded mode only: tiny chakra anchor dots at each chakra y on the spine.
+  // The chakra column to the right pairs each row to one of these dots
+  // visually (matching y, matching color). For v1.7.0 we use a y-alignment
+  // pairing rather than literal SVG leader lines — leader lines are added
+  // in a follow-up if needed.
+  if (mode === 'expanded' && Array.isArray(CHAKRA_STATES)) {
+    CHAKRA_STATES.forEach(c => {
+      const cy = (c.yPct / 100) * 480 + 12;
+      root.appendChild(svg('circle', {
+        class: 'bf-chakra-anchor-dot',
+        'data-chakra-id': c.id,
+        cx: '160', cy: cy.toFixed(0),
+        r: '2.5',
+        fill: 'currentColor'
       }));
-    }
-    // Core dot — constant 5px across all states
-    spot.appendChild(svg('circle', { class: 'bf-chakra-core', r: '5' }));
-    // Containing ring (only visible for carrying-a-lot) — sits just inside halo
-    spot.appendChild(svg('circle', {
-      class: 'bf-chakra-contain',
-      r: String(Math.max(v.haloRadius - 4, 8)), fill: 'none',
-      stroke: 'rgba(255,255,255,0.6)', 'stroke-width': '0.6'
-    }));
-    positioner.appendChild(spot);
-    root.appendChild(positioner);
-  });
+    });
+  }
 
   return root;
+}
+
+/* v1.7.0: Chakra column — the visual subject of the expanded dashboard.
+   Replaces the in-body mini-nucleus rendering. Each row: disc (color =
+   identity, size = amplitude, saturation = vitality, gold ring at
+   threshold) + name + state word + 5-pip amplitude bar.
+   Order: crown at top → root at bottom (matches y-position in silhouette
+   so the eye pairs disc with anchor-dot via shared y-line). */
+function buildChakraColumn() {
+  const col = el('div', { class: 'bf-chakra-column' });
+  if (!Array.isArray(CHAKRA_STATES)) return col;
+  // CHAKRA_STATES is in energetic ascent order (crown → root by index 0..6
+  // when looking at yPct: yPct=7 for crown, yPct=76 for root). Render in
+  // visual top-to-bottom order, which matches array order if yPct is
+  // ascending. We sort defensively.
+  const ordered = [...CHAKRA_STATES].sort((a, b) => (a.yPct || 0) - (b.yPct || 0));
+  ordered.forEach(c => {
+    const v = CHAKRA_VISUAL[c.state] || { amp: 0.7 };
+    const row = el('div', {
+      class: 'bf-chakra-row',
+      dataset: { id: c.id, state: c.state }
+    });
+    row.style.setProperty('--amp', v.amp.toFixed(2));
+    row.style.setProperty('--threshold', v.amp >= 0.85 ? '1' : '0');
+
+    // Disc — color = identity (CSS), size driven by --amp (CSS scales 0.5..1.0)
+    const disc = el('div', { class: 'bf-chakra-disc', 'aria-hidden': 'true' });
+    row.appendChild(disc);
+
+    // Meta block: name + state word + amplitude bar
+    const meta = el('div', { class: 'bf-chakra-meta' });
+    const nameRow = el('div', { class: 'bf-chakra-name' });
+    nameRow.appendChild(document.createTextNode(c.label));
+    if (v.amp >= 0.85) {
+      const star = el('span', { class: 'bf-chakra-threshold-star', 'aria-label': 'threshold reached', text: ' ★' });
+      nameRow.appendChild(star);
+    }
+    meta.appendChild(nameRow);
+
+    // State word — replace dashes with spaces for readability
+    const stateText = c.state.replace(/-/g, ' ');
+    meta.appendChild(el('div', { class: 'bf-chakra-state-word', text: stateText }));
+
+    // 5-pip amplitude bar
+    const bar = el('div', { class: 'bf-chakra-bar', 'aria-label': 'amplitude ' + Math.round(v.amp * 100) + ' percent' });
+    const filled = Math.max(1, Math.round(v.amp * 5));
+    for (let i = 0; i < 5; i++) {
+      bar.appendChild(el('span', { class: 'bf-chakra-pip' + (i < filled ? ' filled' : '') }));
+    }
+    meta.appendChild(bar);
+
+    // Practitioner note (if present in chakra state)
+    if (c.note) {
+      meta.appendChild(el('div', { class: 'bf-chakra-note', text: c.note }));
+    }
+
+    row.appendChild(meta);
+    col.appendChild(row);
+  });
+  return col;
 }
 
 function buildHelixSVG() {
@@ -3220,75 +3374,192 @@ function buildWaveformSVG(week) {
   return { svg: root, hz };
 }
 
-function mountBiofieldDashboard() {
-  const root = document.getElementById('biofield-dashboard');
-  if (!root) return;
-  // Apply the currently-active snapshot before any build function reads
-  // chakraStates / view fields.
-  applyActiveSnapshot();
-  while (root.firstChild) root.removeChild(root.firstChild);
+/* v1.7.0: dashboard is now a two-state controller.
+   - Doorway (default): a settling cue card. Portrait + holding-quote +
+     still silhouette + one outer aura ring breathing + 5.5 BPM dot.
+     "Open the field" affordance below.
+   - Expanded (sidecar): silhouette demoted to a quiet armature on the
+     left, chakra column to its right, Hawkins ladder, horizontal
+     Solfeggio strip, headshot at bottom (thangka anchor), archetype +
+     helix + delta below.
+   State persists in LS.dashOpen. */
+function isDashboardOpen() {
+  return localStorage.getItem(LS.dashOpen) === '1';
+}
+function openDashboard() {
+  localStorage.setItem(LS.dashOpen, '1');
+  mountBiofieldDashboard();
+}
+function closeDashboard() {
+  localStorage.removeItem(LS.dashOpen);
+  mountBiofieldDashboard();
+}
 
-  const grid = el('div', { class: 'bf-grid' });
-
-  /* LEFT COLUMN */
-  const leftCol = el('div', { class: 'bf-silhouette-wrap' });
-  const stage = el('div', { class: 'bf-silhouette-stage' });
-  stage.appendChild(buildHawkinsLadder());
-  stage.appendChild(buildSilhouetteSVG());
-  stage.appendChild(buildSolfeggioScale());
-  leftCol.appendChild(stage);
-
-  // Timeline strip (Phase C). Renders even with only baseline; missing-week
-  // dots become CTAs that scroll to the Map's capture panel.
-  leftCol.appendChild(buildTimelineStrip());
-
-  // Avatar tile + name + aside (Principle 02 distributed here)
-  const avatarRow = el('div', { class: 'bf-avatar-row' });
-  const tile = el('div', { class: 'bf-avatar-tile' });
-  const portraitSrc = (USER && USER.portrait) || ('assets/portraits/' + (USER && USER.slug || '') + '.jpg');
+/* Portrait helpers. v1.7.0 adds onerror fallback to a soft initial-circle
+   so a missing slug-derived JPG no longer breaks the hero tile silently. */
+function buildPortraitImg(extraClass) {
+  const portraitSrc = (USER && USER.portrait) || ('assets/portraits/' + ((USER && USER.slug) || '') + '.jpg');
   const portraitName = (USER && USER.displayName) || '';
-  tile.appendChild(el('img', { src: portraitSrc, alt: portraitName, loading: 'eager' }));
+  const img = el('img', {
+    src: portraitSrc,
+    alt: portraitName,
+    loading: 'eager'
+  });
+  img.addEventListener('error', () => {
+    // Replace the broken image with an initial-circle fallback in place.
+    const wrap = img.parentElement;
+    if (!wrap) return;
+    const initials = portraitName ? portraitName.charAt(0).toUpperCase() : '◯';
+    const fallback = el('div', { class: 'bf-avatar-fallback' + (extraClass ? ' ' + extraClass : ''), text: initials });
+    img.replaceWith(fallback);
+  });
+  return img;
+}
+
+/* Horizontal Solfeggio strip — replaces the vertical right-rail scale in
+   the expanded state. Log-mapped 174..963; renders 174 / 396 / 432 / 528
+   (miracle, gold) / 639 / 741 / 963 along a single line. */
+function buildSolfeggioStrip() {
+  const root = svg('svg', {
+    class: 'bf-solfeggio-strip',
+    viewBox: '0 0 800 36',
+    preserveAspectRatio: 'none',
+    'aria-label': 'Solfeggio frequency scale'
+  });
+  const hzMin = 174, hzMax = 963;
+  const logMin = Math.log(hzMin), logMax = Math.log(hzMax);
+  const xLo = 16, xHi = 784;
+  const hzToX = (hz) => xLo + (Math.log(hz) - logMin) / (logMax - logMin) * (xHi - xLo);
+  // Track
+  root.appendChild(svg('line', {
+    class: 'bf-solfeggio-strip-track',
+    x1: String(xLo), x2: String(xHi), y1: '14', y2: '14'
+  }));
+  const ticks = [
+    { hz: 174, dim: true },
+    { hz: 396, dim: true },
+    { hz: 432, dim: false },
+    { hz: 528, dim: false, miracle: true },
+    { hz: 639, dim: false },
+    { hz: 741, dim: true },
+    { hz: 963, dim: true }
+  ];
+  ticks.forEach(t => {
+    const x = hzToX(t.hz);
+    root.appendChild(svg('line', {
+      class: 'bf-solfeggio-strip-tick' + (t.dim ? ' dim' : '') + (t.miracle ? ' miracle' : ''),
+      x1: x.toFixed(1), x2: x.toFixed(1),
+      y1: '8', y2: '20'
+    }));
+    if (!t.dim) {
+      const lbl = svg('text', {
+        class: 'bf-solfeggio-strip-label' + (t.miracle ? ' miracle' : ''),
+        x: x.toFixed(1), y: '32',
+        'text-anchor': 'middle'
+      });
+      lbl.textContent = t.hz + ' Hz' + (t.miracle ? ' · Miracles' : '');
+      root.appendChild(lbl);
+    }
+  });
+  return root;
+}
+
+/* Doorway state — the settling default. Three animated surfaces:
+   outer aura ring, breath dot, slow aurora blob. Full instrument lives
+   behind the "open the field" affordance. */
+function buildDoorwayState() {
+  const wrap = el('div', { class: 'bf-doorway' });
+  const portraitName = (USER && USER.displayName) || '';
+
+  // Hero: portrait + name + dek
+  const hero = el('div', { class: 'bf-doorway-hero' });
+  const tile = el('div', { class: 'bf-avatar-tile bf-avatar-tile--door' });
+  tile.appendChild(buildPortraitImg('bf-avatar-fallback--door'));
+  hero.appendChild(tile);
+  const heroMeta = el('div', { class: 'bf-doorway-meta' });
+  heroMeta.appendChild(el('div', { class: 'name', text: portraitName }));
+  heroMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' }));
+  hero.appendChild(heroMeta);
+  wrap.appendChild(hero);
+
+  // Holding-quote — promoted from the v1.6.x bottom block to the doorway hero
+  wrap.appendChild(el('div', {
+    class: 'bf-doorway-holding',
+    text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.'
+  }));
+
+  // Minimal silhouette: body + ONE outer aura ring breathing
+  const silhouetteWrap = el('div', { class: 'bf-doorway-silhouette' });
+  silhouetteWrap.appendChild(buildSilhouetteSVG('doorway'));
+  // Breath dot — single 8px circle in the corner pulsing on master clock
+  const breathDot = el('div', { class: 'bf-breath-dot', 'aria-label': 'breath rhythm 5.5 per minute' });
+  silhouetteWrap.appendChild(breathDot);
+  wrap.appendChild(silhouetteWrap);
+
+  // Open-the-field affordance
+  const openBtn = el('button', { class: 'bf-doorway-open', type: 'button' });
+  openBtn.appendChild(el('span', { class: 'bf-doorway-open-icon', 'aria-hidden': 'true' }));
+  openBtn.appendChild(el('span', { class: 'bf-doorway-open-text', text: 'open the field' }));
+  openBtn.addEventListener('click', openDashboard);
+  wrap.appendChild(openBtn);
+
+  return wrap;
+}
+
+/* Expanded (sidecar) state — silhouette small + chakra column + ladders +
+   horizontal Solfeggio strip + headshot at bottom + archetype/helix/delta. */
+function buildExpandedState() {
+  const wrap = el('div', { class: 'bf-expanded' });
+  const view = getView();
+  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
+  const portraitName = (USER && USER.displayName) || '';
+
+  // Close-the-field affordance at top-right of the expanded state
+  const closeBtn = el('button', {
+    class: 'bf-expanded-close',
+    type: 'button',
+    'aria-label': 'close the field, return to doorway'
+  });
+  closeBtn.appendChild(el('span', { class: 'bf-doorway-open-text', text: 'close the field' }));
+  closeBtn.addEventListener('click', closeDashboard);
+  wrap.appendChild(closeBtn);
+
+  // Sidecar grid: silhouette + Hawkins ladder on the left, chakra column on the right
+  const sidecar = el('div', { class: 'bf-sidecar' });
+
+  const leftCol = el('div', { class: 'bf-sidecar-left' });
+  leftCol.appendChild(buildHawkinsLadder());
+  // Smaller silhouette stage
+  const silhouetteStage = el('div', { class: 'bf-silhouette-stage bf-silhouette-stage--small' });
+  silhouetteStage.appendChild(buildSilhouetteSVG('expanded'));
+  leftCol.appendChild(silhouetteStage);
+  sidecar.appendChild(leftCol);
+
+  // Chakra column — the visual subject of the expanded state
+  const rightCol = el('div', { class: 'bf-sidecar-right' });
+  rightCol.appendChild(buildChakraColumn());
+  sidecar.appendChild(rightCol);
+
+  wrap.appendChild(sidecar);
+
+  // Horizontal Solfeggio strip below the chakra column
+  wrap.appendChild(buildSolfeggioStrip());
+
+  // Headshot at bottom (thangka anchor: eye climbs root → crown to reach the chakra column)
+  const avatarRow = el('div', { class: 'bf-avatar-row bf-avatar-row--anchor' });
+  const tile = el('div', { class: 'bf-avatar-tile' });
+  tile.appendChild(buildPortraitImg());
   avatarRow.appendChild(tile);
   const avMeta = el('div');
   avMeta.appendChild(el('div', { class: 'name', text: portraitName }));
-  avMeta.appendChild(el('div', { text: 'their field, mirrored' }));
+  avMeta.appendChild(el('div', { text: 'their field, mirrored · ' + auricMeters.toFixed(1) + ' m' }));
   avatarRow.appendChild(avMeta);
-  leftCol.appendChild(avatarRow);
+  wrap.appendChild(avatarRow);
 
-  // Aura caption — labels the gold dashed boundary ring with the actual meters.
-  const view = getView();
-  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
-  const auraCap = el('div', { class: 'bf-aura-caption' });
-  auraCap.appendChild(document.createTextNode('Auric field '));
-  auraCap.appendChild(el('strong', { text: auricMeters.toFixed(1) + ' m' }));
-  auraCap.appendChild(document.createTextNode('. Pulsing in triadic waves. A golden Fibonacci spiral rises from the crown.'));
-  leftCol.appendChild(auraCap);
+  // Timeline strip (4-week comparison)
+  wrap.appendChild(buildTimelineStrip());
 
-  // Block caption (Primary block as voiced quote, no card-chip)
-  const blockCap = el('div', { class: 'bf-block-caption' });
-  blockCap.appendChild(el('span', { class: 'label', text: 'Carrier attenuation' }));
-  blockCap.appendChild(el('div', { class: 'quote', text: '"Hesitation in finalizing commitments."' }));
-  blockCap.appendChild(el('div', { class: 'holding', text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.' }));
-  leftCol.appendChild(blockCap);
-
-  grid.appendChild(leftCol);
-
-  /* RIGHT COLUMN */
-  const right = el('div', { class: 'bf-readout' });
-
-  // Aside (Principle 02)
-  right.appendChild(el('div', {
-    class: 'bf-section-aside',
-    text: 'This is a living experiment. Your body is the source of truth.'
-  }));
-
-  // "What moved" delta panel (Phase C). Only renders when ≥2 snapshots exist.
-  const delta = buildDeltaPanel(true);
-  if (delta) right.appendChild(delta);
-
-  // Calibration callout — the prose summary that used to live under the
-  // horizontal arc. The full scale visualization moved into the silhouette
-  // stage as the vertical ladder + Solfeggio Hz scale.
+  // Calibration callout — prose summary
   const hkLevel = Number(view.hawkinsLevel) || 525;
   const hkTarget = Number(view.hawkinsTarget) || 528;
   const calBlock = el('div', { class: 'bf-calibration' });
@@ -3298,10 +3569,14 @@ function mountBiofieldDashboard() {
   calVal.appendChild(document.createTextNode(' → ' + hkTarget + ' Hz Miracles. Within reach.'));
   calBlock.appendChild(calVal);
   calBlock.appendChild(el('div', { class: 'felt', text: 'A felt-sense map. One frame among many.' }));
-  right.appendChild(calBlock);
+  wrap.appendChild(calBlock);
 
-  // DNA helix + meta — counts driven by current view's dna
-  const dnaInfo = (getView().dna) || { phaseLocked: 9, consolidating: 3, of: 12 };
+  // What moved (only when ≥2 snapshots exist)
+  const delta = buildDeltaPanel(true);
+  if (delta) wrap.appendChild(delta);
+
+  // DNA helix + meta
+  const dnaInfo = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
   const dna = el('div', { class: 'bf-helix' });
   const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
   helixWrap.appendChild(buildHelixSVG());
@@ -3314,18 +3589,32 @@ function mountBiofieldDashboard() {
   dnaMeta.appendChild(cnt);
   dnaMeta.appendChild(el('div', { class: 'helix-sub', text: 'The lower pairs anchor first. The upper pairs are on their way.' }));
   dna.appendChild(dnaMeta);
-  right.appendChild(dna);
+  wrap.appendChild(dna);
 
   // Archetype
   const arch = el('div', { class: 'bf-archetype' });
   arch.appendChild(el('span', { class: 'label', text: 'Archetype' }));
-  arch.appendChild(el('div', { class: 'name', text: 'Harmonic Guardian of the Inner Return' }));
-  right.appendChild(arch);
+  const archetypeText = (view.archetype || (USER && USER.archetype) || 'Harmonic Guardian of the Inner Return');
+  arch.appendChild(el('div', { class: 'name', text: archetypeText }));
+  wrap.appendChild(arch);
 
-  grid.appendChild(right);
-  root.appendChild(grid);
+  return wrap;
+}
 
-  /* Composite waveform stripe at the bottom edge */
+function mountBiofieldDashboard() {
+  const root = document.getElementById('biofield-dashboard');
+  if (!root) return;
+  applyActiveSnapshot();
+  while (root.firstChild) root.removeChild(root.firstChild);
+
+  if (isDashboardOpen()) {
+    root.appendChild(buildExpandedState());
+  } else {
+    root.appendChild(buildDoorwayState());
+  }
+
+  /* Composite waveform stripe at the bottom edge — only in expanded state */
+  if (!isDashboardOpen()) return;
   const week = (function() {
     const w = (ramonState.weeksCompleted || 0) + 1;
     return Math.max(1, Math.min(4, w));
@@ -4064,69 +4353,65 @@ function setActiveSnapshot(weekN) {
   }
 }
 
-/* Morph the live dashboard to a new snapshot's view, in place. CSS transitions
-   on `.bf-chakra-glow`, `.bf-aura-boundary`, `.bf-ladder-beam` etc. handle the
-   400ms tween of radii / y positions. The DNA helix rebuilds with a quick
-   crossfade (rung counts can't tween numerically). */
+/* v1.7.0: Morph the live dashboard to a new snapshot's view, in place.
+   With chakras now in the sidecar column (not in-body), the morph updates:
+   - chakra column row data attributes + amplitude/threshold CSS vars
+   - aura ring radius (the single outer ring that tracks auricMeters)
+   - Hawkins beam y + label + link + target tick
+   - calibration callout text
+   - DNA helix (crossfade rebuild — rung counts can't tween)
+   - timeline strip active state + caption
+   - "What moved" delta panel insertion/replacement
+   Pure-data updates only; no in-body chakra geometry to walk anymore. */
 function morphActiveSnapshot(weekN) {
   applyActiveSnapshot();
+  const view = getView();
 
-  // 1. Chakras — update halo radius, contain ring, position; rebuild rings
-  //    (count changes per state).
+  // 1. Chakra column rows — update state, amp, threshold, state word, bar pips, note
   CHAKRA_STATES.forEach(c => {
-    const positioner = document.querySelector('.bf-chakra-positioner[data-chakra-id="' + c.id + '"]');
-    if (!positioner) return;
-    const v = CHAKRA_VISUAL[c.state] || { radialOffset: 0, haloRadius: 12, amp: 0.7 };
-    const cy = (c.yPct / 100) * 480 + 12;
-    const cx = 160 + v.radialOffset;
-    positioner.setAttribute('transform', 'translate(' + cx + ' ' + cy.toFixed(0) + ')');
-
-    const spot = positioner.querySelector('.bf-chakra-spot');
-    if (!spot) return;
-    spot.setAttribute('data-state', c.state);
-    spot.style.setProperty('--amp', v.amp.toFixed(2));
-    spot.style.setProperty('--halo', String(v.haloRadius));
-
-    const glow = spot.querySelector('.bf-chakra-glow');
-    if (glow) glow.setAttribute('r', String(v.haloRadius));
-    const contain = spot.querySelector('.bf-chakra-contain');
-    if (contain) contain.setAttribute('r', String(Math.max(v.haloRadius - 4, 8)));
-
-    // Rebuild the nucleus rings — count is data-driven so they can't tween.
-    spot.querySelectorAll('.bf-chakra-ring').forEach(r => r.remove());
-    const ringCount = Math.max(1, v.rings || Math.round(v.amp * 5));
-    const insertBefore = spot.querySelector('.bf-chakra-core');
-    for (let i = 0; i < ringCount; i++) {
-      const ringR = 5 + i * 4;
-      if (ringR > v.haloRadius) continue;
-      const isInnermost = (i === 0);
-      const isConsolidating = (c.state === 'consolidating');
-      const ringCls = 'bf-chakra-ring'
-        + (isInnermost && v.amp >= 0.85 ? ' bf-chakra-ring--gold' : '')
-        + (isConsolidating ? ' bf-chakra-ring--dashed' : '');
-      const ring = svg('circle', {
-        class: ringCls, r: String(ringR), fill: 'none',
-        'stroke-width': Math.max(0.3, (0.7 - i * 0.06)).toFixed(2),
-        'stroke-opacity': (0.55 * Math.pow(0.72, i)).toFixed(2)
-      });
-      if (insertBefore) spot.insertBefore(ring, insertBefore);
-      else spot.appendChild(ring);
+    const row = document.querySelector('.bf-chakra-row[data-id="' + c.id + '"]');
+    if (!row) return;
+    const v = CHAKRA_VISUAL[c.state] || { amp: 0.7 };
+    row.setAttribute('data-state', c.state);
+    row.style.setProperty('--amp', v.amp.toFixed(2));
+    row.style.setProperty('--threshold', v.amp >= 0.85 ? '1' : '0');
+    // State word
+    const stateWord = row.querySelector('.bf-chakra-state-word');
+    if (stateWord) stateWord.textContent = c.state.replace(/-/g, ' ');
+    // Threshold star next to name
+    const nameEl = row.querySelector('.bf-chakra-name');
+    if (nameEl) {
+      const existingStar = nameEl.querySelector('.bf-chakra-threshold-star');
+      if (v.amp >= 0.85 && !existingStar) {
+        nameEl.appendChild(el('span', { class: 'bf-chakra-threshold-star', text: ' ★' }));
+      } else if (v.amp < 0.85 && existingStar) {
+        existingStar.remove();
+      }
     }
+    // Amplitude pips
+    const filled = Math.max(1, Math.round(v.amp * 5));
+    row.querySelectorAll('.bf-chakra-pip').forEach((pip, i) => {
+      pip.classList.toggle('filled', i < filled);
+    });
+    // Note text
+    const noteEl = row.querySelector('.bf-chakra-note');
+    if (noteEl) noteEl.textContent = c.note || '';
   });
 
-  // 2. Aura boundary radius
-  const view = getView();
+  // 2. Outer aura ring radius (the only one that exists in v1.7.0)
   const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
   const auricR = Math.max(120, Math.min(220, 80 + auricMeters * 9));
-  const boundary = document.querySelector('.bf-aura-boundary');
-  if (boundary) boundary.setAttribute('r', auricR.toFixed(1));
+  const auraRing = document.querySelector('.bf-aura-ring--solo');
+  if (auraRing) auraRing.setAttribute('r', auricR.toFixed(1));
 
-  // 3. Aura caption number
-  const auraStrong = document.querySelector('.bf-aura-caption strong');
-  if (auraStrong) auraStrong.textContent = auricMeters.toFixed(1) + ' m';
+  // 3. Aura meters in the avatar caption (expanded state)
+  const auraDek = document.querySelector('.bf-avatar-row--anchor div div');
+  if (auraDek && /m\b/.test(auraDek.textContent)) {
+    auraDek.textContent = 'their field, mirrored · ' + auricMeters.toFixed(1) + ' m';
+  }
 
-  // 4. Hawkins beam + connecting line + target tick
-  const valToY = (v) => 460 - (v - 200) / 800 * 436;
+  // 4. Hawkins beam + label + link + target tick
+  const valToY = (val) => 460 - (val - 200) / 800 * 436;
   const level = Number(view.hawkinsLevel) || 525;
   const target = Number(view.hawkinsTarget) || null;
   const beam = document.querySelector('.bf-ladder-beam');
@@ -4159,7 +4444,7 @@ function morphActiveSnapshot(weekN) {
     calVal.appendChild(document.createTextNode(' → ' + hkTarget + ' Hz Miracles. Within reach.'));
   }
 
-  // 6. DNA helix — rebuild with a quick crossfade (counts can't tween)
+  // 6. DNA helix — crossfade rebuild
   const helixWrap = document.querySelector('.bf-helix-svg-wrap');
   if (helixWrap) {
     helixWrap.style.transition = 'opacity 200ms ease';
@@ -4178,7 +4463,7 @@ function morphActiveSnapshot(weekN) {
     helixCount.appendChild(document.createTextNode(' · ' + dna.consolidating + ' consolidating · of ' + dna.of));
   }
 
-  // 7. Timeline strip — update active dot state (no rebuild)
+  // 7. Timeline strip — update active dot + caption
   document.querySelectorAll('.bf-timeline-dot').forEach(d => {
     const w = parseInt(d.dataset.week, 10);
     d.classList.toggle('active', w === weekN);
@@ -4199,27 +4484,21 @@ function morphActiveSnapshot(weekN) {
     }
   }
 
-  // 8. "What moved" delta panel — replace if exists, insert if just appearing,
-  //    remove if no comparison is possible.
+  // 8. "What moved" delta panel — replace, insert, or remove
   const newDelta = buildDeltaPanel(true);
   const oldDelta = document.querySelector('.bf-delta');
-  const right = document.querySelector('.bf-readout');
   if (newDelta && oldDelta) {
     oldDelta.replaceWith(newDelta);
-  } else if (newDelta && right) {
-    const aside = right.querySelector('.bf-section-aside');
-    if (aside) aside.insertAdjacentElement('afterend', newDelta);
-    else right.insertBefore(newDelta, right.firstChild);
+  } else if (newDelta) {
+    // Insert into the expanded-state container, after the calibration block if present
+    const expanded = document.querySelector('.bf-expanded');
+    if (expanded) {
+      const cal = expanded.querySelector('.bf-calibration');
+      if (cal) cal.insertAdjacentElement('afterend', newDelta);
+      else expanded.appendChild(newDelta);
+    }
   } else if (oldDelta && !newDelta) {
     oldDelta.remove();
-  }
-
-  // 9. Golden spiral — depends on chakra states; rebuild quietly behind a brief
-  //    fade so it tracks the new chakra positions/states.
-  const silhouetteSvg = document.querySelector('.bf-silhouette');
-  if (silhouetteSvg) {
-    silhouetteSvg.querySelectorAll('.bf-spiral-seg, .bf-spiral-terminal').forEach(n => n.remove());
-    buildGoldenSpiral(silhouetteSvg);
   }
 }
 function applyActiveSnapshot() {
