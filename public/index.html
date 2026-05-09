@@ -1569,22 +1569,23 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 
 .session-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
 @media (min-width: 1024px) { .session-grid { grid-template-columns: 1fr 1fr; gap: 24px; } }
+/* v1.7.1: art-at-top vertical layout. Album art is a full-width banner at
+   the top of the card; everything else stacks below. Eliminates the dead
+   negative-space below short art in the old horizontal-grid layout, and
+   reads more like an album card / hero. */
 .session-card {
   background: rgba(31,24,36,0.55);
   border: 1px solid var(--glass-border);
   border-radius: 18px;
-  padding: 24px;
-  position: relative; overflow: hidden;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
   transition: border-color .3s, background .3s, transform .3s, box-shadow .3s;
-  display: grid;
-  grid-template-columns: 132px 1fr;
-  gap: 22px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 8px 32px -12px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.04);
   transform: translateZ(0);
 }
-@media (max-width: 1023px) { .session-card { grid-template-columns: 96px 1fr; gap: 18px; padding: 20px; } }
-@media (max-width: 640px) { .session-card { grid-template-columns: 72px 1fr; gap: 14px; padding: 18px; } }
 .session-card:hover {
   border-color: rgba(106,223,217,0.28);
   background: rgba(31,24,36,0.72);
@@ -1592,26 +1593,33 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   box-shadow: 0 16px 48px -16px rgba(86,76,112,0.7), 0 0 24px rgba(123,111,168,0.18);
 }
 .session-art {
-  width: 132px; height: 132px;
-  border-radius: 12px; overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
   background: var(--surface);
-  border: 1px solid var(--glass-border);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   position: relative;
-  flex-shrink: 0;
 }
-@media (max-width: 1023px) { .session-art { width: 96px; height: 96px; } }
-@media (max-width: 640px) { .session-art { width: 72px; height: 72px; } }
 .session-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .session-art::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(circle at 30% 20%, transparent, rgba(11,8,15,0.32) 100%);
+  background: linear-gradient(180deg, transparent 50%, rgba(11,8,15,0.32) 100%);
 }
 .session-art .ring-mask {
   position: absolute; inset: 0;
-  border-radius: 12px;
+  border-radius: 16px 16px 0 0;
   border: 1px solid transparent;
   pointer-events: none;
   transition: border-color 200ms ease;
+}
+.session-body {
+  padding: 22px 24px 24px;
+  display: flex; flex-direction: column;
+  min-width: 0;
+}
+@media (max-width: 720px) {
+  .session-body { padding: 18px 20px 20px; }
 }
 .session-card.has-note .session-art .ring-mask {
   border-color: rgba(106,223,217,0.55);
@@ -1625,7 +1633,7 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   100% { border-color: rgba(106,223,217,0.55); box-shadow: 0 0 0 0 rgba(106,223,217,0); }
 }
 
-.session-body { min-width: 0; }
+/* .session-body — moved into the v1.7.1 vertical-layout rule above */
 .session-cat {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
@@ -1819,7 +1827,8 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .session-card.collapsed-reflected .notes,
 .session-card.collapsed-reflected .session-spotify,
 .session-card.collapsed-reflected .artist-row { display: none; }
-.session-card.collapsed-reflected { grid-template-columns: 1fr; }
+/* .session-card is now a flex-column; no grid-template override needed
+   for collapsed-reflected. The art still hides via the rule above. */
 .session-card.collapsed-reflected .resolved-reflection { display: block; animation: reflection-slide-up 700ms cubic-bezier(.2,.8,.2,1); }
 .session-card.collapsed-reflected .resolved-actions { display: flex; }
 .session-card.deepened .resolved-reflection { border-left-color: var(--gold); background: rgba(255,215,100,0.04); }
@@ -1952,20 +1961,46 @@ textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
   cursor: not-allowed;
 }
 
-.reserve-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 24px; }
-.reserve-item {
-  display: flex; gap: 14px; align-items: center;
-  background: var(--glass); border: 1px dashed var(--glass-border);
-  border-radius: 12px; padding: 12px 14px;
-  font-size: 13px; color: var(--mid); line-height: 1.45;
+/* v1.7.1: Held in Reserve cards adopt the same art-at-top vertical layout
+   as session cards. Each card is clickable: head (art + name + artist) is
+   always visible, click toggles expanded state which reveals the note +
+   chakra hint + a "for when..." line. Renders real art if `art` field is
+   set on the reserve entry; falls back to chakra-tinted gradient otherwise. */
+.reserve-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
 }
+.reserve-item {
+  background: rgba(31,24,36,0.45);
+  border: 1px dashed var(--glass-border);
+  border-radius: 14px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: border-color .25s, background .25s, transform .25s, box-shadow .25s;
+}
+.reserve-item:hover {
+  border-color: rgba(106,223,217,0.32);
+  border-style: solid;
+  background: rgba(31,24,36,0.65);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -16px rgba(86,76,112,0.5);
+}
+.reserve-item:focus-visible { outline: 1px solid rgba(106,223,217,0.55); outline-offset: 2px; }
 .reserve-art {
-  flex-shrink: 0;
-  width: 64px; height: 64px; border-radius: 8px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px 14px 0 0;
   background: linear-gradient(135deg, rgba(123,111,168,0.45), rgba(31,24,36,0.85));
-  border: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   position: relative; overflow: hidden;
 }
+.reserve-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Chakra-tinted gradient fallback shows when no `art` is provided */
 .reserve-art[data-chakra="crown"]    { background: linear-gradient(135deg, rgba(220,200,255,0.55), rgba(40,28,60,0.85)); }
 .reserve-art[data-chakra="third-eye"]{ background: linear-gradient(135deg, rgba(123,111,168,0.55), rgba(28,24,52,0.85)); }
 .reserve-art[data-chakra="throat"]   { background: linear-gradient(135deg, rgba(106,223,217,0.50), rgba(18,40,46,0.85)); }
@@ -1974,13 +2009,56 @@ textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
 .reserve-art[data-chakra="sacral"]   { background: linear-gradient(135deg, rgba(240,147,94,0.55), rgba(48,26,18,0.85)); }
 .reserve-art[data-chakra="root"]     { background: linear-gradient(135deg, rgba(220,90,90,0.50), rgba(40,18,18,0.85)); }
 .reserve-art::after {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.18), transparent 60%);
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.16), transparent 60%);
 }
-.reserve-item-meta { min-width: 0; flex: 1; }
-.reserve-item-meta strong { color: var(--light); font-weight: 500; display: block; margin-bottom: 2px; font-size: 13.5px; }
-.reserve-item-meta .artist { color: var(--dim); font-size: 11px; letter-spacing: 0.04em; margin-bottom: 4px; }
-.reserve-item-meta .note { color: var(--mid); font-size: 12px; font-style: italic; line-height: 1.45; }
+.reserve-meta { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.reserve-name {
+  color: var(--light); font-weight: 500;
+  font-size: 14px;
+  font-family: var(--serif);
+  letter-spacing: 0.01em;
+}
+.reserve-artist { color: var(--dim); font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; }
+.reserve-toggle {
+  align-self: flex-end;
+  background: transparent; border: none;
+  color: var(--mid);
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0;
+  margin-top: -28px; /* tuck up against the artist line */
+  pointer-events: none; /* card itself is clickable; toggle is just a glyph */
+  transition: transform .25s cubic-bezier(.2,.8,.2,1), color .25s;
+}
+.reserve-toggle::before {
+  content: '▾';
+  font-size: 14px;
+  display: inline-block;
+  transition: transform .25s cubic-bezier(.2,.8,.2,1);
+}
+.reserve-item.expanded .reserve-toggle::before { transform: rotate(180deg); }
+.reserve-expand {
+  display: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 14px 16px;
+  font-size: 12px; color: var(--mid); line-height: 1.55;
+  font-style: italic;
+}
+.reserve-item.expanded .reserve-expand {
+  display: block;
+  animation: reserve-expand-in 280ms cubic-bezier(.2,.8,.2,1);
+}
+@keyframes reserve-expand-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reserve-expand .label {
+  color: var(--teal);
+  font-style: normal;
+  font-size: 9.5px; letter-spacing: 0.20em; text-transform: uppercase;
+  display: block; margin-bottom: 6px;
+}
 
 .reflect-cta {
   background: linear-gradient(135deg, rgba(106,223,217,0.10), rgba(194,47,205,0.06));
@@ -2263,7 +2341,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.7.0';
+const VERSION = '1.7.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4071,25 +4149,60 @@ function renderPhaseTabs() {
   });
 }
 
-/* Held-in-reserve list. Reads USER.heldInReserve. Each entry: name, artist,
-   chakra (used to tint the art tile), note. Renders to #reserve-list. */
+/* v1.7.1: Held-in-reserve cards. Same art-at-top vertical layout as session
+   cards. Each card is clickable: click toggles expanded state which reveals
+   the practitioner's note. Real album art renders if `art` field is set on
+   the entry; otherwise a chakra-tinted gradient fallback. */
 function renderReserveList() {
   const mount = document.getElementById('reserve-list');
   if (!mount || !USER || !Array.isArray(USER.heldInReserve)) return;
   while (mount.firstChild) mount.removeChild(mount.firstChild);
-  USER.heldInReserve.forEach((item) => {
-    const row = el('div', { class: 'reserve-item' });
+  USER.heldInReserve.forEach((item, idx) => {
+    const card = el('div', {
+      class: 'reserve-item',
+      role: 'button',
+      tabindex: '0',
+      'aria-expanded': 'false',
+      'aria-label': item.name + (item.artist ? ' by ' + item.artist : '')
+    });
+
+    // Art (full-width banner at top)
     const art = el('div', { class: 'reserve-art', dataset: { chakra: item.chakra || '' } });
     if (item.art) {
-      art.appendChild(el('img', { src: item.art, alt: '', loading: 'lazy', style: 'width:100%;height:100%;object-fit:cover;display:block;' }));
+      art.appendChild(el('img', { src: item.art, alt: '', loading: 'lazy' }));
     }
-    row.appendChild(art);
-    const meta = el('div', { class: 'reserve-item-meta' });
-    meta.appendChild(el('strong', { text: item.name }));
-    if (item.artist) meta.appendChild(el('div', { class: 'artist', text: item.artist }));
-    if (item.note) meta.appendChild(el('div', { class: 'note', text: item.note }));
-    row.appendChild(meta);
-    mount.appendChild(row);
+    card.appendChild(art);
+
+    // Meta block (name + artist + chevron toggle indicator)
+    const meta = el('div', { class: 'reserve-meta' });
+    meta.appendChild(el('div', { class: 'reserve-name', text: item.name }));
+    if (item.artist) meta.appendChild(el('div', { class: 'reserve-artist', text: item.artist }));
+    meta.appendChild(el('span', { class: 'reserve-toggle', 'aria-hidden': 'true' }));
+    card.appendChild(meta);
+
+    // Expanded content (hidden by default)
+    if (item.note || item.chakra) {
+      const expand = el('div', { class: 'reserve-expand' });
+      expand.appendChild(el('span', { class: 'label', text: 'Held for' }));
+      const noteText = item.note || ((item.chakra || '').replace(/-/g, ' ') + ' work');
+      expand.appendChild(document.createTextNode(noteText));
+      card.appendChild(expand);
+    }
+
+    // Toggle on click + keyboard
+    function toggle() {
+      const open = card.classList.toggle('expanded');
+      card.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    card.addEventListener('click', toggle);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+
+    mount.appendChild(card);
   });
 }
 
