@@ -642,42 +642,135 @@ main { position: relative; z-index: 2; }
   position: absolute; inset: 0;
   pointer-events: none;
 }
+/* v1.9.10: state-encoded chakras. Each chakra carries:
+   - a definitive ring stroke (border) so the edge reads clearly even
+     against the body's bright aurora
+   - an inset highlight + outer halo for depth
+   - a state-specific border style + per-state animation (see rules
+     below) so the diagnostic state is visually identifiable at a
+     glance without needing labels.
+   Sizes scale with --amp (0.30 undercharged → 1.0 radiant). */
 .bf-chakra-glow-pt {
   position: absolute;
   top: var(--top); left: var(--left);
-  /* v1.9.3: chakras must read clearly against the bright violet body.
-     Dropped mix-blend-mode: screen (it washes the chakra hues out into
-     near-white against the body's already-saturated violet). Replaced
-     with a TWO-LAYER composition rendered via two box-shadow halos +
-     a small solid core — visible at any amp without disappearing into
-     the body's own light. */
-  width: calc(28px + 26px * var(--amp));
-  height: calc(28px + 26px * var(--amp));
+  width: calc(34px + 30px * var(--amp));
+  height: calc(34px + 30px * var(--amp));
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--hue) 95%, white 10%) 0%,
-    color-mix(in srgb, var(--hue) 80%, transparent) 40%,
-    transparent 75%
+    color-mix(in srgb, var(--hue) 92%, white 16%) 0%,
+    color-mix(in srgb, var(--hue) 78%, transparent) 48%,
+    color-mix(in srgb, var(--hue) 35%, transparent) 78%,
+    transparent 92%
   );
+  border: 1.5px solid color-mix(in srgb, var(--hue) 88%, white 20%);
   box-shadow:
-    0 0 calc(14px + 18px * var(--amp)) calc(2px + 6px * var(--amp)) color-mix(in srgb, var(--hue) calc(40% + 30% * var(--amp)), transparent),
-    0 0 calc(28px + 36px * var(--amp)) calc(4px + 10px * var(--amp)) color-mix(in srgb, var(--hue) calc(18% + 20% * var(--amp)), transparent);
-  opacity: calc(0.55 + 0.40 * var(--amp));
-  /* Subtle blur so the core stays sharp but edges feather into the body */
-  filter: blur(calc(0.6px + 1.8px * var(--amp)));
-  /* Breathe with master clock — radiant chakras pulse more visibly */
-  animation: bf-chakra-glow-breath 10910ms ease-in-out infinite;
+    inset 0 0 10px color-mix(in srgb, var(--hue) 55%, white 25%),
+    0 0 calc(14px + 18px * var(--amp)) color-mix(in srgb, var(--hue) calc(45% + 25% * var(--amp)), transparent),
+    0 0 calc(30px + 36px * var(--amp)) color-mix(in srgb, var(--hue) calc(20% + 20% * var(--amp)), transparent);
+  opacity: 0.95;
+  will-change: transform, opacity, filter;
 }
-@keyframes bf-chakra-glow-breath {
-  /* Higher-amp chakras pulse more visibly; the scale step blends with
-     opacity (subtle) to give a heartbeat-like rhythm. */
-  0%, 100% { transform: translate(-50%, -50%) scale(0.96); }
-  50%      { transform: translate(-50%, -50%) scale(1.08); }
+
+/* State: UNDERCHARGED — dim, contracted, faint reaching pulse. Energy
+   looking for ground. Dashed thin edge reads as "not yet whole". */
+.bf-chakra-glow-pt[data-state="undercharged"] {
+  border-style: dashed;
+  border-width: 1px;
+  opacity: 0.70;
+  animation: bf-chakra-undercharged 7200ms ease-in-out infinite;
 }
+@keyframes bf-chakra-undercharged {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.78); filter: brightness(0.7) saturate(0.85); }
+  60%      { transform: translate(-50%, -50%) scale(1.02); filter: brightness(0.95) saturate(1.0); }
+}
+
+/* State: STABILIZING — slow even pulse, finding its rhythm. */
+.bf-chakra-glow-pt[data-state="stabilizing"] {
+  border-width: 1.5px;
+  animation: bf-chakra-stabilizing 8000ms ease-in-out infinite;
+}
+@keyframes bf-chakra-stabilizing {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.94); }
+  50%      { transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* State: HOLDING — settled, quiet. Very subtle breath. */
+.bf-chakra-glow-pt[data-state="holding"] {
+  border-width: 1.5px;
+  animation: bf-chakra-holding 9500ms ease-in-out infinite;
+}
+@keyframes bf-chakra-holding {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.98); }
+  50%      { transform: translate(-50%, -50%) scale(1.02); }
+}
+
+/* State: CONSOLIDATING — releasing old constraints, gathering coherence.
+   Dashed edge for "folding in" texture; asymmetric pulse (slow draw,
+   quicker gather) gives the felt sense of an active rebuild. */
+.bf-chakra-glow-pt[data-state="consolidating"] {
+  border-style: dashed;
+  border-width: 1.5px;
+  animation: bf-chakra-consolidating 5500ms ease-in-out infinite;
+}
+@keyframes bf-chakra-consolidating {
+  0%   { transform: translate(-50%, -50%) scale(1.06); filter: brightness(1.0); }
+  25%  { transform: translate(-50%, -50%) scale(0.85); filter: brightness(0.92); }
+  100% { transform: translate(-50%, -50%) scale(1.06); filter: brightness(1.0); }
+}
+
+/* State: CLEAR — pure signal. Double-ring containment + bright steady
+   sparkle pulse. The brightest line on the body. */
+.bf-chakra-glow-pt[data-state="clear"] {
+  border-width: 2px;
+  box-shadow:
+    inset 0 0 12px color-mix(in srgb, var(--hue) 60%, white 30%),
+    0 0 0 3px color-mix(in srgb, var(--hue) 25%, transparent),
+    0 0 18px color-mix(in srgb, var(--hue) 70%, transparent),
+    0 0 38px color-mix(in srgb, var(--hue) 40%, transparent);
+  animation: bf-chakra-clear 8500ms ease-in-out infinite;
+}
+@keyframes bf-chakra-clear {
+  0%, 100% { filter: brightness(1.0) saturate(1.0); }
+  50%      { filter: brightness(1.18) saturate(1.1); }
+}
+
+/* State: CARRYING-A-LOT — full and weighty. Thick containment ring;
+   slow heavy pulse. Visibly carrying more than it can fully release. */
+.bf-chakra-glow-pt[data-state="carrying-a-lot"] {
+  border-width: 2.5px;
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--hue) 60%, white 25%),
+    0 0 0 2.5px color-mix(in srgb, var(--hue) 45%, transparent),
+    0 0 24px color-mix(in srgb, var(--hue) 60%, transparent),
+    0 0 48px color-mix(in srgb, var(--hue) 32%, transparent);
+  animation: bf-chakra-carrying 10800ms ease-in-out infinite;
+}
+@keyframes bf-chakra-carrying {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.96); filter: brightness(0.94); }
+  50%      { transform: translate(-50%, -50%) scale(1.08); filter: brightness(1.08); }
+}
+
+/* State: RADIANT — expansive, projecting outward. Biggest visible pulse,
+   brightest core, widest halo. The page's coherence source. */
+.bf-chakra-glow-pt[data-state="radiant"] {
+  border-width: 2px;
+  box-shadow:
+    inset 0 0 18px color-mix(in srgb, var(--hue) 45%, white 45%),
+    0 0 32px color-mix(in srgb, var(--hue) 80%, transparent),
+    0 0 64px color-mix(in srgb, var(--hue) 50%, transparent),
+    0 0 96px color-mix(in srgb, var(--hue) 28%, transparent);
+  animation: bf-chakra-radiant 6500ms ease-in-out infinite;
+}
+@keyframes bf-chakra-radiant {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.92); filter: brightness(1.0); }
+  50%      { transform: translate(-50%, -50%) scale(1.16); filter: brightness(1.14); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .bf-chakra-glow-pt { animation: none; }
+  .bf-chakra-glow-pt,
+  .bf-chakra-glow-pt[data-state] { animation: none !important; }
 }
 .bf-chakra-glow-pt[data-chakra="root"]      { --hue: rgb(220, 90, 90); }
 .bf-chakra-glow-pt[data-chakra="sacral"]    { --hue: rgb(240,147, 94); }
@@ -686,8 +779,11 @@ main { position: relative; z-index: 2; }
 .bf-chakra-glow-pt[data-chakra="throat"]    { --hue: rgb(106,223,217); }
 .bf-chakra-glow-pt[data-chakra="third-eye"] { --hue: rgb(123,111,168); }
 .bf-chakra-glow-pt[data-chakra="crown"]     { --hue: rgb(194, 47,205); }
-/* Stagger breath phases per chakra so the field never reads as one pulse */
-.bf-chakra-glow-pt[data-chakra="root"]      { animation-delay: 0s; }
+/* v1.9.10: per-chakra phase offsets. Each chakra now runs a state-specific
+   animation duration (5.5–10.8s), so these negative delays produce naturally
+   uncoordinated pulses across the body — the field reads as a living system
+   rather than seven simultaneous heartbeats. */
+.bf-chakra-glow-pt[data-chakra="root"]      { animation-delay:     0ms; }
 .bf-chakra-glow-pt[data-chakra="sacral"]    { animation-delay: -1559ms; }
 .bf-chakra-glow-pt[data-chakra="solar"]     { animation-delay: -3118ms; }
 .bf-chakra-glow-pt[data-chakra="heart"]     { animation-delay: -4677ms; }
@@ -3056,7 +3152,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.9';
+const VERSION = '1.9.10';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
