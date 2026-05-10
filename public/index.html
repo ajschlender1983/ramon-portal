@@ -543,23 +543,65 @@ main { position: relative; z-index: 2; }
 @media (prefers-reduced-motion: reduce) {
   .bf-auric-ring { animation: none; }
 }
-.bf-auric-ring-label {
-  fill: rgba(255,255,255,0.36);
-  font-family: var(--sans);
-  font-size: 1.4px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  paint-order: stroke;
-  stroke: rgba(11,8,15,0.55);
-  stroke-width: 0.4px;
+/* v1.9.9: in-SVG label rules deprecated (no longer mounted). Left as
+   no-ops in case future code references them. */
+.bf-auric-ring-label,
+.bf-auric-ring-label--user { display: none; }
+
+/* v1.9.9: Big glowing auric readout — HTML overlay positioned at the
+   top of the body wrap, centered on the body's spine (36% x). Sized
+   to read as the primary measurement of the figure, glowing in gold
+   with a soft violet halo. A thin gold-gradient tick line drops from
+   the readout toward the outermost ring's top arc, visually
+   connecting "13.4 m" to the rings drawn around the body. */
+.bf-auric-readout {
+  position: absolute;
+  top: 1.5%; left: 36%;
+  transform: translateX(-50%);
+  z-index: 3;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
 }
-.bf-auric-ring-label--user {
-  fill: rgba(255,215,100,0.85);
-  font-size: 1.7px;
-  font-style: italic;
+.bf-auric-readout .label {
+  display: block;
+  font-family: var(--sans);
+  font-size: clamp(8.5px, 0.85vw, 11px);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(255,215,100,0.62);
+  margin-bottom: 4px;
+}
+.bf-auric-readout .value {
+  display: inline-block;
   font-family: var(--serif);
-  letter-spacing: 0.04em;
-  text-transform: none;
+  font-style: italic;
+  font-size: clamp(22px, 3.4vw, 38px);
+  line-height: 1;
+  color: rgba(255,236,180,0.98);
+  letter-spacing: 0.01em;
+  text-shadow:
+    0 0 14px rgba(255,215,100,0.65),
+    0 0 28px rgba(255,180,90,0.45),
+    0 0 56px rgba(194,47,205,0.35);
+}
+.bf-auric-readout .value strong {
+  font-weight: 500;
+  font-style: italic;
+  color: rgba(255,240,200,1);
+}
+/* Tick line connecting the readout down to the rings. Thin gold
+   gradient that fades into the outer ring's atmosphere. */
+.bf-auric-tick {
+  display: block;
+  margin: 8px auto 0;
+  width: 1px;
+  height: clamp(18px, 3vh, 36px);
+  background: linear-gradient(180deg,
+    rgba(255,215,100,0.78) 0%,
+    rgba(255,215,100,0.45) 60%,
+    rgba(255,215,100,0) 100%);
+  filter: drop-shadow(0 0 4px rgba(255,215,100,0.55));
 }
 .bf-body-image {
   /* v1.9.4: image fills its parent .bf-body-wrap, which is aspect-locked
@@ -3014,7 +3056,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.8';
+const VERSION = '1.9.9';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4326,9 +4368,13 @@ function buildBodyAuroraHero() {
 
   // Auric field rings — concentric circles showing the user's field
   // extent proportionally, centered on body's heart anatomical position.
-  // Inside .bf-body-wrap so (50%, 27%) maps to the figure regardless of
+  // Inside .bf-body-wrap so (36%, 29%) maps to the figure regardless of
   // overall stage width.
   bodyWrap.appendChild(buildAuricRingsOverlay(auricMeters));
+
+  // v1.9.9: Big glowing meter readout above the body, with a tick line
+  // visually connecting it to the rings expanding from the heart.
+  bodyWrap.appendChild(buildAuricReadout(auricMeters));
 
   // Chakra overlay — each chakra glows from within the body. Inside
   // .bf-body-wrap so left:50% / top:N% coordinates land on the figure.
@@ -4416,11 +4462,17 @@ function buildBodyAuroraHero() {
   return wrap;
 }
 
-/* Auric-field rings overlay. Renders as an SVG inside the body stage.
+/* Auric-field rings overlay. Renders as an SVG inside the body wrap.
    Concentric circles centered on body's heart anatomical position,
    sized so the user's measured extent (auricMeters) is the outermost
    ring. Three inner rings at 25/50/75% of that extent give a visual
-   sense of how far the field reaches. */
+   sense of how far the field reaches.
+   v1.9.9: removed the in-SVG per-ring text labels — they rendered
+   pixelated at small viewbox sizes (1.4–1.7px stretched 8× to fit
+   the stage) and the inner 25/50% labels (6.7m, 3.4m) misrepresented
+   the reading as "his reading is 6.7m" when his actual extent is the
+   outermost ring. The single big glowing readout is mounted separately
+   as an HTML overlay (see buildAuricReadout below). */
 function buildAuricRingsOverlay(auricMeters) {
   const root = svg('svg', {
     class: 'bf-auric-rings',
@@ -4434,9 +4486,9 @@ function buildAuricRingsOverlay(auricMeters) {
   const cx = 36, cy = 29;
 
   // Maximum visible radius in viewBox units (out of 100). With the body
-  // at x=36%, more room to the right than left — rings still expand
-  // symmetrically but the visible asymmetry feels natural (field flows
-  // into the open negative space where the side-pane cards sit).
+  // at x=36%, rings expand symmetrically. The outermost ring crosses
+  // beyond the top of the viewbox; .bf-auric-rings overflow:visible
+  // lets the visible arc segments still render around the figure.
   const maxR = 50;
   const stops = [0.25, 0.50, 0.75, 1.0];
 
@@ -4450,21 +4502,27 @@ function buildAuricRingsOverlay(auricMeters) {
       r: r.toFixed(1),
       fill: 'none'
     }));
-    // Label sits at the TOP of each ring's arc (12 o'clock), centered
-    // horizontally — symmetric layout, reads as a measurement scale.
-    const labelX = cx;
-    const labelY = cy - r - 0.6;
-    const labelEl = svg('text', {
-      class: 'bf-auric-ring-label' + (isUser ? ' bf-auric-ring-label--user' : ''),
-      x: labelX.toFixed(1),
-      y: labelY.toFixed(1),
-      'text-anchor': 'middle'
-    });
-    labelEl.textContent = (auricMeters * frac).toFixed(1) + ' m';
-    root.appendChild(labelEl);
   });
 
   return root;
+}
+
+/* v1.9.9: Big glowing auric readout — HTML overlay so the text is
+   always crisp regardless of stage scale. Positioned above the body's
+   crown with a fine vertical tick line dropping toward the rings,
+   visually connecting "your field reaches 13.4 m" to the rings drawn
+   around the body. */
+function buildAuricReadout(auricMeters) {
+  const r = el('div', { class: 'bf-auric-readout' });
+  r.appendChild(el('span', { class: 'label', text: 'Field reaches' }));
+  const value = el('span', { class: 'value' });
+  value.appendChild(el('strong', { text: auricMeters.toFixed(1) }));
+  value.appendChild(document.createTextNode(' m'));
+  r.appendChild(value);
+  // Connector tick — a thin gold gradient line dropping toward the
+  // outermost ring's top arc.
+  r.appendChild(el('span', { class: 'bf-auric-tick', 'aria-hidden': 'true' }));
+  return r;
 }
 
 /* Expanded (sidecar) state — silhouette small + chakra column + ladders +
