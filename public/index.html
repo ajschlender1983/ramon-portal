@@ -467,10 +467,10 @@ main { position: relative; z-index: 2; }
   user-select: none;
 }
 .bf-body-stage--no-image::before {
-  /* Soft body-silhouette hint when the image hasn't been added yet.
-     A radial ellipse standing in for the figure, plus a quiet line of
-     italic copy. No clinical missing-asset language. */
-  content: 'a figure is becoming visible';
+  /* Soft body-silhouette hint when the image is missing or
+     prefers-reduced-data is set. A radial ellipse standing in for
+     the figure, plus a quiet line of italic copy. */
+  content: 'the figure is at rest';
   position: absolute; left: 28%; top: 50%;
   transform: translate(-50%, -50%);
   font-family: var(--serif);
@@ -2659,7 +2659,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.7.3';
+const VERSION = '1.7.4';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3925,7 +3925,7 @@ function buildDoorwayState() {
   const reducedData = window.matchMedia && window.matchMedia('(prefers-reduced-data: reduce)').matches;
   const img = el('img', {
     class: 'bf-body-image',
-    src: reducedData ? '' : 'assets/dashboard/body-aurora.jpg',
+    src: reducedData ? '' : 'assets/dashboard/body-aurora.png',
     alt: 'translucent figure rendered in violet and rose light',
     loading: 'eager',
     decoding: 'async'
