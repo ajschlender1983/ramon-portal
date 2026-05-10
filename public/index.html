@@ -434,6 +434,222 @@ main { position: relative; z-index: 2; }
 .bf-chakra-anchor-dot[data-chakra-id="crown"]     { color: var(--magenta); }
 
 /* ============================================================
+   v1.7.2 — BODY-AURORA STAGE: photographic figure + chakra glows
+   Body image lives at public/assets/dashboard/body-aurora.jpg.
+   Chakras render as radial-gradient glows positioned at anatomical
+   points; mix-blend-mode 'screen' makes them appear to emanate from
+   within the body rather than sit on top. Right negative space holds
+   the avatar tile + Hawkins card + holding quote + breath dot + open
+   affordance. The image already carries the aurora gradient on its
+   right edge, so the side panel uses transparent containers that let
+   the image's own light bleed through.
+   ============================================================ */
+.bf-doorway--body-stage {
+  padding: 0;
+  display: block;
+  min-height: 0;
+}
+.bf-body-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 778 / 1030;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 18px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 70% 50%, rgba(194,47,205,0.32), rgba(31,22,50,0.85) 70%);
+}
+.bf-body-image {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+}
+.bf-body-stage--no-image::before {
+  /* Soft fallback silhouette hint when the image hasn't been added yet */
+  content: 'body-aurora.jpg not found';
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.32);
+  font-family: var(--sans);
+}
+
+/* Chakra glows overlaid on the body. mix-blend-mode 'screen' ADDS the
+   chakra color to the underlying body pixels — light emerges from the
+   figure rather than sitting in front of it. Each chakra's brightness,
+   scale, and saturation track its CHAKRA_VISUAL.amp. */
+.bf-chakra-overlay {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.bf-chakra-glow-pt {
+  position: absolute;
+  top: var(--top); left: var(--left);
+  /* Scale + opacity carry amplitude. Base radius 70px, grows to 130px at amp=1. */
+  width: calc(70px + 60px * var(--amp));
+  height: calc(70px + 60px * var(--amp));
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  /* Hue per chakra; --core sets center alpha, --halo sets outer fade */
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--hue) calc(75% * var(--amp) + 25%), transparent) 0%,
+    color-mix(in srgb, var(--hue) calc(40% * var(--amp)), transparent) 35%,
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+  opacity: calc(0.45 + 0.55 * var(--amp));
+  filter: blur(calc(4px + 6px * var(--amp)));
+  /* Breathe with master clock — gentle pulse on top of the static glow */
+  animation: bf-chakra-glow-breath 10910ms ease-in-out infinite;
+}
+@keyframes bf-chakra-glow-breath {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-chakra-glow-pt { animation: none; }
+}
+.bf-chakra-glow-pt[data-chakra="root"]      { --hue: rgb(220, 90, 90); }
+.bf-chakra-glow-pt[data-chakra="sacral"]    { --hue: rgb(240,147, 94); }
+.bf-chakra-glow-pt[data-chakra="solar"]     { --hue: rgb(255,215,100); }
+.bf-chakra-glow-pt[data-chakra="heart"]     { --hue: rgb(120,210,140); }
+.bf-chakra-glow-pt[data-chakra="throat"]    { --hue: rgb(106,223,217); }
+.bf-chakra-glow-pt[data-chakra="third-eye"] { --hue: rgb(123,111,168); }
+.bf-chakra-glow-pt[data-chakra="crown"]     { --hue: rgb(194, 47,205); }
+/* Stagger breath phases per chakra so the field never reads as one pulse */
+.bf-chakra-glow-pt[data-chakra="root"]      { animation-delay: 0s; }
+.bf-chakra-glow-pt[data-chakra="sacral"]    { animation-delay: -1559ms; }
+.bf-chakra-glow-pt[data-chakra="solar"]     { animation-delay: -3118ms; }
+.bf-chakra-glow-pt[data-chakra="heart"]     { animation-delay: -4677ms; }
+.bf-chakra-glow-pt[data-chakra="throat"]    { animation-delay: -6236ms; }
+.bf-chakra-glow-pt[data-chakra="third-eye"] { animation-delay: -7795ms; }
+.bf-chakra-glow-pt[data-chakra="crown"]     { animation-delay: -9354ms; }
+
+/* Side panel — right negative space of the image holds dashboard data */
+.bf-stage-side {
+  position: absolute;
+  top: 7%; right: 4%;
+  width: 38%;
+  max-width: 360px;
+  display: flex; flex-direction: column;
+  gap: 22px;
+  color: var(--light);
+}
+.bf-stage-avatar {
+  display: flex; align-items: center; gap: 14px;
+}
+.bf-avatar-tile--side {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(255,215,100,0.42);
+  box-shadow: 0 0 24px rgba(123,111,168,0.45);
+  flex-shrink: 0;
+}
+.bf-avatar-tile--side img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bf-stage-avatar-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bf-stage-avatar-meta .name {
+  font-family: var(--serif); font-style: italic;
+  font-size: 22px; line-height: 1.2;
+  color: var(--light);
+}
+.bf-stage-avatar-meta .dek {
+  font-family: var(--serif); font-style: italic;
+  font-size: 12px; color: rgba(255,255,255,0.65);
+  letter-spacing: 0.04em;
+}
+.bf-stage-avatar-meta .aura-line {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,215,100,0.85);
+  margin-top: 4px;
+}
+
+/* Hawkins compact card */
+.bf-stage-hawkins {
+  background: rgba(11,8,15,0.42);
+  border: 1px solid rgba(255,215,100,0.22);
+  border-left: 2px solid var(--gold);
+  border-radius: 0 12px 12px 0;
+  padding: 12px 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.bf-stage-hawkins .label {
+  font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.bf-stage-hawkins .value {
+  font-family: var(--serif);
+  font-size: 28px; line-height: 1.1;
+  color: var(--gold);
+  display: flex; align-items: baseline; gap: 4px;
+}
+.bf-stage-hawkins .value strong { font-style: italic; font-weight: 500; color: var(--gold); }
+.bf-stage-hawkins .value .arrow { color: rgba(255,215,100,0.45); font-size: 18px; }
+.bf-stage-hawkins .value .target { color: rgba(255,215,100,0.65); font-size: 22px; }
+.bf-stage-hawkins .felt {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.65);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* Holding quote on the side */
+.bf-stage-holding {
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; line-height: 1.55;
+  color: rgba(255,255,255,0.85);
+  border-left: 1px solid rgba(255,215,100,0.32);
+  padding-left: 14px;
+  letter-spacing: 0.01em;
+}
+
+.bf-breath-dot--side {
+  position: relative; left: 0; bottom: 0;
+  align-self: flex-start;
+  margin-top: -4px;
+}
+
+.bf-doorway-open--side {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+/* Mobile (and narrow desktop): collapse the absolute side panel into a
+   stacked layout below the image. The body image becomes a banner. */
+@media (max-width: 820px) {
+  .bf-body-stage {
+    aspect-ratio: auto;
+    display: flex; flex-direction: column;
+  }
+  .bf-body-image {
+    position: relative;
+    width: 100%; height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+  .bf-chakra-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    aspect-ratio: 4 / 5;
+    inset: auto;
+  }
+  .bf-stage-side {
+    position: relative;
+    top: auto; right: auto;
+    width: 100%; max-width: none;
+    padding: 24px;
+  }
+}
+
+/* ============================================================
    DOORWAY STATE — the settling default. Three animated surfaces:
    outer aura ring, breath dot, slow aurora blob. Polyvagal-aligned.
    ============================================================ */
@@ -2341,7 +2557,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.7.1';
+const VERSION = '1.7.2';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3545,41 +3761,109 @@ function buildSolfeggioStrip() {
 /* Doorway state — the settling default. Three animated surfaces:
    outer aura ring, breath dot, slow aurora blob. Full instrument lives
    behind the "open the field" affordance. */
+/* Anatomical chakra positions on the body-aurora reference image.
+   Image is 778×1030 portrait; body figure occupies the left half with
+   negative space on the right. Coordinates are % of image bounds. */
+const CHAKRA_IMAGE_POS = {
+  'crown':     { top:  6.5, left: 26 },
+  'third-eye': { top: 11.5, left: 26 },
+  'throat':    { top: 17.5, left: 26 },
+  'heart':     { top: 28,   left: 26 },
+  'solar':     { top: 38,   left: 26 },
+  'sacral':    { top: 47,   left: 26 },
+  'root':      { top: 55,   left: 26 }
+};
+
 function buildDoorwayState() {
-  const wrap = el('div', { class: 'bf-doorway' });
+  const wrap = el('div', { class: 'bf-doorway bf-doorway--body-stage' });
   const portraitName = (USER && USER.displayName) || '';
+  const view = getView();
+  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
 
-  // Hero: portrait + name + dek
-  const hero = el('div', { class: 'bf-doorway-hero' });
-  const tile = el('div', { class: 'bf-avatar-tile bf-avatar-tile--door' });
+  // The body-aurora hero stage: photographic figure + chakra glows + side panel
+  const stage = el('div', { class: 'bf-body-stage' });
+
+  // Body image — translucent figure on aurora gradient
+  const img = el('img', {
+    class: 'bf-body-image',
+    src: 'assets/dashboard/body-aurora.jpg',
+    alt: 'translucent figure rendered in violet and rose light',
+    loading: 'eager'
+  });
+  // Graceful degrade: if the image hasn't been added yet, fall back to a
+  // solid aurora gradient so the layout still reads.
+  img.addEventListener('error', () => {
+    img.style.display = 'none';
+    stage.classList.add('bf-body-stage--no-image');
+  });
+  stage.appendChild(img);
+
+  // Chakra overlay — each chakra glows from within the body
+  const overlay = el('div', { class: 'bf-chakra-overlay', 'aria-hidden': 'true' });
+  if (Array.isArray(CHAKRA_STATES)) {
+    CHAKRA_STATES.forEach(c => {
+      const pos = CHAKRA_IMAGE_POS[c.id];
+      if (!pos) return;
+      const v = CHAKRA_VISUAL[c.state] || { amp: 0.7 };
+      const glow = el('div', {
+        class: 'bf-chakra-glow-pt',
+        dataset: { chakra: c.id, state: c.state }
+      });
+      glow.style.setProperty('--top', pos.top + '%');
+      glow.style.setProperty('--left', pos.left + '%');
+      glow.style.setProperty('--amp', v.amp.toFixed(2));
+      overlay.appendChild(glow);
+    });
+  }
+  stage.appendChild(overlay);
+
+  // Side panel (right negative space): avatar + Hawkins + holding quote + open
+  const side = el('div', { class: 'bf-stage-side' });
+
+  // Avatar tile + name
+  const avatarBlock = el('div', { class: 'bf-stage-avatar' });
+  const tile = el('div', { class: 'bf-avatar-tile bf-avatar-tile--side' });
   tile.appendChild(buildPortraitImg('bf-avatar-fallback--door'));
-  hero.appendChild(tile);
-  const heroMeta = el('div', { class: 'bf-doorway-meta' });
-  heroMeta.appendChild(el('div', { class: 'name', text: portraitName }));
-  heroMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' }));
-  hero.appendChild(heroMeta);
-  wrap.appendChild(hero);
+  avatarBlock.appendChild(tile);
+  const avatarMeta = el('div', { class: 'bf-stage-avatar-meta' });
+  avatarMeta.appendChild(el('div', { class: 'name', text: portraitName }));
+  avatarMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' }));
+  avatarMeta.appendChild(el('div', { class: 'aura-line', text: auricMeters.toFixed(1) + ' m field' }));
+  avatarBlock.appendChild(avatarMeta);
+  side.appendChild(avatarBlock);
 
-  // Holding-quote — promoted from the v1.6.x bottom block to the doorway hero
-  wrap.appendChild(el('div', {
-    class: 'bf-doorway-holding',
+  // Hawkins compact card — current calibration prominently displayed
+  const hkLevel = Number(view.hawkinsLevel) || 525;
+  const hkTarget = Number(view.hawkinsTarget) || 528;
+  const hkCard = el('div', { class: 'bf-stage-hawkins' });
+  hkCard.appendChild(el('div', { class: 'label', text: 'Hawkins calibration' }));
+  const hkValue = el('div', { class: 'value' });
+  hkValue.appendChild(el('strong', { text: String(hkLevel) }));
+  hkValue.appendChild(el('span', { class: 'arrow', text: ' → ' }));
+  hkValue.appendChild(el('span', { class: 'target', text: String(hkTarget) }));
+  hkCard.appendChild(hkValue);
+  hkCard.appendChild(el('div', { class: 'felt', text: 'Within reach. ' + hkTarget + ' Hz Miracles.' }));
+  side.appendChild(hkCard);
+
+  // Holding quote
+  side.appendChild(el('div', {
+    class: 'bf-stage-holding',
     text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.'
   }));
 
-  // Minimal silhouette: body + ONE outer aura ring breathing
-  const silhouetteWrap = el('div', { class: 'bf-doorway-silhouette' });
-  silhouetteWrap.appendChild(buildSilhouetteSVG('doorway'));
-  // Breath dot — single 8px circle in the corner pulsing on master clock
-  const breathDot = el('div', { class: 'bf-breath-dot', 'aria-label': 'breath rhythm 5.5 per minute' });
-  silhouetteWrap.appendChild(breathDot);
-  wrap.appendChild(silhouetteWrap);
+  // Breath dot
+  const breathDot = el('div', { class: 'bf-breath-dot bf-breath-dot--side', 'aria-label': 'breath rhythm 5.5 per minute' });
+  side.appendChild(breathDot);
 
   // Open-the-field affordance
-  const openBtn = el('button', { class: 'bf-doorway-open', type: 'button' });
+  const openBtn = el('button', { class: 'bf-doorway-open bf-doorway-open--side', type: 'button' });
   openBtn.appendChild(el('span', { class: 'bf-doorway-open-icon', 'aria-hidden': 'true' }));
   openBtn.appendChild(el('span', { class: 'bf-doorway-open-text', text: 'open the field' }));
   openBtn.addEventListener('click', openDashboard);
-  wrap.appendChild(openBtn);
+  side.appendChild(openBtn);
+
+  stage.appendChild(side);
+  wrap.appendChild(stage);
 
   return wrap;
 }
