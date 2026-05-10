@@ -449,15 +449,78 @@ main { position: relative; z-index: 2; }
   display: block;
   min-height: 0;
 }
+/* v1.8.0: body-aurora hero is the always-visible primary view. Larger
+   max-width (1240px → fills the section width on most desktops) and a
+   generous border-radius. The .bf-body-hero wrapper provides bottom
+   spacing before the below-hero detail block. */
+.bf-body-hero {
+  width: 100%;
+  margin-bottom: 36px;
+}
 .bf-body-stage {
   position: relative;
   width: 100%;
   aspect-ratio: 778 / 1030;
-  max-width: 1100px;
+  max-width: 1240px;
   margin: 0 auto;
-  border-radius: 18px;
+  border-radius: 24px;
   overflow: hidden;
   background: radial-gradient(ellipse at 70% 50%, rgba(194,47,205,0.32), rgba(31,22,50,0.85) 70%);
+  box-shadow: 0 24px 64px -24px rgba(86,76,112,0.55);
+}
+
+/* Auric-field rings overlay — concentric circles centered on body's
+   anatomical center, sized proportionally to USER.auricMeters.
+   Outermost (user's measured extent) is highlighted gold; inner three
+   are quiet reference markers at 25/50/75% of that radius. */
+.bf-auric-rings {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.bf-auric-ring {
+  fill: none;
+  stroke: rgba(255,255,255,0.10);
+  stroke-width: 0.18;
+  stroke-dasharray: 0.4 0.6;
+  vector-effect: non-scaling-stroke;
+  /* Gentle breath — 10.91s master clock */
+  animation: bf-auric-ring-breath 10910ms ease-in-out infinite;
+  transform-origin: 26% 42%;
+}
+.bf-auric-ring--user {
+  stroke: rgba(255,215,100,0.55);
+  stroke-width: 0.32;
+  stroke-dasharray: 1 0.6;
+  filter: drop-shadow(0 0 0.6px rgba(255,215,100,0.45));
+  animation-delay: -5455ms;
+}
+@keyframes bf-auric-ring-breath {
+  0%, 100% { opacity: 0.55; transform: scale(1.000); }
+  50%      { opacity: 0.85; transform: scale(1.010); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-auric-ring { animation: none; }
+}
+.bf-auric-ring-label {
+  fill: rgba(255,255,255,0.36);
+  font-family: var(--sans);
+  font-size: 1.4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  paint-order: stroke;
+  stroke: rgba(11,8,15,0.55);
+  stroke-width: 0.4px;
+}
+.bf-auric-ring-label--user {
+  fill: rgba(255,215,100,0.85);
+  font-size: 1.7px;
+  font-style: italic;
+  font-family: var(--serif);
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 .bf-body-image {
   position: absolute; inset: 0;
@@ -988,6 +1051,30 @@ main { position: relative; z-index: 2; }
   border-radius: 50%;
 }
 .bf-avatar-fallback--door { font-size: 38px; }
+
+/* v1.8.0: below-hero detail block — flows directly under the body hero,
+   no gating. Holds timeline + delta + chakra column + helix + archetype. */
+.bf-detail {
+  display: flex; flex-direction: column;
+  gap: 28px;
+  margin: 0 auto;
+  max-width: 1240px;
+  padding: 0 8px;
+}
+.bf-detail-section { display: flex; flex-direction: column; gap: 14px; }
+.bf-detail-label {
+  font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 4px;
+}
+.bf-detail-chakras .bf-chakra-column {
+  /* In the below-hero detail block, the chakra column sits in a
+     bordered card-like container so it reads as a structured section. */
+  background: rgba(31,24,36,0.42);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 10px 18px;
+}
 
 /* The 4-ellipse `.bf-aura-band` was replaced in v1.4.0 by the 7-ring system
    above (`.bf-aura-ring`). The gold dashed boundary still sits outside that
@@ -1919,7 +2006,23 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   border-bottom: 1px solid rgba(255,255,255,0.06);
   position: relative;
 }
-.session-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.session-art img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  /* v1.8.0: favor upper-center crop so faces / focal points (which sit
+     in the upper third of square album art — birds, portraits, central
+     icons) survive the 16:9 banner crop. */
+  object-position: center 30%;
+  display: block;
+}
+/* Per-session crop overrides — each tells `object-position` where the
+   focal point is on the square source. `top` keeps faces from being cut. */
+.session-card[data-slug="fearless-396"] .session-art img,
+.session-card[data-slug="sending-mark-home"] .session-art img,
+.session-card[data-slug="toning-with-ancestors"] .session-art img,
+.session-card[data-slug="liberated-expression"] .session-art img {
+  object-position: center top;
+}
 .session-art::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, transparent 50%, rgba(11,8,15,0.32) 100%);
@@ -2659,7 +2762,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.7.4';
+const VERSION = '1.8.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3779,17 +3882,12 @@ function buildWaveformSVG(week) {
      Solfeggio strip, headshot at bottom (thangka anchor), archetype +
      helix + delta below.
    State persists in LS.dashOpen. */
-function isDashboardOpen() {
-  return localStorage.getItem(LS.dashOpen) === '1';
-}
-function openDashboard() {
-  localStorage.setItem(LS.dashOpen, '1');
-  mountBiofieldDashboard();
-}
-function closeDashboard() {
-  localStorage.removeItem(LS.dashOpen);
-  mountBiofieldDashboard();
-}
+/* v1.8.0: doorway/expanded gate removed — dashboard is always one state.
+   These stubs remain so any lingering references compile, but the body
+   image is now always visible and there's no "open the field" interaction. */
+function isDashboardOpen() { return true; }
+function openDashboard() { mountBiofieldDashboard(); }
+function closeDashboard() { mountBiofieldDashboard(); }
 
 /* Portrait helpers. v1.7.0 adds onerror fallback to a soft initial-circle
    so a missing slug-derived JPG no longer breaks the hero tile silently. */
@@ -3911,17 +4009,22 @@ const CHAKRA_IMAGE_POS = {
   'root':      { top: 55,   left: 26 }
 };
 
-function buildDoorwayState() {
-  const wrap = el('div', { class: 'bf-doorway bf-doorway--body-stage' });
+/* v1.8.0: Body-aurora hero — always visible, single state.
+   The doorway/expanded toggle is gone. The body image with chakra glows
+   IS the dashboard's primary visualization. The rest of the dashboard
+   (chakra column metadata, helix, archetype, delta panel, etc.) flows
+   below as a continuous scroll, no gating.
+   Adds: auric-rings overlay (concentric rings showing the user's field
+   extent in spatial proportion to the body). */
+function buildBodyAuroraHero() {
+  const wrap = el('div', { class: 'bf-body-hero' });
   const portraitName = (USER && USER.displayName) || '';
   const view = getView();
   const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
 
-  // The body-aurora hero stage: photographic figure + chakra glows + side panel
   const stage = el('div', { class: 'bf-body-stage' });
 
-  // Body image — translucent figure on aurora gradient. Skip eager loading
-  // when prefers-reduced-data is set (lets the fallback gradient stand in).
+  // Body image — translucent figure on aurora gradient
   const reducedData = window.matchMedia && window.matchMedia('(prefers-reduced-data: reduce)').matches;
   const img = el('img', {
     class: 'bf-body-image',
@@ -3931,13 +4034,18 @@ function buildDoorwayState() {
     decoding: 'async'
   });
   if (reducedData) stage.classList.add('bf-body-stage--no-image');
-  // Graceful degrade: if the image hasn't been added yet, fall back to a
-  // solid aurora gradient so the layout still reads.
   img.addEventListener('error', () => {
     img.style.display = 'none';
     stage.classList.add('bf-body-stage--no-image');
   });
   stage.appendChild(img);
+
+  // Auric field rings — concentric circles showing the user's field
+  // extent proportionally. Four rings at 25%/50%/75%/100% of auricMeters,
+  // labeled with their meters value. Outermost (100%) is highlighted gold
+  // as the user's measured boundary. Centered on body's heart anatomical
+  // position so the field expands outward from the energetic center.
+  stage.appendChild(buildAuricRingsOverlay(auricMeters));
 
   // Chakra overlay — each chakra glows from within the body
   const overlay = el('div', { class: 'bf-chakra-overlay', 'aria-hidden': 'true' });
@@ -3958,12 +4066,10 @@ function buildDoorwayState() {
   }
   stage.appendChild(overlay);
 
-  // Side panel (right negative space): avatar + Hawkins + holding quote + open
+  // Side panel (right negative space): avatar + Hawkins + holding quote + breath
   const side = el('div', { class: 'bf-stage-side' });
-
-  // Avatar tile + name. Period anchors when the reading is from; aura line
-  // becomes relational ("field reaches X m") rather than a tag.
   const period = (USER && USER.period) || '';
+
   const avatarBlock = el('div', { class: 'bf-stage-avatar' });
   const tile = el('div', { class: 'bf-avatar-tile bf-avatar-tile--side' });
   tile.appendChild(buildPortraitImg('bf-avatar-fallback--door'));
@@ -3975,17 +4081,11 @@ function buildDoorwayState() {
   avatarBlock.appendChild(avatarMeta);
   side.appendChild(avatarBlock);
 
-  // Hawkins compact card — clickable, opens the field to reveal the full
-  // ladder. Semantic tier name ("approaching Joy") gives context the bare
-  // number doesn't carry.
+  // Hawkins compact card with semantic tier name
   const hkLevel = Number(view.hawkinsLevel) || 525;
   const hkTarget = Number(view.hawkinsTarget) || 528;
   const tierInfo = hawkinsTier(hkLevel);
-  const hkCard = el('button', {
-    class: 'bf-stage-hawkins',
-    type: 'button',
-    'aria-label': 'Hawkins calibration ' + hkLevel + ', ' + tierInfo.frame + ' ' + tierInfo.tier + '. Click to see the full ladder.'
-  });
+  const hkCard = el('div', { class: 'bf-stage-hawkins' });
   hkCard.appendChild(el('div', { class: 'label', text: 'Calibration' }));
   const hkValue = el('div', { class: 'value' });
   hkValue.appendChild(el('strong', { text: String(hkLevel) }));
@@ -3993,12 +4093,9 @@ function buildDoorwayState() {
   hkValue.appendChild(el('span', { class: 'tier-name', text: tierInfo.tier }));
   hkCard.appendChild(hkValue);
   hkCard.appendChild(el('div', { class: 'felt', text: hkTarget + ' Hz · Miracles, within reach.' }));
-  hkCard.addEventListener('click', openDashboard);
   side.appendChild(hkCard);
 
-  // Holding-quote block — carries the "carrier attenuation" eyebrow + the
-  // primary block quote + the felt-sense holding line. Restores semantic
-  // context that was lost when the block-wave element was cut in v1.7.0.
+  // Holding-quote block (carrier attenuation eyebrow + quote + felt-sense)
   const blockQuote = (view.primaryBlock || (USER && USER.primaryBlockQuote) || 'Hesitation in finalizing commitments.').trim();
   const holding = el('div', { class: 'bf-stage-holding' });
   holding.appendChild(el('span', { class: 'eyebrow', text: 'Carrier attenuation' }));
@@ -4006,98 +4103,93 @@ function buildDoorwayState() {
   holding.appendChild(el('div', { class: 'felt', text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.' }));
   side.appendChild(holding);
 
-  // Breath dot + caption + soft instruction. Pre-session use: tells the
-  // user not just *what* the rhythm is but *what to do with it* — sit and
-  // match a few breaths before opening the field.
+  // Breath dot + caption — soft pre-session breathing cue
   const breathBlock = el('div', { class: 'bf-breath-block' });
   const breathRow = el('div', { class: 'bf-breath-row' });
   breathRow.appendChild(el('div', { class: 'bf-breath-dot bf-breath-dot--side', 'aria-label': 'breath rhythm 5.5 per minute' }));
   breathRow.appendChild(el('span', { class: 'bf-breath-caption', text: 'breath · 5.5 / min' }));
   breathBlock.appendChild(breathRow);
-  breathBlock.appendChild(el('div', { class: 'bf-breath-hint', text: 'match the rhythm for a few breaths before opening the field.' }));
+  breathBlock.appendChild(el('div', { class: 'bf-breath-hint', text: 'match the rhythm for a few breaths.' }));
   side.appendChild(breathBlock);
-
-  // Open-the-field — quieter text-link with chevron, not a gold pill
-  const openBtn = el('button', { class: 'bf-doorway-open bf-doorway-open--side bf-doorway-open--quiet', type: 'button' });
-  openBtn.appendChild(el('span', { class: 'bf-doorway-open-text', text: 'open the field' }));
-  openBtn.appendChild(el('span', { class: 'bf-doorway-open-icon', 'aria-hidden': 'true' }));
-  openBtn.addEventListener('click', openDashboard);
-  side.appendChild(openBtn);
 
   stage.appendChild(side);
   wrap.appendChild(stage);
-
   return wrap;
+}
+
+/* Auric-field rings overlay. Renders as an SVG inside the body stage.
+   Concentric circles centered on body's heart anatomical position,
+   sized so the user's measured extent (auricMeters) is the outermost
+   ring. Three inner rings at 25/50/75% of that extent give a visual
+   sense of how far the field reaches. */
+function buildAuricRingsOverlay(auricMeters) {
+  const root = svg('svg', {
+    class: 'bf-auric-rings',
+    viewBox: '0 0 100 100',
+    preserveAspectRatio: 'none',
+    'aria-hidden': 'true'
+  });
+
+  // Body's heart anatomical center on the image (% coordinates). The body
+  // figure's heart sits roughly at x=26, y=28 (matches the chakra positions
+  // table). We center the rings at the body's vertical middle (~42%) so
+  // they read as field rings rather than chakra-specific.
+  const cx = 26, cy = 42;
+
+  // Maximum visible radius in viewBox units (out of 100). The rings extend
+  // mostly into the right negative space; the body sits on the left, so
+  // larger rings reach toward the right edge of the image. Cap so the
+  // outermost ring (100%) just touches the right edge at scale.
+  const maxR = 70;
+  const stops = [0.25, 0.50, 0.75, 1.0];
+
+  stops.forEach((frac, i) => {
+    const r = maxR * frac;
+    const isUser = (i === stops.length - 1);
+    root.appendChild(svg('circle', {
+      class: 'bf-auric-ring' + (isUser ? ' bf-auric-ring--user' : ''),
+      cx: String(cx),
+      cy: String(cy),
+      r: r.toFixed(1),
+      fill: 'none'
+    }));
+    // Label at the right edge of each ring
+    const labelX = cx + r;
+    const labelY = cy - 1.5;
+    const labelEl = svg('text', {
+      class: 'bf-auric-ring-label' + (isUser ? ' bf-auric-ring-label--user' : ''),
+      x: labelX.toFixed(1),
+      y: labelY.toFixed(1),
+      'text-anchor': 'start'
+    });
+    labelEl.textContent = (auricMeters * frac).toFixed(1) + ' m';
+    root.appendChild(labelEl);
+  });
+
+  return root;
 }
 
 /* Expanded (sidecar) state — silhouette small + chakra column + ladders +
    horizontal Solfeggio strip + headshot at bottom + archetype/helix/delta. */
-function buildExpandedState() {
-  const wrap = el('div', { class: 'bf-expanded' });
+/* v1.8.0: Below-hero detail block. Flows directly under the body-aurora
+   hero — no gating. Holds the timeline strip + delta panel + chakra
+   column metadata + helix + archetype. */
+function buildBelowHeroDetail() {
+  const wrap = el('div', { class: 'bf-detail' });
   const view = getView();
-  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
-  const portraitName = (USER && USER.displayName) || '';
 
-  // Close-the-field affordance at top-right of the expanded state
-  const closeBtn = el('button', {
-    class: 'bf-expanded-close',
-    type: 'button',
-    'aria-label': 'close the field, return to doorway'
-  });
-  closeBtn.appendChild(el('span', { class: 'bf-doorway-open-text', text: 'close the field' }));
-  closeBtn.addEventListener('click', closeDashboard);
-  wrap.appendChild(closeBtn);
-
-  // Sidecar grid: silhouette + Hawkins ladder on the left, chakra column on the right
-  const sidecar = el('div', { class: 'bf-sidecar' });
-
-  const leftCol = el('div', { class: 'bf-sidecar-left' });
-  leftCol.appendChild(buildHawkinsLadder());
-  // Smaller silhouette stage
-  const silhouetteStage = el('div', { class: 'bf-silhouette-stage bf-silhouette-stage--small' });
-  silhouetteStage.appendChild(buildSilhouetteSVG('expanded'));
-  leftCol.appendChild(silhouetteStage);
-  sidecar.appendChild(leftCol);
-
-  // Chakra column — the visual subject of the expanded state
-  const rightCol = el('div', { class: 'bf-sidecar-right' });
-  rightCol.appendChild(buildChakraColumn());
-  sidecar.appendChild(rightCol);
-
-  wrap.appendChild(sidecar);
-
-  // Horizontal Solfeggio strip below the chakra column
-  wrap.appendChild(buildSolfeggioStrip());
-
-  // Headshot at bottom (thangka anchor: eye climbs root → crown to reach the chakra column)
-  const avatarRow = el('div', { class: 'bf-avatar-row bf-avatar-row--anchor' });
-  const tile = el('div', { class: 'bf-avatar-tile' });
-  tile.appendChild(buildPortraitImg());
-  avatarRow.appendChild(tile);
-  const avMeta = el('div');
-  avMeta.appendChild(el('div', { class: 'name', text: portraitName }));
-  avMeta.appendChild(el('div', { text: 'their field, mirrored · ' + auricMeters.toFixed(1) + ' m' }));
-  avatarRow.appendChild(avMeta);
-  wrap.appendChild(avatarRow);
-
-  // Timeline strip (4-week comparison)
+  // Timeline strip (multi-snapshot)
   wrap.appendChild(buildTimelineStrip());
 
-  // Calibration callout — prose summary
-  const hkLevel = Number(view.hawkinsLevel) || 525;
-  const hkTarget = Number(view.hawkinsTarget) || 528;
-  const calBlock = el('div', { class: 'bf-calibration' });
-  calBlock.appendChild(el('span', { class: 'label', text: 'Calibration' }));
-  const calVal = el('div', { class: 'value' });
-  calVal.appendChild(el('strong', { text: String(hkLevel) }));
-  calVal.appendChild(document.createTextNode(' → ' + hkTarget + ' Hz Miracles. Within reach.'));
-  calBlock.appendChild(calVal);
-  calBlock.appendChild(el('div', { class: 'felt', text: 'A felt-sense map. One frame among many.' }));
-  wrap.appendChild(calBlock);
-
-  // What moved (only when ≥2 snapshots exist)
+  // What moved (when ≥2 snapshots)
   const delta = buildDeltaPanel(true);
   if (delta) wrap.appendChild(delta);
+
+  // Chakra column metadata — state words, amplitude bars, notes
+  const chakraSection = el('div', { class: 'bf-detail-section bf-detail-chakras' });
+  chakraSection.appendChild(el('div', { class: 'bf-detail-label', text: 'Chakra reading' }));
+  chakraSection.appendChild(buildChakraColumn());
+  wrap.appendChild(chakraSection);
 
   // DNA helix + meta
   const dnaInfo = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
@@ -4131,14 +4223,13 @@ function mountBiofieldDashboard() {
   applyActiveSnapshot();
   while (root.firstChild) root.removeChild(root.firstChild);
 
-  if (isDashboardOpen()) {
-    root.appendChild(buildExpandedState());
-  } else {
-    root.appendChild(buildDoorwayState());
-  }
+  // Body-aurora hero — always visible, never gated
+  root.appendChild(buildBodyAuroraHero());
 
-  /* Composite waveform stripe at the bottom edge — only in expanded state */
-  if (!isDashboardOpen()) return;
+  // Below-hero detail block — timeline + delta + chakras + helix + archetype
+  root.appendChild(buildBelowHeroDetail());
+
+  // Composite waveform stripe at the bottom edge of the section
   const week = (function() {
     const w = (ramonState.weeksCompleted || 0) + 1;
     return Math.max(1, Math.min(4, w));
@@ -5999,6 +6090,18 @@ function applyUserToDOM() {
   document.querySelectorAll('[data-baseline-reading-label]').forEach(el => { el.textContent = baselineLabel; });
   const v = document.getElementById('footer-version');
   if (v) v.textContent = 'v' + VERSION;
+
+  // v1.8.0: one-time reset of session-card expansion state on a new VERSION.
+  // Earlier versions accumulated entries in LS.expandedSessions; v1.8.0
+  // wants the default to be "all collapsed" (per Adam's UX call). User
+  // can re-expand any card freely; reading notes are preserved (different LS key).
+  try {
+    const seen = localStorage.getItem(LS.versionSeen);
+    if (seen !== VERSION) {
+      localStorage.removeItem(LS.expandedSessions);
+      localStorage.setItem(LS.versionSeen, VERSION);
+    }
+  } catch (e) { /* quota / private mode — silently skip */ }
 }
 
 /* Render the no-user / unknown-link gate. Replaces the body content with a
