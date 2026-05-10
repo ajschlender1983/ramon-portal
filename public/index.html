@@ -457,42 +457,63 @@ main { position: relative; z-index: 2; }
   width: 100%;
   margin-bottom: 36px;
 }
-/* v1.9.3: Stage row — body image (left) + instrumentation pane (right).
-   Lives inside the negative space of the page next to the portrait-
-   orientation image. Collapses to single column at narrow widths. */
-.bf-stage-row {
-  display: grid;
-  grid-template-columns: minmax(280px, 480px) minmax(220px, 360px);
-  gap: 32px;
-  align-items: start;
-  justify-content: center;
-  max-width: 1120px;
-  margin: 0 auto;
-}
-.bf-stage-pane {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  padding-top: 12px;
-}
-@media (max-width: 960px) {
-  .bf-stage-row {
-    grid-template-columns: 1fr;
-    max-width: 560px;
-  }
-  .bf-stage-pane { padding-top: 0; }
-}
+/* v1.9.4: Stage is a single wide rectangle. The body image sits in a
+   fixed-aspect wrap pinned to the LEFT side (.bf-body-wrap) — chakras +
+   auric rings are positioned inside that wrap so % coordinates map
+   exactly to the figure regardless of stage width. The side pane
+   (Hawkins + DNA) absolutely overlays the RIGHT side of the stage on
+   the aurora-gradient background. Collapses to vertical stack below
+   960px. */
 .bf-body-stage {
   position: relative;
   width: 100%;
-  /* v1.9.2: matches body-aurora.png native aspect ratio (703×1024) so
-     object-fit:cover never crops the figure off-axis on any width. */
-  aspect-ratio: 703 / 1024;
+  /* Wider-than-portrait so there's room on the right for the side pane
+     to overlay the aurora background next to the body figure. */
+  aspect-ratio: 6 / 5;
+  max-width: 1120px;
   margin: 0 auto;
   border-radius: 24px;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 38%, rgba(194,47,205,0.32), rgba(31,22,50,0.92) 70%);
+  background:
+    radial-gradient(ellipse 55% 70% at 70% 50%, rgba(194,47,205,0.38), transparent 65%),
+    radial-gradient(ellipse 70% 90% at 30% 50%, rgba(123,111,168,0.28), transparent 70%),
+    linear-gradient(180deg, rgba(20,15,30,0.96), rgba(31,22,50,0.96));
   box-shadow: 0 24px 64px -24px rgba(86,76,112,0.55);
+}
+.bf-body-wrap {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  /* Match the body-aurora.png native ratio (703/1024). Width is derived
+     from height so the wrap fits inside the stage exactly as portrait. */
+  aspect-ratio: 703 / 1024;
+}
+.bf-stage-pane {
+  position: absolute;
+  top: 6%; right: 4%;
+  width: 34%;
+  max-width: 360px;
+  display: flex; flex-direction: column;
+  gap: 18px;
+  z-index: 2;
+}
+@media (max-width: 960px) {
+  /* Mobile: collapse to vertical stack. Stage becomes auto-height; body
+     wrap returns to its native portrait box; side pane flows below. */
+  .bf-body-stage {
+    aspect-ratio: auto;
+    display: flex; flex-direction: column;
+  }
+  .bf-body-wrap {
+    position: relative;
+    width: 100%; max-width: 480px;
+    margin: 0 auto;
+  }
+  .bf-stage-pane {
+    position: relative;
+    top: auto; right: auto;
+    width: 100%; max-width: none;
+    padding: 16px 18px 24px;
+  }
 }
 
 /* Auric-field rings overlay — concentric circles centered on body's
@@ -500,6 +521,8 @@ main { position: relative; z-index: 2; }
    Outermost (user's measured extent) is highlighted gold; inner three
    are quiet reference markers at 25/50/75% of that radius. */
 .bf-auric-rings {
+  /* v1.9.4: lives inside .bf-body-wrap so 50%/27% coordinates map to
+     the body's heart anatomical center. */
   position: absolute;
   inset: 0;
   width: 100%; height: 100%;
@@ -550,6 +573,8 @@ main { position: relative; z-index: 2; }
   text-transform: none;
 }
 .bf-body-image {
+  /* v1.9.4: image fills its parent .bf-body-wrap, which is aspect-locked
+     to 703/1024 so the figure never crops. */
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
@@ -710,12 +735,14 @@ main { position: relative; z-index: 2; }
   color: var(--light);
 }
 .bf-stage-card {
-  background: rgba(11,8,15,0.55);
-  border: 1px solid rgba(255,215,100,0.18);
+  /* v1.9.4: increased background opacity so cards stay legible when
+     overlaying the body image's aurora background. */
+  background: rgba(11,8,15,0.72);
+  border: 1px solid rgba(255,215,100,0.22);
   border-radius: 14px;
   padding: 16px 18px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .bf-stage-card .label {
   font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
@@ -728,19 +755,20 @@ main { position: relative; z-index: 2; }
   .bf-avatar-tile--masthead { width: 88px; height: 88px; }
 }
 
-/* v1.9.3: side-pane DNA helix — Hawkins card sits above, so the helix
-   uses a tighter layout (smaller helix on the left, meta on the right). */
+/* v1.9.3/.4: side-pane DNA helix — overlays the aurora background of
+   the stage. Same surface as .bf-stage-card so the side pane reads as
+   a coherent pair of cards. */
 .bf-helix--side {
-  background: rgba(11,8,15,0.55);
-  border: 1px solid rgba(255,215,100,0.18);
+  background: rgba(11,8,15,0.72);
+  border: 1px solid rgba(255,215,100,0.22);
   border-radius: 14px;
   padding: 14px 16px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  grid-template-columns: 80px 1fr;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  grid-template-columns: 72px 1fr;
   gap: 14px;
 }
-.bf-helix--side .bf-helix-svg-wrap { width: 80px; height: 240px; }
+.bf-helix--side .bf-helix-svg-wrap { width: 72px; height: 220px; }
 /* v1.9.2: Hawkins card lives in the .bf-stage-cards row (not in an
    absolute side panel anymore). Card surface comes from .bf-stage-card;
    we just add the gold accent + value typography here. */
@@ -2990,7 +3018,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.3';
+const VERSION = '1.9.4';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4268,11 +4296,16 @@ function buildBodyAuroraHero() {
   masthead.appendChild(mastMeta);
   wrap.appendChild(masthead);
 
-  /* v1.9.3: 2-column row — body stage on the left, instrumentation pane
-     on the right (uses the page's negative space beside the portrait-
-     orientation figure). At <960px collapses to a single column. */
-  const row = el('div', { class: 'bf-stage-row' });
+  /* v1.9.4: Stage is now a single wide rectangle. Body image lives in a
+     fixed-aspect .bf-body-wrap pinned to the left (chakras + auric
+     rings are positioned inside that wrap so their % coords map to the
+     figure). Right side of the stage holds an absolutely-positioned
+     side pane (Hawkins + DNA) overlaying the aurora background. */
   const stage = el('div', { class: 'bf-body-stage' });
+
+  // Body wrap — aspect-locked to the image's native 703/1024 portrait
+  // ratio. Contains image + auric rings + chakra glows.
+  const bodyWrap = el('div', { class: 'bf-body-wrap' });
 
   // Body image — translucent figure on aurora gradient
   const reducedData = window.matchMedia && window.matchMedia('(prefers-reduced-data: reduce)').matches;
@@ -4288,16 +4321,16 @@ function buildBodyAuroraHero() {
     img.style.display = 'none';
     stage.classList.add('bf-body-stage--no-image');
   });
-  stage.appendChild(img);
+  bodyWrap.appendChild(img);
 
   // Auric field rings — concentric circles showing the user's field
-  // extent proportionally. Four rings at 25%/50%/75%/100% of auricMeters,
-  // labeled with their meters value. Outermost (100%) is highlighted gold
-  // as the user's measured boundary. Centered on body's heart anatomical
-  // position so the field expands outward from the energetic center.
-  stage.appendChild(buildAuricRingsOverlay(auricMeters));
+  // extent proportionally, centered on body's heart anatomical position.
+  // Inside .bf-body-wrap so (50%, 27%) maps to the figure regardless of
+  // overall stage width.
+  bodyWrap.appendChild(buildAuricRingsOverlay(auricMeters));
 
-  // Chakra overlay — each chakra glows from within the body
+  // Chakra overlay — each chakra glows from within the body. Inside
+  // .bf-body-wrap so left:50% / top:N% coordinates land on the figure.
   const overlay = el('div', { class: 'bf-chakra-overlay', 'aria-hidden': 'true' });
   if (Array.isArray(CHAKRA_STATES)) {
     CHAKRA_STATES.forEach(c => {
@@ -4314,13 +4347,12 @@ function buildBodyAuroraHero() {
       overlay.appendChild(glow);
     });
   }
-  stage.appendChild(overlay);
+  bodyWrap.appendChild(overlay);
+  stage.appendChild(bodyWrap);
 
-  row.appendChild(stage);
-
-  /* v1.9.3: Right-side instrumentation pane — sits in the negative
-     space next to the portrait-orientation body image. Holds the
-     Calibration (Hawkins) card + the DNA helix block. */
+  /* v1.9.4: Side pane absolutely overlays the right portion of the
+     stage on the aurora background, beside the body figure. Holds the
+     Calibration (Hawkins) card + DNA helix block. */
   const sidePane = el('div', { class: 'bf-stage-pane' });
 
   // Calibration / Hawkins card
@@ -4354,11 +4386,11 @@ function buildBodyAuroraHero() {
   dna.appendChild(dnaMeta);
   sidePane.appendChild(dna);
 
-  row.appendChild(sidePane);
-  wrap.appendChild(row);
+  stage.appendChild(sidePane);
+  wrap.appendChild(stage);
 
-  /* v1.9.2/.3: Card row BELOW the stage row — quote + breath. Hawkins
-     moved up into the side pane. Two cards now (was three). */
+  /* v1.9.2/.3/.4: Card row BELOW the stage — Carrier-attenuation quote +
+     Breath. Hawkins + DNA are inside the stage's side pane (v1.9.4). */
   const cards = el('div', { class: 'bf-stage-cards' });
 
   // Holding-quote card
