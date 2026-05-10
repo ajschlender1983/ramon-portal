@@ -522,9 +522,9 @@ main { position: relative; z-index: 2; }
   vector-effect: non-scaling-stroke;
   /* Gentle breath — 10.91s master clock */
   animation: bf-auric-ring-breath 10910ms ease-in-out infinite;
-  /* v1.9.5: ring center matches the body's actual off-center spine
-     position in the source image (heart at x=36%, y=27%) */
-  transform-origin: 36% 27%;
+  /* v1.9.5/.6: ring center matches the body's actual off-center spine
+     and heart-y per the corrected chakra table (x=36%, y=29%). */
+  transform-origin: 36% 29%;
 }
 .bf-auric-ring--user {
   stroke: rgba(255,215,100,0.55);
@@ -3008,7 +3008,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.5';
+const VERSION = '1.9.6';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4245,17 +4245,21 @@ function hawkinsTier(level) {
 /* Anatomical chakra positions on the body-aurora reference image
    (public/assets/dashboard/body-aurora.png — 703×1024). The body
    figure is NOT centered in the source image; programmatic desaturation
-   analysis locates the spine at x ≈ 35% (head 36%, throat 38%, heart
-   36%). Coordinates are % of body-wrap bounds. v1.9.5: corrected from
-   the wrong-assumption 50% values. */
+   analysis locates the spine at x ≈ 35-38%. Coordinates are % of
+   body-wrap bounds.
+   v1.9.5: corrected x from 50 → 36 (true spine).
+   v1.9.6: corrected y values for the upper chakras after Adam's review:
+   crown lands ON the head, third-eye on the forehead/brow, throat on
+   the Adam's apple. Lower chakras bumped down 1-2% in sympathy so the
+   spacing reads as one column. */
 const CHAKRA_IMAGE_POS = {
-  'crown':     { top:  6.5, left: 36 },
-  'third-eye': { top: 10.5, left: 36 },
-  'throat':    { top: 16.0, left: 36 },
-  'heart':     { top: 27.0, left: 36 },
-  'solar':     { top: 35.0, left: 36 },
-  'sacral':    { top: 43.0, left: 36 },
-  'root':      { top: 51.0, left: 36 }
+  'crown':     { top:  9.0, left: 36 },
+  'third-eye': { top: 13.0, left: 36 },
+  'throat':    { top: 18.5, left: 36 },
+  'heart':     { top: 29.0, left: 36 },
+  'solar':     { top: 36.5, left: 36 },
+  'sacral':    { top: 44.0, left: 36 },
+  'root':      { top: 52.0, left: 36 }
 };
 
 /* v1.8.0: Body-aurora hero — always visible, single state.
@@ -4419,10 +4423,9 @@ function buildAuricRingsOverlay(auricMeters) {
     'aria-hidden': 'true'
   });
 
-  // v1.9.5: Body figure is NOT centered in the source image. Programmatic
-  // desaturation analysis locates the spine/heart at x=36%, y=27% of the
-  // body-wrap. Rings expand outward from there.
-  const cx = 36, cy = 27;
+  // v1.9.5/.6: Body figure is NOT centered in the source image. Spine
+  // at x=36%; heart y bumped to 29% per the corrected chakra table.
+  const cx = 36, cy = 29;
 
   // Maximum visible radius in viewBox units (out of 100). With the body
   // at x=36%, more room to the right than left — rings still expand
