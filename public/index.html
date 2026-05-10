@@ -3008,7 +3008,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.6';
+const VERSION = '1.9.7';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -5151,32 +5151,12 @@ function renderPhasePanels() {
     });
     const phaseEl = el('div', { class: 'phase reveal', dataset: { week: String(phase.week) } });
 
-    // Hero banner — styled CSS composition per week (no image gen needed).
-    // Each week's banner has a distinct gradient register + minimal SVG
-    // accent that names its energetic story:
-    //   Week 1 (root, ground)         → bottom-anchored red bloom + horizon hairline
-    //   Week 2 (sacral, release)      → orange bloom from the right + sweeping arcs
-    //   Week 3 (heart-throat, open)   → twin green/teal blooms + vertical axis line
-    //   Week 4 (crown, integration)   → gold bloom upper-right + golden-spiral arc
-    // If `phase.art` is set, an <img> renders on top instead — leaves the
-    // door open for image generation later without rewriting the banner.
-    const banner = el('div', {
-      class: 'phase-banner phase-banner--styled',
-      dataset: { week: String(phase.week) }
-    });
-    banner.appendChild(buildPhaseBannerAccent(phase.week));
-    if (phase.art) {
-      const img = el('img', {
-        class: 'phase-banner-img',
-        src: phase.art,
-        alt: '',
-        loading: 'lazy',
-        decoding: 'async'
-      });
-      img.addEventListener('error', () => { img.remove(); });
-      banner.appendChild(img);
-    }
-    phaseEl.appendChild(banner);
+    // v1.9.7: per-week hero banner removed per Adam's review (the dark
+    // gradient cards at the top of each week section were decorative
+    // weight, not information). The chakra-themed week number + title
+    // below now opens the section directly. buildPhaseBannerAccent and
+    // .phase-banner CSS are still defined in case we revisit the banner
+    // story later, but they're no longer mounted.
 
     // Head: display number on its own line above the title
     const head = el('div', { class: 'phase-head phase-head--vertical' });
