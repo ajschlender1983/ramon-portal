@@ -1947,8 +1947,11 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Phase banner: thematic visual (lazy-loaded). Falls back to a chakra-tinted
-   gradient if no art is provided or the file 404s. */
+/* v1.9.1: Phase banner is now a styled CSS composition per week.
+   Each week's gradient stack tells its energetic story (root grounding,
+   sacral release, heart-throat coherence, crown integration). An inline
+   SVG accent layers a minimal geometric mark on top. No image asset
+   required; phase.art still wins if set (future-proof plumbing). */
 .phase-banner {
   position: relative;
   width: 100%;
@@ -1958,24 +1961,99 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   margin-bottom: 28px;
   background: linear-gradient(135deg, rgba(86,76,112,0.42), rgba(31,22,50,0.85));
 }
-.phase-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.phase-banner-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
 .phase-banner::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, transparent 60%, rgba(11,8,15,0.55) 100%);
+  background: linear-gradient(180deg, transparent 60%, rgba(11,8,15,0.45) 100%);
 }
-/* Per-week chakra tint when no image is present */
-.phase-banner--no-image[data-week="1"] { background: linear-gradient(135deg, rgba(220, 90, 90, 0.32), rgba(31,22,50,0.85)); }
-.phase-banner--no-image[data-week="2"] { background: linear-gradient(135deg, rgba(240,147, 94, 0.32), rgba(31,22,50,0.85)); }
-.phase-banner--no-image[data-week="3"] { background: linear-gradient(135deg, rgba(120,210,140, 0.32), rgba(31,22,50,0.85)); }
-.phase-banner--no-image[data-week="4"] { background: linear-gradient(135deg, rgba(255,215,100, 0.32), rgba(31,22,50,0.85)); }
-.phase-banner--no-image::before {
-  content: 'thematic visual coming';
-  position: absolute; left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  font-family: var(--serif); font-style: italic;
-  font-size: 13px;
-  color: rgba(255,255,255,0.32);
-  letter-spacing: 0.04em;
+
+/* Week 1 — IN THE BODY (root, ground).
+   Bottom-anchored red bloom rising from earth, two side blooms suggest
+   wide stable base. Horizon hairline + 3 grounding dots in the SVG accent. */
+.phase-banner--styled[data-week="1"] {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 105%, rgba(220, 90, 90, 0.45), transparent 65%),
+    radial-gradient(ellipse 35% 30% at 25% 85%, rgba(180, 60, 60, 0.30), transparent 80%),
+    radial-gradient(ellipse 35% 30% at 75% 85%, rgba(180, 60, 60, 0.30), transparent 80%),
+    linear-gradient(180deg, rgba(20,15,30,0.95) 0%, rgba(40,18,22,0.95) 100%);
+}
+
+/* Week 2 — RELEASE THE CHARGE (sacral, lateral motion).
+   Orange bloom anchored to the right edge, smaller bloom on the left,
+   asymmetric so the eye reads sweep / clearing direction. Three sweeping
+   arcs in the SVG accent reinforce the release. */
+.phase-banner--styled[data-week="2"] {
+  background:
+    radial-gradient(ellipse 60% 80% at 105% 50%, rgba(240,147, 94, 0.42), transparent 60%),
+    radial-gradient(ellipse 40% 50% at 15% 60%, rgba(220,120, 80, 0.26), transparent 80%),
+    radial-gradient(ellipse 80% 30% at 50% 0%, rgba(240,147, 94, 0.18), transparent 75%),
+    linear-gradient(105deg, rgba(20,15,30,0.95) 0%, rgba(35,20,18,0.95) 100%);
+}
+
+/* Week 3 — HEART COHERENT, VOICE OPEN (heart-throat axis).
+   Two equal blooms — green from below-left, teal from above-right —
+   meeting along a vertical axis. Vertical hairline + 2 dot markers
+   in the SVG name the heart and throat centers. */
+.phase-banner--styled[data-week="3"] {
+  background:
+    radial-gradient(ellipse 55% 65% at 32% 75%, rgba(120,210,140, 0.40), transparent 65%),
+    radial-gradient(ellipse 55% 65% at 68% 25%, rgba(106,223,217, 0.40), transparent 65%),
+    linear-gradient(135deg, rgba(15,18,28,0.95) 0%, rgba(15,28,28,0.95) 100%);
+}
+
+/* Week 4 — INTEGRATION & CREATIVE FLOW (crown, golden spiral).
+   Gold bloom anchored upper-right, violet undercurrent on the lower-
+   left so the eye reads ascent / completion. Quarter-spiral arc in the
+   SVG accent echoes the body-aurora golden spiral. */
+.phase-banner--styled[data-week="4"] {
+  background:
+    radial-gradient(ellipse 60% 65% at 75% 25%, rgba(255,215,100, 0.45), transparent 65%),
+    radial-gradient(ellipse 40% 50% at 18% 78%, rgba(194, 47,205, 0.28), transparent 80%),
+    radial-gradient(ellipse 80% 30% at 50% 100%, rgba(255,215,100, 0.14), transparent 75%),
+    linear-gradient(135deg, rgba(15,12,22,0.95) 0%, rgba(28,22,15,0.95) 100%);
+}
+
+/* SVG accent overlays — minimal geometric marks per week. Stroke is
+   gold by default; week 3's heart dot tints green, throat tints teal. */
+.phase-banner-accent {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  opacity: 0.85;
+}
+.pba-line {
+  stroke: rgba(255,215,100,0.45);
+  stroke-width: 0.18;
+  stroke-dasharray: 0.6 0.4;
+  vector-effect: non-scaling-stroke;
+}
+.pba-line--vertical {
+  stroke: rgba(255,215,100,0.32);
+  stroke-dasharray: 0.4 0.4;
+}
+.pba-dot {
+  fill: rgba(255,215,100,0.85);
+  filter: drop-shadow(0 0 0.4px rgba(255,215,100,0.6));
+}
+.pba-dot--heart  { fill: rgba(120,210,140, 0.95); filter: drop-shadow(0 0 0.6px rgba(120,210,140,0.7)); }
+.pba-dot--throat { fill: rgba(106,223,217, 0.95); filter: drop-shadow(0 0 0.6px rgba(106,223,217,0.7)); }
+.pba-dot--spiral { fill: rgba(255,215,100, 0.95); filter: drop-shadow(0 0 0.6px rgba(255,215,100,0.7)); }
+.pba-arc {
+  fill: none;
+  stroke: rgba(240,147, 94, 0.42);
+  stroke-width: 0.16;
+  vector-effect: non-scaling-stroke;
+}
+.pba-spiral {
+  fill: none;
+  stroke: rgba(255,215,100, 0.55);
+  stroke-width: 0.18;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 0.4px rgba(255,215,100,0.45));
 }
 
 /* Vertical phase head — display number above the title */
@@ -2872,7 +2950,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.0';
+const VERSION = '1.9.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4907,6 +4985,63 @@ function renderReserveList() {
   if (typeof applyExpandedStates === 'function') applyExpandedStates();
 }
 
+/* v1.9.1: Per-week SVG accent for the styled banner. Each week gets a
+   distinct geometric mark layered on top of its CSS gradient:
+   - Week 1 (root, in the body)         → horizon hairline + 3 grounding marks
+   - Week 2 (sacral, release)           → 3 sweeping arcs from the right
+   - Week 3 (heart-throat, coherence)   → vertical axis hairline + 2 dot markers
+   - Week 4 (crown, integration)        → arc echoing a golden spiral
+   ViewBox is 100x37.5 (matches 16:6 aspect at any width). */
+function buildPhaseBannerAccent(week) {
+  const root = svg('svg', {
+    class: 'phase-banner-accent',
+    viewBox: '0 0 100 37.5',
+    preserveAspectRatio: 'none',
+    'aria-hidden': 'true'
+  });
+  if (week === 1) {
+    // Horizon hairline near the bottom + 3 grounding marks
+    root.appendChild(svg('line', {
+      class: 'pba-line', x1: '8', y1: '28', x2: '92', y2: '28'
+    }));
+    [22, 50, 78].forEach(x => {
+      root.appendChild(svg('circle', {
+        class: 'pba-dot', cx: String(x), cy: '28', r: '0.5'
+      }));
+    });
+  } else if (week === 2) {
+    // Three sweeping arcs from the right edge — release/clearing motion
+    [10, 18, 26].forEach((dy) => {
+      root.appendChild(svg('path', {
+        class: 'pba-arc',
+        d: 'M 100 ' + dy + ' Q 50 ' + (dy + 6) + ' 0 ' + dy + ' '
+      }));
+    });
+  } else if (week === 3) {
+    // Vertical axis hairline + heart/throat dot markers
+    root.appendChild(svg('line', {
+      class: 'pba-line pba-line--vertical', x1: '50', y1: '4', x2: '50', y2: '34'
+    }));
+    root.appendChild(svg('circle', {
+      class: 'pba-dot pba-dot--heart', cx: '50', cy: '24', r: '1.4'
+    }));
+    root.appendChild(svg('circle', {
+      class: 'pba-dot pba-dot--throat', cx: '50', cy: '13', r: '1.4'
+    }));
+  } else if (week === 4) {
+    // Quarter-arc echoing a golden spiral, anchored upper-right
+    root.appendChild(svg('path', {
+      class: 'pba-spiral',
+      d: 'M 100 4 Q 80 4 70 14 T 55 30'
+    }));
+    // Small radiant dot at the spiral's terminal
+    root.appendChild(svg('circle', {
+      class: 'pba-dot pba-dot--spiral', cx: '55', cy: '30', r: '0.8'
+    }));
+  }
+  return root;
+}
+
 /* v1.9.0: Vertical-progressive week sections.
    - All four weeks render as a continuous scroll; no tab interaction.
    - Each week is a hero with: thematic visual (top, full-width banner)
@@ -4925,11 +5060,20 @@ function renderPhasePanels() {
     });
     const phaseEl = el('div', { class: 'phase reveal', dataset: { week: String(phase.week) } });
 
-    // Hero banner — thematic image with chakra-themed gradient fallback
+    // Hero banner — styled CSS composition per week (no image gen needed).
+    // Each week's banner has a distinct gradient register + minimal SVG
+    // accent that names its energetic story:
+    //   Week 1 (root, ground)         → bottom-anchored red bloom + horizon hairline
+    //   Week 2 (sacral, release)      → orange bloom from the right + sweeping arcs
+    //   Week 3 (heart-throat, open)   → twin green/teal blooms + vertical axis line
+    //   Week 4 (crown, integration)   → gold bloom upper-right + golden-spiral arc
+    // If `phase.art` is set, an <img> renders on top instead — leaves the
+    // door open for image generation later without rewriting the banner.
     const banner = el('div', {
-      class: 'phase-banner',
+      class: 'phase-banner phase-banner--styled',
       dataset: { week: String(phase.week) }
     });
+    banner.appendChild(buildPhaseBannerAccent(phase.week));
     if (phase.art) {
       const img = el('img', {
         class: 'phase-banner-img',
@@ -4938,11 +5082,8 @@ function renderPhasePanels() {
         loading: 'lazy',
         decoding: 'async'
       });
-      // Hide image gracefully if file isn't there yet — gradient stands in
-      img.addEventListener('error', () => { img.style.display = 'none'; banner.classList.add('phase-banner--no-image'); });
+      img.addEventListener('error', () => { img.remove(); });
       banner.appendChild(img);
-    } else {
-      banner.classList.add('phase-banner--no-image');
     }
     phaseEl.appendChild(banner);
 
