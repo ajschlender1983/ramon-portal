@@ -1748,11 +1748,12 @@ main { position: relative; z-index: 2; }
 @keyframes mesh-drift3 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(10vw,-15vh) scale(1.1)} 100%{transform:translate(-15vw,-5vh) scale(1.2)} }
 @keyframes mesh-drift4 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(-12vw,8vh) scale(1.15)} 100%{transform:translate(8vw,-12vh) scale(0.95)} }
 
-/* The Input parsed-reading frames sit collapsed by default — the user
-   opts in to read the practitioner's verbose words. The dashboard above
-   is the visual primary; this is the optional deep-read. */
+/* v1.9.11: parsed-reading collapse pill sits ABOVE the body-aurora
+   dashboard now (was below). Top margin clears the hero copy, bottom
+   margin breathes into the dashboard card. The dashboard remains the
+   visual primary; this pill opens the source words. */
 .input-collapse {
-  margin-top: 28px;
+  margin: 12px 0 8px;
 }
 .input-collapse-summary {
   cursor: pointer;
@@ -3058,11 +3059,10 @@ window.__userDataPromise = (function() {
     This is the reading you were given. We mirror the words back to you and design the next 30 days around them. <strong>The Input itself is what we built the map from.</strong>
   </p>
 
-  <div class="biofield-dashboard" id="biofield-dashboard"></div>
-
-  <!-- The verbose parsed-reading frames are folded by default. The dashboard
-       above is the visual primary; the words are here for when the user
-       wants to read them. -->
+  <!-- v1.9.11: collapse pill moved ABOVE the body-aurora dashboard so the
+       raw reading text is accessible BEFORE the visual mirror, not after.
+       The dashboard stays as the primary visual; this pill opens the
+       words that built it. -->
   <details class="input-collapse">
     <summary class="input-collapse-summary">
       <span class="input-collapse-icon" aria-hidden="true"></span>
@@ -3078,6 +3078,8 @@ window.__userDataPromise = (function() {
       </div>
     </div>
   </details>
+
+  <div class="biofield-dashboard" id="biofield-dashboard"></div>
 </section>
 
 <hr class="gradient-divider">
@@ -3152,7 +3154,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.10';
+const VERSION = '1.9.11';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
