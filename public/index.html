@@ -467,15 +467,25 @@ main { position: relative; z-index: 2; }
   user-select: none;
 }
 .bf-body-stage--no-image::before {
-  /* Soft fallback silhouette hint when the image hasn't been added yet */
-  content: 'body-aurora.jpg not found';
-  position: absolute; left: 50%; top: 50%;
+  /* Soft body-silhouette hint when the image hasn't been added yet.
+     A radial ellipse standing in for the figure, plus a quiet line of
+     italic copy. No clinical missing-asset language. */
+  content: 'a figure is becoming visible';
+  position: absolute; left: 28%; top: 50%;
   transform: translate(-50%, -50%);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.32);
-  font-family: var(--sans);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+}
+.bf-body-stage--no-image::after {
+  content: '';
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 22% 70% at 26% 50%, rgba(123,111,168,0.32), transparent 70%);
+  pointer-events: none;
 }
 
 /* Chakra glows overlaid on the body. mix-blend-mode 'screen' ADDS the
@@ -544,11 +554,11 @@ main { position: relative; z-index: 2; }
   display: flex; align-items: center; gap: 14px;
 }
 .bf-avatar-tile--side {
-  width: 88px; height: 88px;
+  width: 76px; height: 76px;
   border-radius: 50%;
   overflow: hidden;
-  border: 1px solid rgba(255,215,100,0.42);
-  box-shadow: 0 0 24px rgba(123,111,168,0.45);
+  border: 1px solid rgba(255,215,100,0.36);
+  box-shadow: 0 0 22px rgba(123,111,168,0.40);
   flex-shrink: 0;
 }
 .bf-avatar-tile--side img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -569,15 +579,28 @@ main { position: relative; z-index: 2; }
   margin-top: 4px;
 }
 
-/* Hawkins compact card */
+/* Hawkins compact card — clickable button that opens the field */
 .bf-stage-hawkins {
-  background: rgba(11,8,15,0.42);
+  background: rgba(11,8,15,0.45);
   border: 1px solid rgba(255,215,100,0.22);
   border-left: 2px solid var(--gold);
   border-radius: 0 12px 12px 0;
   padding: 12px 16px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  transition: background .25s, border-color .25s;
+}
+.bf-stage-hawkins:hover {
+  background: rgba(11,8,15,0.62);
+  border-color: rgba(255,215,100,0.42);
+}
+.bf-stage-hawkins:focus-visible {
+  outline: 1px solid rgba(255,215,100,0.72);
+  outline-offset: 2px;
 }
 .bf-stage-hawkins .label {
   font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
@@ -591,8 +614,20 @@ main { position: relative; z-index: 2; }
   display: flex; align-items: baseline; gap: 4px;
 }
 .bf-stage-hawkins .value strong { font-style: italic; font-weight: 500; color: var(--gold); }
-.bf-stage-hawkins .value .arrow { color: rgba(255,215,100,0.45); font-size: 18px; }
-.bf-stage-hawkins .value .target { color: rgba(255,215,100,0.65); font-size: 22px; }
+.bf-stage-hawkins .value .tier-frame {
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(255,215,100,0.55);
+  margin-left: 2px;
+}
+.bf-stage-hawkins .value .tier-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  color: rgba(255,215,100,0.85);
+}
 .bf-stage-hawkins .felt {
   margin-top: 6px;
   font-size: 11.5px;
@@ -601,25 +636,92 @@ main { position: relative; z-index: 2; }
   line-height: 1.5;
 }
 
-/* Holding quote on the side */
+/* Holding-quote block — carries Carrier-attenuation eyebrow + primary
+   block quote + felt-sense holding line. Backdrop blur ensures
+   readability across any image brightness variation. */
 .bf-stage-holding {
-  font-family: var(--serif); font-style: italic;
-  font-size: 14px; line-height: 1.55;
-  color: rgba(255,255,255,0.85);
+  display: flex; flex-direction: column; gap: 6px;
   border-left: 1px solid rgba(255,215,100,0.32);
-  padding-left: 14px;
+  padding: 10px 12px 10px 14px;
+  background: linear-gradient(90deg, rgba(11,8,15,0.45), rgba(11,8,15,0.18));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 0 8px 8px 0;
+}
+.bf-stage-holding .eyebrow {
+  font-size: 9.5px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: rgba(255,215,100,0.78);
+  font-family: var(--sans);
+}
+.bf-stage-holding .quote {
+  font-family: var(--serif); font-style: italic;
+  font-size: 15px; line-height: 1.45;
+  color: var(--light);
   letter-spacing: 0.01em;
+}
+.bf-stage-holding .felt {
+  font-family: var(--serif); font-style: italic;
+  font-size: 12.5px; line-height: 1.55;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.01em;
+  margin-top: 2px;
 }
 
 .bf-breath-dot--side {
   position: relative; left: 0; bottom: 0;
+  align-self: center;
+  margin: 0;
+}
+.bf-breath-block { display: flex; flex-direction: column; gap: 4px; }
+.bf-breath-row {
+  display: inline-flex; align-items: center; gap: 10px;
   align-self: flex-start;
-  margin-top: -4px;
+}
+.bf-breath-caption {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,215,100,0.55);
+  font-family: var(--sans);
+}
+.bf-breath-hint {
+  font-family: var(--serif); font-style: italic;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.01em;
+  max-width: 280px;
 }
 
 .bf-doorway-open--side {
   align-self: flex-start;
   margin-top: 4px;
+}
+/* v1.7.3 EBI 1: quieter open-the-field — text-link weight instead of gold pill,
+   so it doesn't compete with the body image as the visual primary. */
+.bf-doorway-open--quiet {
+  background: transparent;
+  border: none;
+  padding: 8px 0;
+  color: rgba(255,215,100,0.78);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 8px;
+  cursor: pointer;
+  transition: color .25s, gap .25s;
+  border-bottom: 1px solid rgba(255,215,100,0.18);
+}
+.bf-doorway-open--quiet:hover {
+  color: var(--gold);
+  gap: 14px;
+  border-bottom-color: rgba(255,215,100,0.42);
+}
+.bf-doorway-open--quiet .bf-doorway-open-icon {
+  width: 6px; height: 6px;
+  transform: rotate(-45deg);
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
 }
 
 /* Mobile (and narrow desktop): collapse the absolute side panel into a
@@ -2557,7 +2659,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.7.2';
+const VERSION = '1.7.3';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3761,6 +3863,41 @@ function buildSolfeggioStrip() {
 /* Doorway state — the settling default. Three animated surfaces:
    outer aura ring, breath dot, slow aurora blob. Full instrument lives
    behind the "open the field" affordance. */
+/* Map a Hawkins level (200..1000) to a tier name. Returns the named tier
+   the user is closest to, plus a relational verb ("at" if within ±15 of a
+   tier center, "approaching" if rising toward the next, "past" if falling
+   below). Used by the body-aurora hero's Hawkins card for semantic context
+   (raw numbers without a name read as a score; tiers tell a story). */
+const HAWKINS_TIERS = [
+  { v: 200, name: 'Courage' },
+  { v: 350, name: 'Acceptance' },
+  { v: 400, name: 'Reason' },
+  { v: 500, name: 'Love' },
+  { v: 540, name: 'Joy' },
+  { v: 600, name: 'Peace' },
+  { v: 700, name: 'Enlightenment' }
+];
+function hawkinsTier(level) {
+  if (typeof level !== 'number' || isNaN(level)) return { tier: 'Reason', frame: 'at' };
+  // Find the tier the level is in or approaching
+  let nearest = HAWKINS_TIERS[0];
+  let next = null;
+  for (let i = 0; i < HAWKINS_TIERS.length; i++) {
+    if (level >= HAWKINS_TIERS[i].v) {
+      nearest = HAWKINS_TIERS[i];
+      next = HAWKINS_TIERS[i + 1] || null;
+    }
+  }
+  // Within ±15 of nearest center → "at <tier>"
+  if (Math.abs(level - nearest.v) <= 15) return { tier: nearest.name, frame: 'at' };
+  // Rising toward next → "approaching <next>"
+  if (next && (next.v - level) < (level - nearest.v)) {
+    return { tier: next.name, frame: 'approaching' };
+  }
+  // Default: between tiers → "past <nearest>"
+  return { tier: nearest.name, frame: 'past' };
+}
+
 /* Anatomical chakra positions on the body-aurora reference image.
    Image is 778×1030 portrait; body figure occupies the left half with
    negative space on the right. Coordinates are % of image bounds. */
@@ -3783,13 +3920,17 @@ function buildDoorwayState() {
   // The body-aurora hero stage: photographic figure + chakra glows + side panel
   const stage = el('div', { class: 'bf-body-stage' });
 
-  // Body image — translucent figure on aurora gradient
+  // Body image — translucent figure on aurora gradient. Skip eager loading
+  // when prefers-reduced-data is set (lets the fallback gradient stand in).
+  const reducedData = window.matchMedia && window.matchMedia('(prefers-reduced-data: reduce)').matches;
   const img = el('img', {
     class: 'bf-body-image',
-    src: 'assets/dashboard/body-aurora.jpg',
+    src: reducedData ? '' : 'assets/dashboard/body-aurora.jpg',
     alt: 'translucent figure rendered in violet and rose light',
-    loading: 'eager'
+    loading: 'eager',
+    decoding: 'async'
   });
+  if (reducedData) stage.classList.add('bf-body-stage--no-image');
   // Graceful degrade: if the image hasn't been added yet, fall back to a
   // solid aurora gradient so the layout still reads.
   img.addEventListener('error', () => {
@@ -3820,45 +3961,66 @@ function buildDoorwayState() {
   // Side panel (right negative space): avatar + Hawkins + holding quote + open
   const side = el('div', { class: 'bf-stage-side' });
 
-  // Avatar tile + name
+  // Avatar tile + name. Period anchors when the reading is from; aura line
+  // becomes relational ("field reaches X m") rather than a tag.
+  const period = (USER && USER.period) || '';
   const avatarBlock = el('div', { class: 'bf-stage-avatar' });
   const tile = el('div', { class: 'bf-avatar-tile bf-avatar-tile--side' });
   tile.appendChild(buildPortraitImg('bf-avatar-fallback--door'));
   avatarBlock.appendChild(tile);
   const avatarMeta = el('div', { class: 'bf-stage-avatar-meta' });
   avatarMeta.appendChild(el('div', { class: 'name', text: portraitName }));
-  avatarMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' }));
-  avatarMeta.appendChild(el('div', { class: 'aura-line', text: auricMeters.toFixed(1) + ' m field' }));
+  avatarMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' + (period ? ' · ' + period : '') }));
+  avatarMeta.appendChild(el('div', { class: 'aura-line', text: 'field reaches ' + auricMeters.toFixed(1) + ' m' }));
   avatarBlock.appendChild(avatarMeta);
   side.appendChild(avatarBlock);
 
-  // Hawkins compact card — current calibration prominently displayed
+  // Hawkins compact card — clickable, opens the field to reveal the full
+  // ladder. Semantic tier name ("approaching Joy") gives context the bare
+  // number doesn't carry.
   const hkLevel = Number(view.hawkinsLevel) || 525;
   const hkTarget = Number(view.hawkinsTarget) || 528;
-  const hkCard = el('div', { class: 'bf-stage-hawkins' });
-  hkCard.appendChild(el('div', { class: 'label', text: 'Hawkins calibration' }));
+  const tierInfo = hawkinsTier(hkLevel);
+  const hkCard = el('button', {
+    class: 'bf-stage-hawkins',
+    type: 'button',
+    'aria-label': 'Hawkins calibration ' + hkLevel + ', ' + tierInfo.frame + ' ' + tierInfo.tier + '. Click to see the full ladder.'
+  });
+  hkCard.appendChild(el('div', { class: 'label', text: 'Calibration' }));
   const hkValue = el('div', { class: 'value' });
   hkValue.appendChild(el('strong', { text: String(hkLevel) }));
-  hkValue.appendChild(el('span', { class: 'arrow', text: ' → ' }));
-  hkValue.appendChild(el('span', { class: 'target', text: String(hkTarget) }));
+  hkValue.appendChild(el('span', { class: 'tier-frame', text: ' · ' + tierInfo.frame + ' ' }));
+  hkValue.appendChild(el('span', { class: 'tier-name', text: tierInfo.tier }));
   hkCard.appendChild(hkValue);
-  hkCard.appendChild(el('div', { class: 'felt', text: 'Within reach. ' + hkTarget + ' Hz Miracles.' }));
+  hkCard.appendChild(el('div', { class: 'felt', text: hkTarget + ' Hz · Miracles, within reach.' }));
+  hkCard.addEventListener('click', openDashboard);
   side.appendChild(hkCard);
 
-  // Holding quote
-  side.appendChild(el('div', {
-    class: 'bf-stage-holding',
-    text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.'
-  }));
+  // Holding-quote block — carries the "carrier attenuation" eyebrow + the
+  // primary block quote + the felt-sense holding line. Restores semantic
+  // context that was lost when the block-wave element was cut in v1.7.0.
+  const blockQuote = (view.primaryBlock || (USER && USER.primaryBlockQuote) || 'Hesitation in finalizing commitments.').trim();
+  const holding = el('div', { class: 'bf-stage-holding' });
+  holding.appendChild(el('span', { class: 'eyebrow', text: 'Carrier attenuation' }));
+  holding.appendChild(el('div', { class: 'quote', text: '"' + blockQuote.replace(/^"|"$/g, '') + '"' }));
+  holding.appendChild(el('div', { class: 'felt', text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.' }));
+  side.appendChild(holding);
 
-  // Breath dot
-  const breathDot = el('div', { class: 'bf-breath-dot bf-breath-dot--side', 'aria-label': 'breath rhythm 5.5 per minute' });
-  side.appendChild(breathDot);
+  // Breath dot + caption + soft instruction. Pre-session use: tells the
+  // user not just *what* the rhythm is but *what to do with it* — sit and
+  // match a few breaths before opening the field.
+  const breathBlock = el('div', { class: 'bf-breath-block' });
+  const breathRow = el('div', { class: 'bf-breath-row' });
+  breathRow.appendChild(el('div', { class: 'bf-breath-dot bf-breath-dot--side', 'aria-label': 'breath rhythm 5.5 per minute' }));
+  breathRow.appendChild(el('span', { class: 'bf-breath-caption', text: 'breath · 5.5 / min' }));
+  breathBlock.appendChild(breathRow);
+  breathBlock.appendChild(el('div', { class: 'bf-breath-hint', text: 'match the rhythm for a few breaths before opening the field.' }));
+  side.appendChild(breathBlock);
 
-  // Open-the-field affordance
-  const openBtn = el('button', { class: 'bf-doorway-open bf-doorway-open--side', type: 'button' });
-  openBtn.appendChild(el('span', { class: 'bf-doorway-open-icon', 'aria-hidden': 'true' }));
+  // Open-the-field — quieter text-link with chevron, not a gold pill
+  const openBtn = el('button', { class: 'bf-doorway-open bf-doorway-open--side bf-doorway-open--quiet', type: 'button' });
   openBtn.appendChild(el('span', { class: 'bf-doorway-open-text', text: 'open the field' }));
+  openBtn.appendChild(el('span', { class: 'bf-doorway-open-icon', 'aria-hidden': 'true' }));
   openBtn.addEventListener('click', openDashboard);
   side.appendChild(openBtn);
 
@@ -4764,7 +4926,16 @@ function morphActiveSnapshot(weekN) {
   applyActiveSnapshot();
   const view = getView();
 
-  // 1. Chakra column rows — update state, amp, threshold, state word, bar pips, note
+  // 1a. Doorway chakra glows on the body-aurora hero (v1.7.2+)
+  CHAKRA_STATES.forEach(c => {
+    const glow = document.querySelector('.bf-chakra-glow-pt[data-chakra="' + c.id + '"]');
+    if (!glow) return;
+    const v = CHAKRA_VISUAL[c.state] || { amp: 0.7 };
+    glow.setAttribute('data-state', c.state);
+    glow.style.setProperty('--amp', v.amp.toFixed(2));
+  });
+
+  // 1b. Sidecar chakra column rows — update state, amp, threshold, state word, bar pips, note
   CHAKRA_STATES.forEach(c => {
     const row = document.querySelector('.bf-chakra-row[data-id="' + c.id + '"]');
     if (!row) return;
