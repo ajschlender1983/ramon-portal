@@ -562,27 +562,31 @@ main { position: relative; z-index: 2; }
 .bf-chakra-glow-pt {
   position: absolute;
   top: var(--top); left: var(--left);
-  /* Scale + opacity carry amplitude. Base radius 70px, grows to 130px at amp=1. */
-  width: calc(70px + 60px * var(--amp));
-  height: calc(70px + 60px * var(--amp));
+  /* v1.9.0: tighter contrast between low and high amp.
+     Scale: 60px (undercharged 0.30) → 150px (radiant 1.0).
+     Opacity: 0.18 (undercharged) → 0.95 (radiant) — true dim → true present.
+     Blur: subtle for undercharged, soft glow for radiant. */
+  width: calc(50px + 100px * var(--amp));
+  height: calc(50px + 100px * var(--amp));
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  /* Hue per chakra; --core sets center alpha, --halo sets outer fade */
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--hue) calc(75% * var(--amp) + 25%), transparent) 0%,
-    color-mix(in srgb, var(--hue) calc(40% * var(--amp)), transparent) 35%,
+    color-mix(in srgb, var(--hue) calc(85% * var(--amp) + 15%), transparent) 0%,
+    color-mix(in srgb, var(--hue) calc(50% * var(--amp)), transparent) 35%,
     transparent 70%
   );
   mix-blend-mode: screen;
-  opacity: calc(0.45 + 0.55 * var(--amp));
-  filter: blur(calc(4px + 6px * var(--amp)));
-  /* Breathe with master clock — gentle pulse on top of the static glow */
+  opacity: calc(0.10 + 0.85 * var(--amp));
+  filter: blur(calc(3px + 9px * var(--amp)));
+  /* Breathe with master clock — radiant chakras pulse more visibly */
   animation: bf-chakra-glow-breath 10910ms ease-in-out infinite;
 }
 @keyframes bf-chakra-glow-breath {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50%      { transform: translate(-50%, -50%) scale(1.06); }
+  /* Higher-amp chakras pulse more visibly; the scale step blends with
+     opacity (subtle) to give a heartbeat-like rhythm. */
+  0%, 100% { transform: translate(-50%, -50%) scale(0.96); }
+  50%      { transform: translate(-50%, -50%) scale(1.08); }
 }
 @media (prefers-reduced-motion: reduce) {
   .bf-chakra-glow-pt { animation: none; }
@@ -1928,12 +1932,77 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   100% { box-shadow: inset 0 0 0 0 rgba(255,255,255,0.0); }
 }
 
+/* v1.9.0: All week sections are visible at once, vertical-progressive scroll */
 .phase-panel { display: none; }
-.phase-panel.active { display: block; animation: phase-fade 360ms cubic-bezier(.2,.8,.2,1); }
+.phase-panel.active,
+.phase-panel--always-visible { display: block; animation: phase-fade 360ms cubic-bezier(.2,.8,.2,1); }
+.phase-panel--always-visible + .phase-panel--always-visible {
+  margin-top: 56px;
+  padding-top: 56px;
+  border-top: 1px dashed rgba(255,255,255,0.06);
+}
+.phase-tabs--hidden { display: none !important; }
 @keyframes phase-fade {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Phase banner: thematic visual (lazy-loaded). Falls back to a chakra-tinted
+   gradient if no art is provided or the file 404s. */
+.phase-banner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 6;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  background: linear-gradient(135deg, rgba(86,76,112,0.42), rgba(31,22,50,0.85));
+}
+.phase-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.phase-banner::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent 60%, rgba(11,8,15,0.55) 100%);
+}
+/* Per-week chakra tint when no image is present */
+.phase-banner--no-image[data-week="1"] { background: linear-gradient(135deg, rgba(220, 90, 90, 0.32), rgba(31,22,50,0.85)); }
+.phase-banner--no-image[data-week="2"] { background: linear-gradient(135deg, rgba(240,147, 94, 0.32), rgba(31,22,50,0.85)); }
+.phase-banner--no-image[data-week="3"] { background: linear-gradient(135deg, rgba(120,210,140, 0.32), rgba(31,22,50,0.85)); }
+.phase-banner--no-image[data-week="4"] { background: linear-gradient(135deg, rgba(255,215,100, 0.32), rgba(31,22,50,0.85)); }
+.phase-banner--no-image::before {
+  content: 'thematic visual coming';
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--serif); font-style: italic;
+  font-size: 13px;
+  color: rgba(255,255,255,0.32);
+  letter-spacing: 0.04em;
+}
+
+/* Vertical phase head — display number above the title */
+.phase-head--vertical {
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 32px;
+}
+.phase-num--display {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(72px, 11vw, 140px);
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  color: rgba(255,215,100,0.85);
+  -webkit-text-stroke: 0;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  filter: drop-shadow(0 0 24px rgba(255,215,100,0.18));
+}
+.phase[data-week="1"] .phase-num--display { color: rgba(220, 90, 90, 0.85); filter: drop-shadow(0 0 24px rgba(220, 90, 90, 0.22)); }
+.phase[data-week="2"] .phase-num--display { color: rgba(240,147, 94, 0.88); filter: drop-shadow(0 0 24px rgba(240,147, 94, 0.22)); }
+.phase[data-week="3"] .phase-num--display { color: rgba(120,210,140, 0.88); filter: drop-shadow(0 0 24px rgba(120,210,140, 0.22)); }
+.phase[data-week="4"] .phase-num--display { color: rgba(255,215,100, 0.88); filter: drop-shadow(0 0 24px rgba(255,215,100, 0.22)); }
 
 .phase { position: relative; }
 .phase-head {
@@ -2387,12 +2456,50 @@ textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
    always visible, click toggles expanded state which reveals the note +
    chakra hint + a "for when..." line. Renders real art if `art` field is
    set on the reserve entry; falls back to chakra-tinted gradient otherwise. */
+/* v1.9.0: reserve list now uses the same grid as the session-grid so
+   reserve items render as proper session cards in a 1-up / 2-up flow. */
 .reserve-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 20px;
   margin-top: 24px;
 }
+@media (min-width: 1024px) {
+  .reserve-list { grid-template-columns: 1fr 1fr; gap: 24px; }
+}
+/* Reserve sessions look like session cards but are styled with a dashed
+   border to signal "not in the active arc". */
+.session-card.session-card--reserve {
+  border-style: dashed;
+  border-color: rgba(255,255,255,0.10);
+}
+.session-card.session-card--reserve:hover {
+  border-style: solid;
+}
+/* No-image fallback for session-art (used by reserve cards without art files
+   yet, or any session where the image 404s). Chakra-tinted gradient. */
+.session-art--no-image {
+  background: linear-gradient(135deg, rgba(123,111,168,0.45), rgba(31,22,50,0.85));
+}
+.session-art--no-image[data-chakra="crown"]    { background: linear-gradient(135deg, rgba(220,200,255,0.55), rgba(40,28,60,0.85)); }
+.session-art--no-image[data-chakra="third-eye"]{ background: linear-gradient(135deg, rgba(123,111,168,0.55), rgba(28,24,52,0.85)); }
+.session-art--no-image[data-chakra="throat"]   { background: linear-gradient(135deg, rgba(106,223,217,0.50), rgba(18,40,46,0.85)); }
+.session-art--no-image[data-chakra="heart"]    { background: linear-gradient(135deg, rgba(120,210,140,0.50), rgba(20,40,28,0.85)); }
+.session-art--no-image[data-chakra="solar"]    { background: linear-gradient(135deg, rgba(255,215,100,0.55), rgba(50,38,18,0.85)); }
+.session-art--no-image[data-chakra="sacral"]   { background: linear-gradient(135deg, rgba(240,147,94,0.55), rgba(48,26,18,0.85)); }
+.session-art--no-image[data-chakra="root"]     { background: linear-gradient(135deg, rgba(220,90,90,0.50), rgba(40,18,18,0.85)); }
+/* "Held for" reason block in reserve cards — same shape as session-why
+   but with a gold left-border to distinguish it from "Why this, for you". */
+.session-why--held {
+  background: rgba(255,215,100,0.04);
+  border-left: 2px solid rgba(255,215,100,0.40);
+}
+.session-why--held .session-why-label {
+  color: var(--gold);
+}
+/* Old reserve-* classes are no longer used by the new layout but kept
+   for backward compat. */
+
 .reserve-item {
   background: rgba(31,24,36,0.45);
   border: 1px dashed var(--glass-border);
@@ -2703,7 +2810,10 @@ window.__userDataPromise = (function() {
     Your reading shapes the path. Each week is built from what came up. Every session below is a real entry from the OPUS catalog. After each one, log a short note. We're listening for what changes.
   </p>
 
-  <div class="phase-tabs" id="phase-tabs" role="tablist" aria-label="Weekly map"></div>
+  <!-- v1.9.0: phase-tabs hidden — weeks now render as a continuous
+       vertical-progressive scroll. The container stays for any code that
+       still references it. -->
+  <div class="phase-tabs phase-tabs--hidden" id="phase-tabs" aria-hidden="true" hidden></div>
   <div id="phases"></div>
 
   <div class="reveal" style="margin-top:64px;">
@@ -2762,7 +2872,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.8.0';
+const VERSION = '1.9.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4185,11 +4295,10 @@ function buildBelowHeroDetail() {
   const delta = buildDeltaPanel(true);
   if (delta) wrap.appendChild(delta);
 
-  // Chakra column metadata — state words, amplitude bars, notes
-  const chakraSection = el('div', { class: 'bf-detail-section bf-detail-chakras' });
-  chakraSection.appendChild(el('div', { class: 'bf-detail-label', text: 'Chakra reading' }));
-  chakraSection.appendChild(buildChakraColumn());
-  wrap.appendChild(chakraSection);
+  // v1.9.0: chakra column removed from below-hero. The body image with
+  // its on-body glows IS the chakra reading; redundant column was visual
+  // noise + competed with the hero. State words / notes can be revealed
+  // as hover/click affordances on each glow in a future round.
 
   // DNA helix + meta
   const dnaInfo = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
@@ -4690,73 +4799,157 @@ function renderPhaseTabs() {
    cards. Each card is clickable: click toggles expanded state which reveals
    the practitioner's note. Real album art renders if `art` field is set on
    the entry; otherwise a chakra-tinted gradient fallback. */
+/* v1.9.0: Held-in-reserve cards now mirror the session-card structure.
+   Each reserve entry should carry the same metadata shape as a SESSIONS
+   entry (heading/subtitle/artist/portrait/category/lede/chooseWhen/art).
+   Plus a `held` reason field for the expanded "why this is in reserve"
+   section. Renders as a session-card with no notes/intention/resolve UI
+   (since these aren't part of the active 30-day arc) — just the lede,
+   choose-when chips, artist, art, plus a "held for" rationale. */
 function renderReserveList() {
   const mount = document.getElementById('reserve-list');
   if (!mount || !USER || !Array.isArray(USER.heldInReserve)) return;
   while (mount.firstChild) mount.removeChild(mount.firstChild);
-  USER.heldInReserve.forEach((item, idx) => {
-    const card = el('div', {
-      class: 'reserve-item',
-      role: 'button',
-      tabindex: '0',
-      'aria-expanded': 'false',
-      'aria-label': item.name + (item.artist ? ' by ' + item.artist : '')
-    });
 
-    // Art (full-width banner at top)
-    const art = el('div', { class: 'reserve-art', dataset: { chakra: item.chakra || '' } });
-    if (item.art) {
-      art.appendChild(el('img', { src: item.art, alt: '', loading: 'lazy' }));
+  USER.heldInReserve.forEach((item) => {
+    const slug = item.slug || ('reserve-' + (item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+    const card = el('article', { class: 'session-card session-card--reserve reveal', dataset: { slug } });
+
+    // Art (full-width banner at top, same as session cards)
+    const artWrap = el('div', { class: 'session-art' });
+    const artSrc = item.art || '';
+    if (artSrc) {
+      const img = el('img', { src: artSrc, alt: item.heading || item.name || '', loading: 'lazy' });
+      // Soft fallback: if the image 404s, mark the wrapper so the
+      // chakra-tinted gradient stands in.
+      img.addEventListener('error', () => { img.style.display = 'none'; artWrap.classList.add('session-art--no-image'); });
+      artWrap.appendChild(img);
+    } else {
+      artWrap.classList.add('session-art--no-image');
     }
-    card.appendChild(art);
+    artWrap.dataset.chakra = item.chakra || '';
+    artWrap.appendChild(el('span', { class: 'ring-mask', 'aria-hidden': 'true' }));
+    card.appendChild(artWrap);
 
-    // Meta block (name + artist + chevron toggle indicator)
-    const meta = el('div', { class: 'reserve-meta' });
-    meta.appendChild(el('div', { class: 'reserve-name', text: item.name }));
-    if (item.artist) meta.appendChild(el('div', { class: 'reserve-artist', text: item.artist }));
-    meta.appendChild(el('span', { class: 'reserve-toggle', 'aria-hidden': 'true' }));
-    card.appendChild(meta);
+    const body = el('div', { class: 'session-body' });
 
-    // Expanded content (hidden by default)
-    if (item.note || item.chakra) {
-      const expand = el('div', { class: 'reserve-expand' });
-      expand.appendChild(el('span', { class: 'label', text: 'Held for' }));
-      const noteText = item.note || ((item.chakra || '').replace(/-/g, ' ') + ' work');
-      expand.appendChild(document.createTextNode(noteText));
-      card.appendChild(expand);
+    // Head: category + heading + subtitle + artist + chevron toggle
+    const head = el('div', { class: 'session-head' });
+    if (item.category) {
+      const cat = el('div', { class: 'session-cat ' + (item.catClass || '') });
+      cat.appendChild(el('span', { class: 'pip' }));
+      cat.appendChild(el('span', { text: item.category + (item.collection ? ' · ' + item.collection : '') }));
+      head.appendChild(cat);
     }
+    head.appendChild(el('div', { class: 'session-heading', text: item.heading || item.name || '' }));
+    if (item.subtitle) head.appendChild(el('div', { class: 'session-subtitle', text: item.subtitle }));
 
-    // Toggle on click + keyboard
-    function toggle() {
-      const open = card.classList.toggle('expanded');
-      card.setAttribute('aria-expanded', open ? 'true' : 'false');
-    }
-    card.addEventListener('click', toggle);
-    card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggle();
+    if (item.artist) {
+      const artistRow = el('div', { class: 'artist-row' });
+      if (item.portrait) {
+        artistRow.appendChild(el('img', { class: 'artist-avatar', src: item.portrait, alt: item.artist, loading: 'lazy' }));
+      } else {
+        const orb = el('span', { class: 'artist-avatar house', 'aria-hidden': 'true' });
+        orb.textContent = '◯';
+        artistRow.appendChild(orb);
       }
+      artistRow.appendChild(el('span', { class: 'by', text: 'by' }));
+      artistRow.appendChild(el('span', { class: 'name', text: item.artist }));
+      head.appendChild(artistRow);
+    }
+
+    const toggle = el('button', {
+      class: 'session-toggle',
+      type: 'button',
+      'aria-label': 'Expand session details',
+      'aria-expanded': 'false'
+    });
+    toggle.appendChild(el('span', { class: 'session-toggle-icon', 'aria-hidden': 'true' }));
+    head.appendChild(toggle);
+    body.appendChild(head);
+
+    // Expand: lede + choose-when + held-for rationale
+    const expand = el('div', { class: 'session-expand' });
+    if (item.lede) expand.appendChild(el('div', { class: 'session-lede', text: item.lede }));
+    if (Array.isArray(item.chooseWhen) && item.chooseWhen.length) {
+      const cw = el('div', { class: 'choose-when' });
+      item.chooseWhen.forEach(c => cw.appendChild(el('span', { class: 'cw-chip', text: c })));
+      expand.appendChild(cw);
+    }
+
+    // Held-for rationale (the reason this session is in reserve)
+    const heldText = item.held || item.note || '';
+    if (heldText) {
+      const heldBlock = el('div', { class: 'session-why session-why--held' });
+      heldBlock.appendChild(el('span', { class: 'session-why-label', text: 'Held for' }));
+      const heldTextEl = el('div', { class: 'session-why-text', text: heldText });
+      heldBlock.appendChild(heldTextEl);
+      expand.appendChild(heldBlock);
+    }
+
+    body.appendChild(expand);
+    card.appendChild(body);
+
+    // Click on the head zone toggles expand (same pattern as session cards)
+    head.addEventListener('click', (e) => {
+      if (e.target.closest('a,button,input,textarea')) return;
+      toggleSessionExpand(slug);
+    });
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSessionExpand(slug);
     });
 
     mount.appendChild(card);
   });
+
+  // After mounting, apply expand state (same as session cards)
+  if (typeof applyExpandedStates === 'function') applyExpandedStates();
 }
 
+/* v1.9.0: Vertical-progressive week sections.
+   - All four weeks render as a continuous scroll; no tab interaction.
+   - Each week is a hero with: thematic visual (top, full-width banner)
+     + display-text week number + display-text title + body-text intent
+     + responds-to line + 4 session cards in a 2x2 grid + capture panel.
+   - Image renders from phase.art if present; otherwise a chakra-themed
+     gradient placeholder hints at the week's energetic register. */
 function renderPhasePanels() {
   const root = document.getElementById('phases');
+  while (root.firstChild) root.removeChild(root.firstChild);
   PLAN.forEach((phase) => {
     const panel = el('section', {
-      class: 'phase-panel',
+      class: 'phase-panel phase-panel--always-visible',
       id: 'phase-panel-' + phase.week,
-      role: 'tabpanel',
-      'aria-labelledby': 'ptab-' + phase.week,
       dataset: { week: String(phase.week) }
     });
     const phaseEl = el('div', { class: 'phase reveal', dataset: { week: String(phase.week) } });
-    const head = el('div', { class: 'phase-head' });
-    const num = String(phase.week).padStart(2, '0');
-    head.appendChild(el('div', { class: 'phase-num', text: num }));
+
+    // Hero banner — thematic image with chakra-themed gradient fallback
+    const banner = el('div', {
+      class: 'phase-banner',
+      dataset: { week: String(phase.week) }
+    });
+    if (phase.art) {
+      const img = el('img', {
+        class: 'phase-banner-img',
+        src: phase.art,
+        alt: '',
+        loading: 'lazy',
+        decoding: 'async'
+      });
+      // Hide image gracefully if file isn't there yet — gradient stands in
+      img.addEventListener('error', () => { img.style.display = 'none'; banner.classList.add('phase-banner--no-image'); });
+      banner.appendChild(img);
+    } else {
+      banner.classList.add('phase-banner--no-image');
+    }
+    phaseEl.appendChild(banner);
+
+    // Head: display number on its own line above the title
+    const head = el('div', { class: 'phase-head phase-head--vertical' });
+    const numStr = String(phase.week).padStart(2, '0');
+    head.appendChild(el('div', { class: 'phase-num phase-num--display', text: numStr }));
     const meta = el('div', { class: 'phase-meta' });
     meta.appendChild(el('div', { class: 'phase-eyebrow', text: 'Week ' + phase.week }));
     meta.appendChild(el('h3', { class: 'phase-title', text: phase.title }));

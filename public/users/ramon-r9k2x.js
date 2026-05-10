@@ -100,10 +100,10 @@ You are functioning as a Harmonic Guardian of the Inner Return. Your greatest gi
   },
 
   plan: [
-    { week: 1, title: 'Land the Body', intent: "Ground first. Don't pile crown content on a system already oversaturated.", responds: 'Root undercharged · third-eye filtering more data than usual · "minor echo of unworthiness in lower chakras" · new to SoundBed', sessions: ['welcome-to-opus','stability-root','earth-awareness','body-scan'] },
-    { week: 2, title: 'Release the Residue', intent: "Make room. Let the body unload what it's already finished with.", responds: 'Liver detox wave · kidneys recovering / fear-based residue · "fear of timeline collapse" as primary block', sessions: ['fearless-396','ease-174','fire-cleanse','sending-mark-home'] },
-    { week: 3, title: 'Heart Coherent, Voice Open', intent: 'Feed what is already strong. Support what is already opening.', responds: 'Heart radiant emitting green-gold (primary coherence source) · throat finally releasing constraints around truth-speaking · Hawkins 525 = Love & Integration', sessions: ['heart-focus','coherence-639','liberated-expression','toning-with-ancestors'] },
-    { week: 4, title: 'Integration & Creative Flow', intent: "Let the loop close. Move toward what's next.", responds: 'Sacral holding space for creative rebirth · solar plexus stabilizing · "hesitation in finalizing commitments" · golden spiral integration signature', sessions: ['heart-hara','flow-sacral','sunmerge-174','open-path-741'] }
+    { week: 1, title: 'In the Body', art: 'assets/weeks/week-1.png', intent: "Ground first. Don't pile crown content on a system already oversaturated.", responds: 'Root undercharged · third-eye filtering more data than usual · "minor echo of unworthiness in lower chakras" · new to SoundBed', sessions: ['welcome-to-opus','stability-root','earth-awareness','body-scan'] },
+    { week: 2, title: 'Release the Charge', art: 'assets/weeks/week-2.png', intent: "Make room. Let the body unload what it's already finished with.", responds: 'Liver detox wave · kidneys recovering / fear-based residue · "fear of timeline collapse" as primary block', sessions: ['fearless-396','ease-174','fire-cleanse','sending-mark-home'] },
+    { week: 3, title: 'Heart Coherent, Voice Open', art: 'assets/weeks/week-3.png', intent: 'Feed what is already strong. Support what is already opening.', responds: 'Heart radiant emitting green-gold (primary coherence source) · throat finally releasing constraints around truth-speaking · Hawkins 525 = Love & Integration', sessions: ['heart-focus','coherence-639','liberated-expression','toning-with-ancestors'] },
+    { week: 4, title: 'Integration & Creative Flow', art: 'assets/weeks/week-4.png', intent: "Let the loop close. Move toward what's next.", responds: 'Sacral holding space for creative rebirth · solar plexus stabilizing · "hesitation in finalizing commitments" · golden spiral integration signature', sessions: ['heart-hara','flow-sacral','sunmerge-174','open-path-741'] }
   ],
 
   /* Chakra states parsed from this user's reading. Order = energetic ascent.
@@ -121,16 +121,96 @@ You are functioning as a Harmonic Guardian of the Inner Return. Your greatest gi
     { id: 'root',      label: 'Root',         state: 'undercharged',   yPct: 76, note: 'Quiet, wants more earth resonance' }
   ],
 
-  /* Sessions intentionally not in Week 1-4. Each entry needs a name, artist,
-     and a chakra (used to tint the placeholder art tile). The OPUS catalog
-     entries here aren't part of Ramon's 30-day arc, so there's no album-art
-     asset for them in the repo; we render a chakra-tinted gradient tile. */
+  /* Sessions intentionally not in Week 1-4. Same shape as `sessions` so they
+     render as identical session cards (art-at-top, expandable). `art` paths
+     can point to real album art when available; otherwise the card uses a
+     chakra-tinted gradient fallback. `chakra` drives the gradient tint. */
   heldInReserve: [
-    { name: 'Rest in Love · 852 Hz', artist: 'Sam Bottner', chakra: 'third-eye', note: 'third-eye, universal love' },
-    { name: 'Pure Awareness · Crown', artist: 'Sam Bottner', chakra: 'crown',     note: 'direct crown work' },
-    { name: 'Pineal Aperture',        artist: 'Sam Bottner', chakra: 'third-eye', note: 'third-eye attunement' },
-    { name: 'AUM · 136 Hz',           artist: 'Sam Bottner', chakra: 'crown',     note: 'cosmic attune' },
-    { name: 'Bridging Worlds',        artist: 'Sam Bottner', chakra: 'crown',     note: 'Earth / Spirit bridge' }
+    {
+      slug: 'rest-in-love-852',
+      name: 'Rest in Love · 852 Hz',
+      heading: 'Rest in Love',
+      subtitle: '852 Hz · Universal Love',
+      artist: 'Sam Bottner',
+      portrait: 'assets/artists/sam-bottner.jpg',
+      category: 'Frequency',
+      catClass: 'cat-frequency',
+      collection: 'Solfeggio II',
+      chakra: 'third-eye',
+      art: 'assets/sessions/rest-in-love.jpg',
+      lede: "Tuned to 852 Hz, often associated with returning to spiritual order, releasing illusion, and resting in unconditional love.",
+      chooseWhen: ['When the head is loud', 'To soften strain on the third-eye', 'For evening contemplation'],
+      note: 'third-eye, universal love',
+      held: 'Crown and third-eye are already oversaturated. Once the root has more charge, this becomes useful.'
+    },
+    {
+      slug: 'pure-awareness-crown',
+      name: 'Pure Awareness · Crown',
+      heading: 'Pure Awareness',
+      subtitle: 'Direct Crown Work',
+      artist: 'Sam Bottner',
+      portrait: 'assets/artists/sam-bottner.jpg',
+      category: 'Chakras',
+      catClass: 'cat-chakras',
+      collection: 'Chakra Awakening',
+      chakra: 'crown',
+      art: 'assets/sessions/pure-awareness.jpg',
+      lede: "Direct, unmediated crown work. The session asks the system to receive without the mind organizing what's happening.",
+      chooseWhen: ['When ready for direct crown work', 'After the lower chakras have charge', 'For deep stillness'],
+      note: 'direct crown work',
+      held: 'Held back until the root has more charge. Going crown-first on an over-saturated upper field would be more of the same.'
+    },
+    {
+      slug: 'pineal-aperture',
+      name: 'Pineal Aperture',
+      heading: 'Pineal Aperture',
+      subtitle: 'Third-eye attunement',
+      artist: 'Sam Bottner',
+      portrait: 'assets/artists/sam-bottner.jpg',
+      category: 'Guided',
+      catClass: 'cat-guided',
+      collection: '',
+      chakra: 'third-eye',
+      art: 'assets/sessions/pineal-aperture.jpg',
+      lede: "An attunement to the pineal — the third-eye gateway. Subtle, slow, and best done after the body is grounded.",
+      chooseWhen: ['Once the root is steadier', 'For inner-vision practice', 'When seeking clarity through stillness'],
+      note: 'third-eye attunement',
+      held: 'Your third-eye is already filtering more data than usual. Adding more crown stimulation now would tax that further.'
+    },
+    {
+      slug: 'aum-136',
+      name: 'AUM · 136 Hz',
+      heading: 'AUM · 136 Hz',
+      subtitle: 'Cosmic attune',
+      artist: 'Sam Bottner',
+      portrait: 'assets/artists/sam-bottner.jpg',
+      category: 'Frequency',
+      catClass: 'cat-frequency',
+      collection: 'Solfeggio II',
+      chakra: 'crown',
+      art: 'assets/sessions/aum-136.jpg',
+      lede: "The Om frequency. 136 Hz is the resonance often associated with the Earth's natural year, used as a tuning anchor for cosmic alignment.",
+      chooseWhen: ['As an evening tune-in', 'Before contemplative practice', 'When seeking the largest frame'],
+      note: 'cosmic attune',
+      held: 'The cosmic register fits Ramon, but lower-body grounding comes first.'
+    },
+    {
+      slug: 'bridging-worlds',
+      name: 'Bridging Worlds',
+      heading: 'Bridging Worlds',
+      subtitle: 'Earth / Spirit bridge',
+      artist: 'Sam Bottner',
+      portrait: 'assets/artists/sam-bottner.jpg',
+      category: 'Guided',
+      catClass: 'cat-guided',
+      collection: '',
+      chakra: 'crown',
+      art: 'assets/sessions/bridging-worlds.jpg',
+      lede: "A guided journey between earth-rooted and spirit-receptive states. Holds both registers without forcing either.",
+      chooseWhen: ['When the root + crown both have charge', 'For practitioner-level integration', 'In moments of liminality'],
+      note: 'Earth / Spirit bridge',
+      held: 'Bridge work asks for both poles to be online. Root needs more charge before this lands fully.'
+    }
   ],
 
   /* Map session slugs to chakras for the delight-pulse on resolve */
