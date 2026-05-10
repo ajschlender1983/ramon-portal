@@ -457,15 +457,37 @@ main { position: relative; z-index: 2; }
   width: 100%;
   margin-bottom: 36px;
 }
+/* v1.9.3: Stage row — body image (left) + instrumentation pane (right).
+   Lives inside the negative space of the page next to the portrait-
+   orientation image. Collapses to single column at narrow widths. */
+.bf-stage-row {
+  display: grid;
+  grid-template-columns: minmax(280px, 480px) minmax(220px, 360px);
+  gap: 32px;
+  align-items: start;
+  justify-content: center;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.bf-stage-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-top: 12px;
+}
+@media (max-width: 960px) {
+  .bf-stage-row {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+  }
+  .bf-stage-pane { padding-top: 0; }
+}
 .bf-body-stage {
   position: relative;
   width: 100%;
   /* v1.9.2: matches body-aurora.png native aspect ratio (703×1024) so
-     object-fit:cover never crops the figure off-axis on any width.
-     Capped at 560px so the portrait-orientation image doesn't dominate
-     the page vertically — the cards row provides surrounding context. */
+     object-fit:cover never crops the figure off-axis on any width. */
   aspect-ratio: 703 / 1024;
-  max-width: 560px;
   margin: 0 auto;
   border-radius: 24px;
   overflow: hidden;
@@ -567,23 +589,28 @@ main { position: relative; z-index: 2; }
 .bf-chakra-glow-pt {
   position: absolute;
   top: var(--top); left: var(--left);
-  /* v1.9.0: tighter contrast between low and high amp.
-     Scale: 60px (undercharged 0.30) → 150px (radiant 1.0).
-     Opacity: 0.18 (undercharged) → 0.95 (radiant) — true dim → true present.
-     Blur: subtle for undercharged, soft glow for radiant. */
-  width: calc(50px + 100px * var(--amp));
-  height: calc(50px + 100px * var(--amp));
+  /* v1.9.3: chakras must read clearly against the bright violet body.
+     Dropped mix-blend-mode: screen (it washes the chakra hues out into
+     near-white against the body's already-saturated violet). Replaced
+     with a TWO-LAYER composition rendered via two box-shadow halos +
+     a small solid core — visible at any amp without disappearing into
+     the body's own light. */
+  width: calc(28px + 26px * var(--amp));
+  height: calc(28px + 26px * var(--amp));
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--hue) calc(85% * var(--amp) + 15%), transparent) 0%,
-    color-mix(in srgb, var(--hue) calc(50% * var(--amp)), transparent) 35%,
-    transparent 70%
+    color-mix(in srgb, var(--hue) 95%, white 10%) 0%,
+    color-mix(in srgb, var(--hue) 80%, transparent) 40%,
+    transparent 75%
   );
-  mix-blend-mode: screen;
-  opacity: calc(0.10 + 0.85 * var(--amp));
-  filter: blur(calc(3px + 9px * var(--amp)));
+  box-shadow:
+    0 0 calc(14px + 18px * var(--amp)) calc(2px + 6px * var(--amp)) color-mix(in srgb, var(--hue) calc(40% + 30% * var(--amp)), transparent),
+    0 0 calc(28px + 36px * var(--amp)) calc(4px + 10px * var(--amp)) color-mix(in srgb, var(--hue) calc(18% + 20% * var(--amp)), transparent);
+  opacity: calc(0.55 + 0.40 * var(--amp));
+  /* Subtle blur so the core stays sharp but edges feather into the body */
+  filter: blur(calc(0.6px + 1.8px * var(--amp)));
   /* Breathe with master clock — radiant chakras pulse more visibly */
   animation: bf-chakra-glow-breath 10910ms ease-in-out infinite;
 }
@@ -674,9 +701,11 @@ main { position: relative; z-index: 2; }
    when the body figure became centered. */
 .bf-stage-cards {
   max-width: 1120px;
-  margin: 24px auto 0;
+  margin: 28px auto 0;
   display: grid;
-  grid-template-columns: 1fr 1.4fr 0.9fr;
+  /* v1.9.3: only 2 cards now (carrier-attenuation + breath); Hawkins
+     promoted into the side pane. Quote gets the wider column. */
+  grid-template-columns: 2fr 1fr;
   gap: 16px;
   color: var(--light);
 }
@@ -698,6 +727,20 @@ main { position: relative; z-index: 2; }
   .bf-stage-masthead { gap: 14px; }
   .bf-avatar-tile--masthead { width: 88px; height: 88px; }
 }
+
+/* v1.9.3: side-pane DNA helix — Hawkins card sits above, so the helix
+   uses a tighter layout (smaller helix on the left, meta on the right). */
+.bf-helix--side {
+  background: rgba(11,8,15,0.55);
+  border: 1px solid rgba(255,215,100,0.18);
+  border-radius: 14px;
+  padding: 14px 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  grid-template-columns: 80px 1fr;
+  gap: 14px;
+}
+.bf-helix--side .bf-helix-svg-wrap { width: 80px; height: 240px; }
 /* v1.9.2: Hawkins card lives in the .bf-stage-cards row (not in an
    absolute side panel anymore). Card surface comes from .bf-stage-card;
    we just add the gold accent + value typography here. */
@@ -2947,7 +2990,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.2';
+const VERSION = '1.9.3';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4225,6 +4268,10 @@ function buildBodyAuroraHero() {
   masthead.appendChild(mastMeta);
   wrap.appendChild(masthead);
 
+  /* v1.9.3: 2-column row — body stage on the left, instrumentation pane
+     on the right (uses the page's negative space beside the portrait-
+     orientation figure). At <960px collapses to a single column. */
+  const row = el('div', { class: 'bf-stage-row' });
   const stage = el('div', { class: 'bf-body-stage' });
 
   // Body image — translucent figure on aurora gradient
@@ -4269,12 +4316,12 @@ function buildBodyAuroraHero() {
   }
   stage.appendChild(overlay);
 
-  wrap.appendChild(stage);
+  row.appendChild(stage);
 
-  /* v1.9.2: Card row BELOW the body image (replaces the absolute side
-     panel that overlapped the now-centered body figure). Three cards:
-     calibration · holding · breath. Stacks on mobile. */
-  const cards = el('div', { class: 'bf-stage-cards' });
+  /* v1.9.3: Right-side instrumentation pane — sits in the negative
+     space next to the portrait-orientation body image. Holds the
+     Calibration (Hawkins) card + the DNA helix block. */
+  const sidePane = el('div', { class: 'bf-stage-pane' });
 
   // Calibration / Hawkins card
   const hkLevel = Number(view.hawkinsLevel) || 525;
@@ -4288,7 +4335,31 @@ function buildBodyAuroraHero() {
   hkValue.appendChild(el('span', { class: 'tier-name', text: tierInfo.tier }));
   hkCard.appendChild(hkValue);
   hkCard.appendChild(el('div', { class: 'felt', text: hkTarget + ' Hz · Miracles, within reach.' }));
-  cards.appendChild(hkCard);
+  sidePane.appendChild(hkCard);
+
+  // DNA helix block (relocated from below-hero detail per Adam's
+  // request: "put DNA and Hawkins on the right side of the image").
+  const dnaInfo = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
+  const dna = el('div', { class: 'bf-helix bf-helix--side' });
+  const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
+  helixWrap.appendChild(buildHelixSVG());
+  dna.appendChild(helixWrap);
+  const dnaMeta = el('div', { class: 'bf-helix-meta' });
+  dnaMeta.appendChild(el('div', { class: 'helix-label', text: 'DNA Strand Activation' }));
+  const cnt = el('div', { class: 'helix-count' });
+  cnt.appendChild(el('strong', { text: dnaInfo.phaseLocked + ' phase-locked' }));
+  cnt.appendChild(document.createTextNode(' · ' + dnaInfo.consolidating + ' consolidating · of ' + dnaInfo.of));
+  dnaMeta.appendChild(cnt);
+  dnaMeta.appendChild(el('div', { class: 'helix-sub', text: 'The lower pairs anchor first. The upper pairs are on their way.' }));
+  dna.appendChild(dnaMeta);
+  sidePane.appendChild(dna);
+
+  row.appendChild(sidePane);
+  wrap.appendChild(row);
+
+  /* v1.9.2/.3: Card row BELOW the stage row — quote + breath. Hawkins
+     moved up into the side pane. Two cards now (was three). */
+  const cards = el('div', { class: 'bf-stage-cards' });
 
   // Holding-quote card
   const blockQuote = (view.primaryBlock || (USER && USER.primaryBlockQuote) || 'Hesitation in finalizing commitments.').trim();
@@ -4385,22 +4456,9 @@ function buildBelowHeroDetail() {
   // its on-body glows IS the chakra reading; redundant column was visual
   // noise + competed with the hero. State words / notes can be revealed
   // as hover/click affordances on each glow in a future round.
-
-  // DNA helix + meta
-  const dnaInfo = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
-  const dna = el('div', { class: 'bf-helix' });
-  const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
-  helixWrap.appendChild(buildHelixSVG());
-  dna.appendChild(helixWrap);
-  const dnaMeta = el('div', { class: 'bf-helix-meta' });
-  dnaMeta.appendChild(el('div', { class: 'helix-label', text: 'DNA Strand Activation' }));
-  const cnt = el('div', { class: 'helix-count' });
-  cnt.appendChild(el('strong', { text: dnaInfo.phaseLocked + ' phase-locked' }));
-  cnt.appendChild(document.createTextNode(' · ' + dnaInfo.consolidating + ' consolidating · of ' + dnaInfo.of));
-  dnaMeta.appendChild(cnt);
-  dnaMeta.appendChild(el('div', { class: 'helix-sub', text: 'The lower pairs anchor first. The upper pairs are on their way.' }));
-  dna.appendChild(dnaMeta);
-  wrap.appendChild(dna);
+  // v1.9.3: DNA helix relocated from here into the right-hand side pane
+  // of the body-aurora hero (see buildBodyAuroraHero). Below-hero detail
+  // now holds only timeline + delta + archetype.
 
   // Archetype
   const arch = el('div', { class: 'bf-archetype' });
