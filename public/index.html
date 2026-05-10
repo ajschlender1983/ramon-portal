@@ -260,7 +260,9 @@ main { position: relative; z-index: 2; }
    ============================================================ */
 .biofield-dashboard {
   margin: 36px 0 28px;
-  padding: clamp(28px, 4vw, 44px) clamp(20px, 4vw, 40px) 0;
+  /* v1.9.8: proper symmetric padding now that the absolute-positioned
+     waveform stripe is gone (was claiming the bottom edge). */
+  padding: clamp(28px, 4vw, 44px) clamp(20px, 4vw, 40px) clamp(32px, 4vw, 48px);
   background: linear-gradient(180deg, rgba(31,24,36,0.55), rgba(31,24,36,0.35));
   border: 1px solid var(--glass-border);
   border-radius: 22px;
@@ -278,7 +280,8 @@ main { position: relative; z-index: 2; }
   gap: clamp(28px, 4vw, 64px);
   align-items: start;
   position: relative; z-index: 1;
-  padding-bottom: 56px; /* leave room for waveform stripe */
+  /* v1.9.8: bottom-padding waveform-clearance hack removed (no more
+     absolute waveform stripe). */
 }
 @media (max-width: 920px) { .bf-grid { grid-template-columns: 1fr; gap: 36px; } }
 
@@ -1553,33 +1556,36 @@ main { position: relative; z-index: 2; }
 .bf-helix-meta .helix-count strong { color: var(--gold); font-weight: 500; font-style: italic; }
 .bf-helix-meta .helix-sub { font-size: 11px; color: var(--mid); line-height: 1.55; font-style: italic; }
 
+/* v1.9.8: archetype as the section's closer — chrome quieted so the
+   line itself does the work. Centered, generous breathing room, no
+   left-bar accent. The magenta-violet eyebrow keeps the energetic
+   register without commanding attention. */
 .bf-archetype {
-  background: rgba(194,47,205,0.06);
-  border: 1px solid rgba(194,47,205,0.22);
-  border-left: 2px solid var(--magenta);
-  border-radius: 0 12px 12px 0;
-  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  padding: 28px clamp(12px, 4vw, 48px) 8px;
+  text-align: center;
+  max-width: 880px;
+  margin: 16px auto 0;
 }
-.bf-archetype .label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--magenta); display: block; margin-bottom: 6px; }
-.bf-archetype .name  { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--light); line-height: 1.4; }
+.bf-archetype .label {
+  font-size: 9.5px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: rgba(194,47,205,0.70);
+  display: block; margin-bottom: 14px;
+}
+.bf-archetype .name {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(18px, 2vw, 22px);
+  color: rgba(255,255,255,0.88);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+}
 
-/* Composite waveform stripe (bottom edge of dashboard) */
-.bf-waveform {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 56px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.18));
-  display: flex; align-items: center; padding: 0 24px;
-  gap: 14px;
-}
-.bf-waveform svg { flex: 1; height: 28px; display: block; overflow: visible; }
-.bf-waveform .wf-curve { fill: none; stroke: url(#wf-grad); stroke-width: 1.5; stroke-linecap: round; opacity: 0.65; }
-.bf-waveform-label {
-  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--mid); white-space: nowrap;
-}
-.bf-waveform-label strong { color: var(--gold); font-weight: 500; }
+/* v1.9.8: .bf-waveform stripe removed from the dashboard mount. CSS
+   left in place but inert (nothing in the rendered DOM uses it now)
+   so the buildWaveformSVG helper can be relocated later without
+   re-authoring styles. */
+.bf-waveform { display: none; }
 
 /* Whisper line at section transitions (Principle 03 distributed) */
 .principle-whisper {
@@ -3008,7 +3014,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.7';
+const VERSION = '1.9.8';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4507,19 +4513,12 @@ function mountBiofieldDashboard() {
   // Below-hero detail block — timeline + delta + chakras + helix + archetype
   root.appendChild(buildBelowHeroDetail());
 
-  // Composite waveform stripe at the bottom edge of the section
-  const week = (function() {
-    const w = (ramonState.weeksCompleted || 0) + 1;
-    return Math.max(1, Math.min(4, w));
-  })();
-  const wf = buildWaveformSVG(week);
-  const wfWrap = el('div', { class: 'bf-waveform' });
-  const wfLabel = el('div', { class: 'bf-waveform-label' });
-  wfLabel.appendChild(el('strong', { text: wf.hz + ' Hz' }));
-  wfLabel.appendChild(document.createTextNode(' · breath 5.5/min'));
-  wfWrap.appendChild(wfLabel);
-  wfWrap.appendChild(wf.svg);
-  root.appendChild(wfWrap);
+  // v1.9.8: composite waveform stripe removed. It was absolutely
+  // positioned at the bottom of the dashboard and overlaid the archetype
+  // closer in a visually messy way, AND it duplicated info already
+  // surfaced by the Calibration card (Hz) and the Breath card (5.5/min).
+  // buildWaveformSVG is still defined in case we want to bring it back
+  // somewhere quieter later.
 }
 
 function pulseChakra(slug) {
