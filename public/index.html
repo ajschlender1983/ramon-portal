@@ -274,167 +274,17 @@ main { position: relative; z-index: 2; }
     radial-gradient(ellipse 50% 40% at 50% 0%, rgba(123,111,168,0.12), transparent 60%),
     radial-gradient(ellipse 60% 50% at 100% 100%, rgba(194,47,205,0.06), transparent 60%);
 }
-.bf-grid {
-  display: grid;
-  grid-template-columns: minmax(300px, 380px) 1fr;
-  gap: clamp(28px, 4vw, 64px);
-  align-items: start;
-  position: relative; z-index: 1;
-  /* v1.9.8: bottom-padding waveform-clearance hack removed (no more
-     absolute waveform stripe). */
-}
-@media (max-width: 920px) { .bf-grid { grid-template-columns: 1fr; gap: 36px; } }
+/* v1.9.14: .bf-grid rules removed — dashboard hasn't used .bf-grid
+   since v1.8 (replaced by .bf-body-hero + .bf-stage-row). */
 
-/* LEFT COLUMN: silhouette wrap with caption + avatar */
-.bf-silhouette-wrap {
-  display: flex; flex-direction: column; align-items: stretch; gap: 14px;
-}
-.bf-silhouette-stage {
-  position: relative;
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
-  display: flex;
-  align-items: stretch;
-  gap: 4px;
-}
-.bf-silhouette-stage > svg { display: block; overflow: visible; }
-.bf-silhouette-stage > svg.bf-silhouette {
-  flex: 1 1 auto;
-  width: auto;
-  aspect-ratio: 320 / 480;
-  max-width: 380px;
-}
-/* Aura: 7 nested rings in 3 triadic breathing groups. Each group breathes
-   on the master 10.91s cycle with staggered phase offsets so the field reads
-   as layered (not flat). Reduced motion disables the animation. */
-.bf-aura-ring {
-  fill: none;
-  transform-origin: 160px 250px;
-  animation: bf-aura-breath 10910ms ease-in-out infinite;
-  animation-delay: 0s;
-}
-/* Plan §3 stagger: +0 / +1.4s / +2.8s within the 10.91s breath period */
-.bf-aura-ring--group-1 { animation-delay: 1400ms; }
-.bf-aura-ring--group-2 { animation-delay: 2800ms; }
-@keyframes bf-aura-breath {
-  0%, 100% { opacity: 0.55; transform: scale(1.000); }
-  50%      { opacity: 0.92; transform: scale(1.018); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bf-aura-ring { animation: none; opacity: 0.7; }
-}
-/* Vertical scales flanking the silhouette. Same height as silhouette so
-   their y-axis aligns with the body anatomy. */
-.bf-silhouette-stage > svg.bf-ladder {
-  flex: 0 0 auto;
-  width: 56px;
-  aspect-ratio: 60 / 480;
-}
-.bf-silhouette-stage > svg.bf-ladder--solfeggio {
-  width: 70px;
-  aspect-ratio: 80 / 480;
-}
-.bf-ladder-track { stroke: rgba(255,255,255,0.10); stroke-width: 0.8; }
-.bf-ladder-tick { stroke: rgba(255,255,255,0.32); stroke-width: 1; }
-.bf-ladder-tick.dim { stroke: rgba(255,255,255,0.12); stroke-width: 0.5; }
-.bf-ladder-tick.miracle { stroke: rgba(255,215,100,0.85); stroke-width: 1.5; }
-.bf-ladder-num {
-  fill: rgba(255,255,255,0.7);
-  font: 9px var(--sans);
-  letter-spacing: 0.04em;
-  font-weight: 500;
-}
-.bf-ladder-name {
-  fill: rgba(255,255,255,0.45);
-  font: italic 10px var(--serif);
-  letter-spacing: 0.02em;
-}
-.bf-calib-hairline {
-  stroke: rgba(255,215,100,0.32);
-  stroke-width: 0.6;
-  stroke-dasharray: 1 2;
-  filter: drop-shadow(0 0 2px rgba(255,215,100,0.30));
-  transition: y1 400ms cubic-bezier(.2,.8,.2,1), y2 400ms cubic-bezier(.2,.8,.2,1);
-}
-.bf-ladder-beam {
-  stroke: var(--gold);
-  stroke-width: 2;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 6px rgba(255,215,100,0.55));
-  opacity: calc(0.85 + 0.15 * var(--breath-pulse));
-  /* Tween beam y when morphing between weekly snapshots (Hawkins level shifts) */
-  transition: y1 400ms cubic-bezier(.2,.8,.2,1), y2 400ms cubic-bezier(.2,.8,.2,1);
-}
-.bf-ladder-current, .bf-ladder-link, .bf-ladder-target {
-  transition: y 400ms cubic-bezier(.2,.8,.2,1),
-              y1 400ms cubic-bezier(.2,.8,.2,1),
-              y2 400ms cubic-bezier(.2,.8,.2,1),
-              cy 400ms cubic-bezier(.2,.8,.2,1);
-}
-@media (prefers-reduced-motion: reduce) {
-  .bf-ladder-beam, .bf-ladder-current, .bf-ladder-link, .bf-ladder-target { transition: none; }
-}
-.bf-ladder-current {
-  fill: var(--gold);
-  font-family: var(--serif);
-  font-size: 13px;
-  font-weight: 500;
-  font-style: italic;
-}
-.bf-ladder-link {
-  stroke: rgba(255,215,100,0.30);
-  stroke-width: 0.6;
-  stroke-dasharray: 2 3;
-}
-.bf-ladder-target {
-  fill: rgba(255,215,100,0.6);
-  filter: drop-shadow(0 0 3px rgba(255,215,100,0.5));
-}
-.bf-ladder-hz {
-  fill: rgba(106,223,217,0.75);
-  font: 10px var(--sans);
-  letter-spacing: 0.04em;
-  font-weight: 500;
-}
-.bf-ladder-hz.miracle {
-  fill: var(--gold);
-  font-style: italic;
-  font-family: var(--serif);
-  font-size: 11px;
-}
-@media (max-width: 720px) {
-  .bf-silhouette-stage > svg.bf-ladder { width: 44px; }
-  .bf-silhouette-stage > svg.bf-ladder--solfeggio { width: 56px; }
-  .bf-ladder-name { display: none; }
-}
-/* v1.7.0: silhouette becomes a quiet armature.
-   - .bf-body--washed lowers fill + stroke opacity so chakras can win
-     the figure-ground fight (the column is the subject, body is the key).
-   - .bf-aura-ring--solo: the single outer aura ring breathing on the
-     master clock. All other aura rings cut. */
-.bf-body--washed {
-  fill: url(#bf-body-grad);
-  stroke: rgba(106,223,217,0.28);
-  stroke-width: 1;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 8px rgba(123,111,168,0.18));
-  opacity: 0.55;
-}
-.bf-aura-ring--solo {
-  animation: bf-aura-breath 10910ms ease-in-out infinite;
-  transform-origin: 160px 250px;
-}
-.bf-chakra-anchor-dot {
-  /* Each anchor dot inherits its chakra color via currentColor + the per-id rule below */
-}
-.bf-chakra-anchor-dot[data-chakra-id="root"]      { color: var(--red); }
-.bf-chakra-anchor-dot[data-chakra-id="sacral"]    { color: var(--orange); }
-.bf-chakra-anchor-dot[data-chakra-id="solar"]     { color: var(--gold); }
-.bf-chakra-anchor-dot[data-chakra-id="heart"]     { color: var(--green); }
-.bf-chakra-anchor-dot[data-chakra-id="throat"]    { color: var(--teal); }
-.bf-chakra-anchor-dot[data-chakra-id="third-eye"] { color: var(--accent-bright); }
-.bf-chakra-anchor-dot[data-chakra-id="crown"]     { color: var(--magenta); }
+/* v1.9.14: another ~150 lines DELETED — the entire silhouette-stage
+   CSS family. Components removed in v1.7.0 (body-aurora image replaced
+   the SVG silhouette). Removed: .bf-silhouette-wrap, .bf-silhouette-stage,
+   .bf-silhouette, .bf-aura-ring + group/solo + @keyframes bf-aura-breath,
+   .bf-ladder-* (track/tick/num/name/beam/current/link/target/hz),
+   .bf-calib-hairline, .bf-body--washed, .bf-chakra-anchor-dot[data-*].
+   Note: .bf-auric-* (NEW namespace, used by buildAuricRingsOverlay
+   and buildAuricReadout) is preserved further down. */
 
 /* ============================================================
    v1.7.2 — BODY-AURORA STAGE: photographic figure + chakra glows
@@ -447,11 +297,8 @@ main { position: relative; z-index: 2; }
    right edge, so the side panel uses transparent containers that let
    the image's own light bleed through.
    ============================================================ */
-.bf-doorway--body-stage {
-  padding: 0;
-  display: block;
-  min-height: 0;
-}
+/* v1.9.14: .bf-doorway--body-stage removed (doorway/expanded gating
+   is gone since v1.8 — stage is always visible). */
 /* v1.8.0: body-aurora hero is the always-visible primary view. Larger
    max-width (1240px → fills the section width on most desktops) and a
    generous border-radius. The .bf-body-hero wrapper provides bottom
@@ -519,26 +366,29 @@ main { position: relative; z-index: 2; }
 }
 .bf-auric-ring {
   fill: none;
-  stroke: rgba(255,255,255,0.10);
-  stroke-width: 0.18;
-  stroke-dasharray: 0.4 0.6;
+  /* v1.9.14: stronger halo presence so it reads as "field around body"
+     not "decorative trace". Gold-tinted strokes with brighter outer
+     ring + visible breath pulse. */
+  stroke: rgba(255,215,100,0.22);
+  stroke-width: 0.24;
+  stroke-dasharray: 0.5 0.8;
   vector-effect: non-scaling-stroke;
-  /* Gentle breath — 10.91s master clock */
   animation: bf-auric-ring-breath 10910ms ease-in-out infinite;
-  /* v1.9.5/.6: ring center matches the body's actual off-center spine
-     and heart-y per the corrected chakra table (x=36%, y=29%). */
   transform-origin: 36% 29%;
 }
 .bf-auric-ring--user {
-  stroke: rgba(255,215,100,0.55);
-  stroke-width: 0.32;
-  stroke-dasharray: 1 0.6;
-  filter: drop-shadow(0 0 0.6px rgba(255,215,100,0.45));
+  /* v1.9.14: brightest outer ring = user's measured extent. Gold glow. */
+  stroke: rgba(255,215,100,0.75);
+  stroke-width: 0.42;
+  stroke-dasharray: 1.4 0.6;
+  filter: drop-shadow(0 0 1.0px rgba(255,215,100,0.65));
   animation-delay: -5455ms;
 }
 @keyframes bf-auric-ring-breath {
-  0%, 100% { opacity: 0.55; transform: scale(1.000); }
-  50%      { opacity: 0.85; transform: scale(1.010); }
+  /* v1.9.14: more visible pulse — opacity range widened so the halo
+     reads as "alive" rather than static decoration. */
+  0%, 100% { opacity: 0.45; transform: scale(0.985); }
+  50%      { opacity: 0.95; transform: scale(1.020); }
 }
 @media (prefers-reduced-motion: reduce) {
   .bf-auric-ring { animation: none; }
@@ -548,60 +398,87 @@ main { position: relative; z-index: 2; }
 .bf-auric-ring-label,
 .bf-auric-ring-label--user { display: none; }
 
-/* v1.9.9: Big glowing auric readout — HTML overlay positioned at the
-   top of the body wrap, centered on the body's spine (36% x). Sized
-   to read as the primary measurement of the figure, glowing in gold
-   with a soft violet halo. A thin gold-gradient tick line drops from
-   the readout toward the outermost ring's top arc, visually
-   connecting "13.4 m" to the rings drawn around the body. */
+/* v1.9.14: Big glowing auric readout moved from the top-of-head to
+   the BOTTOM-RIGHT quadrant of the body stage. The rings now read as
+   a pulsing halo around the body (centered on heart), and the numeric
+   reading lives in the open negative space below the side pane with
+   a hairline diameter notation pointing toward the field's outer arc.
+
+   Strategic-resolve goal: prominence + non-occlusion. The body figure
+   sits at x≈18–55%, so x>58% is clean atmosphere — perfect surface for
+   the readout and its connector. The hairline runs from the readout
+   leftward toward the body, naming what the field diameter is. */
 .bf-auric-readout {
   position: absolute;
-  top: 1.5%; left: 36%;
-  transform: translateX(-50%);
+  bottom: 6%; right: 5%;
   z-index: 3;
-  text-align: center;
+  text-align: right;
   white-space: nowrap;
   pointer-events: none;
 }
 .bf-auric-readout .label {
   display: block;
   font-family: var(--sans);
-  font-size: clamp(8.5px, 0.85vw, 11px);
+  font-size: clamp(9px, 0.9vw, 11.5px);
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: rgba(255,215,100,0.62);
-  margin-bottom: 4px;
+  color: rgba(255,215,100,0.72);
+  margin-bottom: 6px;
 }
 .bf-auric-readout .value {
   display: inline-block;
   font-family: var(--serif);
   font-style: italic;
-  font-size: clamp(22px, 3.4vw, 38px);
+  font-size: clamp(26px, 4vw, 44px);
   line-height: 1;
   color: rgba(255,236,180,0.98);
   letter-spacing: 0.01em;
   text-shadow:
-    0 0 14px rgba(255,215,100,0.65),
-    0 0 28px rgba(255,180,90,0.45),
-    0 0 56px rgba(194,47,205,0.35);
+    0 0 14px rgba(255,215,100,0.70),
+    0 0 32px rgba(255,180,90,0.50),
+    0 0 64px rgba(194,47,205,0.35);
+  /* v1.9.14: gentle pulse synced to master breath, drawing the eye
+     while staying calm. */
+  animation: bf-auric-readout-breath 10910ms ease-in-out infinite;
+}
+@keyframes bf-auric-readout-breath {
+  0%, 100% { opacity: 0.92; filter: brightness(1.0); }
+  50%      { opacity: 1.00; filter: brightness(1.10); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-auric-readout .value { animation: none; }
 }
 .bf-auric-readout .value strong {
   font-weight: 500;
   font-style: italic;
   color: rgba(255,240,200,1);
 }
-/* Tick line connecting the readout down to the rings. Thin gold
-   gradient that fades into the outer ring's atmosphere. */
-.bf-auric-tick {
+.bf-auric-readout .diameter-hint {
   display: block;
-  margin: 8px auto 0;
-  width: 1px;
-  height: clamp(18px, 3vh, 36px);
-  background: linear-gradient(180deg,
-    rgba(255,215,100,0.78) 0%,
-    rgba(255,215,100,0.45) 60%,
+  margin-top: 6px;
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,215,100,0.55);
+}
+/* v1.9.14: hairline diameter notation — runs from the readout leftward
+   into the body's field, anchoring the value to the halo around the
+   body. A thin gold-gradient horizontal stroke that fades out before
+   it touches the figure. */
+.bf-auric-tick {
+  position: absolute;
+  bottom: calc(6% + 1.5em);
+  right: calc(5% + 4.8em);
+  width: clamp(40px, 8vw, 80px);
+  height: 1px;
+  background: linear-gradient(270deg,
+    rgba(255,215,100,0.80) 0%,
+    rgba(255,215,100,0.45) 55%,
     rgba(255,215,100,0) 100%);
   filter: drop-shadow(0 0 4px rgba(255,215,100,0.55));
+  pointer-events: none;
+  z-index: 3;
 }
 .bf-body-image {
   /* v1.9.4: image fills its parent .bf-body-wrap, which is aspect-locked
@@ -980,36 +857,18 @@ main { position: relative; z-index: 2; }
   color: rgba(255,215,100,0.85);
 }
 
-.bf-doorway-open--side {
-  align-self: flex-start;
-  margin-top: 4px;
-}
-/* v1.7.3 EBI 1: quieter open-the-field — text-link weight instead of gold pill,
-   so it doesn't compete with the body image as the visual primary. */
-.bf-doorway-open--quiet {
-  background: transparent;
-  border: none;
-  padding: 8px 0;
-  color: rgba(255,215,100,0.78);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  display: inline-flex; align-items: center; gap: 8px;
-  cursor: pointer;
-  transition: color .25s, gap .25s;
-  border-bottom: 1px solid rgba(255,215,100,0.18);
-}
-.bf-doorway-open--quiet:hover {
-  color: var(--gold);
-  gap: 14px;
-  border-bottom-color: rgba(255,215,100,0.42);
-}
-.bf-doorway-open--quiet .bf-doorway-open-icon {
-  width: 6px; height: 6px;
-  transform: rotate(-45deg);
-  border-right: 1px solid currentColor;
-  border-bottom: 1px solid currentColor;
-}
+/* v1.9.14: STRATEGIC RESOLVE — perf cleanup. The 262-line block here
+   contained CSS for the v1.7/v1.8 doorway state, expanded/sidecar
+   layout, on-stage chakra column, Solfeggio strip, and avatar-anchor
+   row. None of those components have been mounted since v1.8 / v1.9.0.
+   Removed: .bf-doorway-* family, .bf-expanded, .bf-expanded-close,
+   .bf-sidecar, .bf-sidecar-left, .bf-silhouette-stage--small,
+   .bf-chakra-column / .bf-chakra-row / .bf-chakra-disc /
+   .bf-chakra-meta / .bf-chakra-name / .bf-chakra-state-word /
+   .bf-chakra-bar / .bf-chakra-pip / .bf-chakra-note, .bf-solfeggio-strip
+   (and its child rules), .bf-avatar-row--anchor. */
+/* (dead doorway/expanded/chakra-column/solfeggio block deleted; see
+   the v1.9.14 cleanup comment above) */
 
 /* v1.9.2: Mobile architecture — stage stays portrait-ratio (the image's
    native shape), masthead avatar shrinks, cards stack. The .bf-stage-side
@@ -1017,54 +876,15 @@ main { position: relative; z-index: 2; }
    that collapses to single-column at 720px (handled in
    .bf-stage-cards above). */
 
-/* ============================================================
-   DOORWAY STATE — the settling default. Three animated surfaces:
-   outer aura ring, breath dot, slow aurora blob. Polyvagal-aligned.
-   ============================================================ */
-.bf-doorway {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 28px;
-  padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 64px);
-  text-align: center;
-  position: relative; z-index: 1;
-  min-height: 60vh;
-  justify-content: center;
-}
-.bf-doorway-hero {
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-}
-.bf-avatar-tile--door {
-  width: 124px; height: 124px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid rgba(255,215,100,0.32);
-  box-shadow: 0 0 32px rgba(123,111,168,0.32);
-}
-.bf-avatar-tile--door img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.bf-doorway-meta { display: flex; flex-direction: column; gap: 4px; align-items: center; }
-.bf-doorway-meta .name { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--light); }
-.bf-doorway-meta .dek {
-  font-family: var(--serif); font-style: italic; font-size: 13px;
-  color: var(--mid); letter-spacing: 0.04em;
-}
-.bf-doorway-holding {
-  font-family: var(--serif); font-style: italic;
-  font-size: clamp(17px, 2.2vw, 22px);
-  line-height: 1.5;
-  color: var(--light); opacity: 0.92;
-  max-width: 540px;
-  letter-spacing: 0.01em;
-}
-.bf-doorway-silhouette {
-  position: relative;
-  width: 220px; aspect-ratio: 320 / 480;
-  margin: 8px auto;
-}
-.bf-doorway-silhouette > svg.bf-silhouette {
-  width: 100%; height: 100%; display: block; overflow: visible;
-}
+/* v1.9.14: .bf-doorway / .bf-doorway-hero / .bf-doorway-meta /
+   .bf-doorway-holding / .bf-doorway-silhouette / .bf-doorway-open
+   family DELETED (~75 lines). Stage has been always-visible since
+   v1.8 — no doorway state remains. */
+
+/* v1.9.14: .bf-breath-dot retained — it's still used by the breath
+   card inside the cards row beneath the stage. */
 .bf-breath-dot {
-  position: absolute; right: -28px; bottom: 28px;
+  position: relative;
   width: 10px; height: 10px; border-radius: 50%;
   background: rgba(255,215,100,0.85);
   box-shadow: 0 0 8px rgba(255,215,100,0.55);
@@ -1072,178 +892,20 @@ main { position: relative; z-index: 2; }
   transform: scale(calc(0.85 + 0.15 * var(--breath-pulse)));
   transition: opacity 200ms linear, transform 200ms linear;
 }
-.bf-doorway-open {
-  background: transparent;
-  border: 1px solid rgba(255,215,100,0.32);
-  border-radius: 999px;
-  padding: 12px 28px;
-  display: inline-flex; align-items: center; gap: 10px;
-  font-size: 11px; letter-spacing: 0.20em; text-transform: uppercase;
-  color: var(--gold);
-  cursor: pointer;
-  transition: background .25s, border-color .25s;
-}
-.bf-doorway-open:hover {
-  background: rgba(255,215,100,0.08);
-  border-color: rgba(255,215,100,0.55);
-}
-.bf-doorway-open:focus-visible { outline: 1px solid rgba(106,223,217,0.55); outline-offset: 2px; }
-.bf-doorway-open-icon {
-  display: inline-block; width: 8px; height: 8px;
-  border-right: 1px solid currentColor;
-  border-bottom: 1px solid currentColor;
-  transform: rotate(45deg);
-}
 
 /* ============================================================
    EXPANDED (SIDECAR) STATE — silhouette small + chakra column
    subject + ladders + horizontal Solfeggio + headshot anchor.
    ============================================================ */
-.bf-expanded { position: relative; padding-top: 8px; padding-bottom: 56px; }
-.bf-expanded-close {
-  position: absolute; top: 0; right: 0;
-  background: transparent; border: 1px solid var(--glass-border);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--mid);
-  cursor: pointer;
-  transition: color .2s, border-color .2s;
-}
-.bf-expanded-close:hover { color: var(--light); border-color: var(--glass-border); }
-.bf-expanded-close:focus-visible { outline: 1px solid rgba(106,223,217,0.55); outline-offset: 2px; }
+/* v1.9.14: .bf-expanded / .bf-expanded-close / .bf-sidecar /
+   .bf-sidecar-left / .bf-silhouette-stage--small / .bf-chakra-column
+   and its row/disc/meta/name/state-word/bar/pip/note family /
+   .bf-solfeggio-strip-* family / .bf-avatar-row--anchor /
+   .bf-avatar-fallback--door — all DELETED (~150 lines). Components
+   removed in v1.8 / v1.9.0; CSS was unreferenced. */
 
-.bf-sidecar {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 32px;
-  align-items: stretch;
-  margin: 24px 0 16px;
-}
-@media (max-width: 720px) {
-  .bf-sidecar { grid-template-columns: 1fr; gap: 18px; }
-}
-.bf-sidecar-left {
-  display: flex; flex-direction: row; gap: 8px;
-  align-items: stretch;
-  position: relative;
-}
-.bf-silhouette-stage--small {
-  flex: 1 1 auto;
-  width: auto;
-  aspect-ratio: 320 / 480;
-  max-width: 160px;
-}
-.bf-silhouette-stage--small > svg.bf-silhouette { width: 100%; height: 100%; display: block; overflow: visible; }
-
-/* Chakra column — the visual subject of the expanded state.
-   Each row: disc (size = amplitude) + meta (name + state word + 5-pip bar). */
-.bf-chakra-column {
-  display: flex; flex-direction: column;
-  gap: 8px;
-  padding: 4px 0;
-}
-.bf-chakra-row {
-  --amp: 0.6;
-  --threshold: 0;
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 16px;
-  align-items: center;
-  padding: 10px 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.bf-chakra-row:last-child { border-bottom: none; }
-.bf-chakra-row[data-id="root"]      { --hue: var(--red); }
-.bf-chakra-row[data-id="sacral"]    { --hue: var(--orange); }
-.bf-chakra-row[data-id="solar"]     { --hue: var(--gold); }
-.bf-chakra-row[data-id="heart"]     { --hue: var(--green); }
-.bf-chakra-row[data-id="throat"]    { --hue: var(--teal); }
-.bf-chakra-row[data-id="third-eye"] { --hue: var(--accent-bright); }
-.bf-chakra-row[data-id="crown"]     { --hue: var(--magenta); }
-.bf-chakra-disc {
-  width: 64px; height: 64px; border-radius: 50%;
-  /* Disc size scales with amplitude (0.5 at undercharged → 1.0 at radiant)
-     while the row's grid-column stays 64px wide. The disc fills the cell
-     proportionally via transform: scale. */
-  transform: scale(calc(0.55 + 0.45 * var(--amp)));
-  background: var(--hue);
-  /* Saturation = vitality: undercharged reads desaturated, radiant reads full color */
-  filter: saturate(calc(0.30 + 0.70 * var(--amp))) brightness(calc(0.85 + 0.15 * var(--amp)));
-  box-shadow: 0 0 calc(8px + 16px * var(--amp)) color-mix(in srgb, var(--hue) calc(var(--amp) * 100%), transparent);
-  /* Threshold gold ring (ceremonial) when amp ≥ 0.85 */
-  border: calc(2px * var(--threshold)) solid rgba(255,215,100,0.85);
-  transition: transform 400ms cubic-bezier(.2,.8,.2,1),
-              filter 400ms cubic-bezier(.2,.8,.2,1),
-              border-width 400ms cubic-bezier(.2,.8,.2,1),
-              box-shadow 400ms cubic-bezier(.2,.8,.2,1);
-}
-@media (prefers-reduced-motion: reduce) {
-  .bf-chakra-disc { transition: none; }
-}
-.bf-chakra-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.bf-chakra-name {
-  font-family: var(--serif);
-  font-size: 16px; line-height: 1.2;
-  color: var(--light);
-}
-.bf-chakra-threshold-star { color: var(--gold); font-size: 13px; vertical-align: 2px; }
-.bf-chakra-state-word {
-  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--mid);
-  font-style: italic;
-}
-.bf-chakra-row[data-state="radiant"]        .bf-chakra-state-word { color: var(--gold); }
-.bf-chakra-row[data-state="carrying-a-lot"] .bf-chakra-state-word { color: rgba(220,140,90,0.85); }
-.bf-chakra-row[data-state="undercharged"]   .bf-chakra-state-word { color: var(--dim); }
-.bf-chakra-bar {
-  display: inline-flex; gap: 4px;
-  margin-top: 2px;
-}
-.bf-chakra-pip {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  transition: background 400ms cubic-bezier(.2,.8,.2,1);
-}
-.bf-chakra-pip.filled { background: var(--hue); }
-.bf-chakra-note {
-  font-size: 11px; line-height: 1.5;
-  color: var(--dim);
-  font-style: italic;
-  margin-top: 2px;
-  max-width: 420px;
-}
-
-/* Horizontal Solfeggio strip below the chakra column */
-.bf-solfeggio-strip {
-  width: 100%; height: 36px;
-  display: block; overflow: visible;
-  margin: 18px 0 8px;
-}
-.bf-solfeggio-strip-track { stroke: rgba(255,255,255,0.10); stroke-width: 0.6; }
-.bf-solfeggio-strip-tick { stroke: rgba(255,255,255,0.32); stroke-width: 1; }
-.bf-solfeggio-strip-tick.dim { stroke: rgba(255,255,255,0.12); stroke-width: 0.5; }
-.bf-solfeggio-strip-tick.miracle { stroke: rgba(255,215,100,0.85); stroke-width: 1.5; }
-.bf-solfeggio-strip-label {
-  fill: rgba(106,223,217,0.75);
-  font: 10px var(--sans);
-  letter-spacing: 0.04em;
-  font-weight: 500;
-}
-.bf-solfeggio-strip-label.miracle {
-  fill: var(--gold);
-  font-style: italic;
-  font-family: var(--serif);
-  font-size: 11px;
-}
-
-/* Headshot at bottom of expanded view (thangka practitioner-anchor) */
-.bf-avatar-row--anchor {
-  margin: 18px auto 4px;
-  justify-content: center;
-}
-
-/* Avatar fallback when portrait image fails to load */
+/* Avatar fallback when portrait image fails to load (still used by
+   masthead/side portrait via .bf-avatar-fallback--masthead). */
 .bf-avatar-fallback {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
@@ -1253,7 +915,6 @@ main { position: relative; z-index: 2; }
   background: rgba(255,215,100,0.08);
   border-radius: 50%;
 }
-.bf-avatar-fallback--door { font-size: 38px; }
 
 /* v1.8.0: below-hero detail block — flows directly under the body hero,
    no gating. Holds timeline + delta + chakra column + helix + archetype. */
@@ -1264,20 +925,8 @@ main { position: relative; z-index: 2; }
   max-width: 1240px;
   padding: 0 8px;
 }
-.bf-detail-section { display: flex; flex-direction: column; gap: 14px; }
-.bf-detail-label {
-  font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
-  color: var(--dim);
-  margin-bottom: 4px;
-}
-.bf-detail-chakras .bf-chakra-column {
-  /* In the below-hero detail block, the chakra column sits in a
-     bordered card-like container so it reads as a structured section. */
-  background: rgba(31,24,36,0.42);
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 10px 18px;
-}
+/* v1.9.14: .bf-detail-section / .bf-detail-label / .bf-detail-chakras
+   removed — only the wrapping .bf-detail is still used. */
 
 /* The 4-ellipse `.bf-aura-band` was replaced in v1.4.0 by the 7-ring system
    above (`.bf-aura-ring`). The gold dashed boundary still sits outside that
@@ -1294,151 +943,13 @@ main { position: relative; z-index: 2; }
   /* Tween radius when morphing between weekly snapshots (auric extent shifts) */
   transition: r 400ms cubic-bezier(.2,.8,.2,1);
 }
-.bf-aura-boundary-tick {
-  stroke: rgba(255,215,100,0.85);
-  stroke-width: 1;
-  filter: drop-shadow(0 0 2px rgba(255,215,100,0.45));
-}
-.bf-aura-boundary-label {
-  fill: rgba(255,215,100,0.85);
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  filter: drop-shadow(0 0 3px rgba(0,0,0,0.6));
-}
-@media (prefers-reduced-motion: reduce) {
-  .bf-aura-boundary { transition: none; }
-}
-/* Unifying golden axial line — quiet thread along the spine. Tells the eye
-   "these are one column" before reading any individual chakra. */
-.bf-chakra-axis {
-  stroke: rgba(255,215,100,0.10);
-  stroke-width: 0.6;
-  filter: drop-shadow(0 0 3px rgba(255,215,100,0.18));
-  opacity: calc(0.65 + 0.25 * var(--breath-pulse));
-}
-/* Golden spiral — replaces the static .bf-fibonacci with data-driven
-   segments. Each segment picks up the chakra-state character of its
-   destination. */
-.bf-spiral-seg {
-  fill: none;
-  stroke: url(#bf-spiral-grad);
-  stroke-width: 1;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 4px rgba(255,215,100,0.45));
-  opacity: calc(0.70 + 0.18 * var(--breath-pulse));
-}
-.bf-spiral-seg--consolidating { stroke-dasharray: 4 2; }
-.bf-spiral-seg--clear { stroke-width: 1.4; }
-.bf-spiral-seg--carrying-a-lot { /* bow handled in path */ }
-.bf-spiral-seg--exit { stroke-width: 1.2; }
-.bf-spiral-terminal-ring {
-  stroke: rgba(255,215,100,0.78);
-  stroke-width: 0.6;
-  fill: none;
-}
-.bf-spiral-terminal-core {
-  fill: rgba(255,215,100,0.95);
-  filter: drop-shadow(0 0 4px rgba(255,215,100,0.65));
-}
-@media (prefers-reduced-motion: reduce) {
-  .bf-chakra-axis, .bf-spiral-seg { opacity: 0.7; }
-}
-.bf-body {
-  fill: url(#bf-body-grad);
-  stroke: rgba(106,223,217,0.55);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 12px rgba(123,111,168,0.32));
-}
-.bf-body-anchor {
-  fill: url(#bf-anchor-grad);
-  opacity: 0.75;
-}
-.bf-chakra-spot {
-  --amp: 0.6;
-  /* No size scaling — halo radius is data-driven via the `r` attribute.
-     Breath modulates halo opacity instead. */
-}
-/* Per-chakra hue var so cores AND rings pick up the same color via a single rule */
-.bf-chakra-spot[data-id="root"]      { --hue: var(--red); }
-.bf-chakra-spot[data-id="sacral"]    { --hue: var(--orange); }
-.bf-chakra-spot[data-id="solar"]     { --hue: var(--gold); }
-.bf-chakra-spot[data-id="heart"]     { --hue: var(--green); }
-.bf-chakra-spot[data-id="throat"]    { --hue: var(--teal); }
-.bf-chakra-spot[data-id="third-eye"] { --hue: var(--accent-bright); }
-.bf-chakra-spot[data-id="crown"]     { --hue: var(--magenta); }
-.bf-chakra-spot circle.bf-chakra-core { fill: var(--hue); transition: fill 400ms ease; }
-.bf-chakra-spot circle.bf-chakra-glow { fill: var(--hue); }
-/* Joy-Spark mini-nucleus rings: count is data-driven, color follows --hue.
-   Innermost ring picks up gold when amp ≥ 0.85 (threshold activation). */
-.bf-chakra-spot .bf-chakra-ring { stroke: var(--hue); }
-.bf-chakra-spot .bf-chakra-ring--gold { stroke: rgba(255,215,100,0.85); }
-.bf-chakra-spot .bf-chakra-ring--dashed { stroke-dasharray: 2 3; }
-.bf-chakra-glow {
-  fill: var(--hue);
-  filter: blur(4px);
-  /* Breath-coupled opacity (size is static from data) */
-  opacity: calc(0.42 + 0.20 * var(--breath-pulse));
-  /* Tween halo radius when morphing between weekly snapshots */
-  transition: r 400ms cubic-bezier(.2,.8,.2,1);
-}
-.bf-chakra-contain {
-  transition: r 400ms cubic-bezier(.2,.8,.2,1);
-}
-.bf-chakra-positioner {
-  /* SVG <g> translate via attribute change. Modern browsers tween it
-     naturally between snapshot updates. */
-  transition: transform 400ms cubic-bezier(.2,.8,.2,1);
-}
-@media (prefers-reduced-motion: reduce) {
-  .bf-chakra-glow, .bf-chakra-contain, .bf-chakra-positioner { transition: none; }
-}
-/* Per-state visual rules */
-.bf-chakra-spot .bf-chakra-anchor { display: none; }
-.bf-chakra-spot[data-state="undercharged"] .bf-chakra-anchor { display: block; opacity: 0.6; }
-.bf-chakra-spot .bf-chakra-contain { display: none; }
-.bf-chakra-spot[data-state="carrying-a-lot"] .bf-chakra-contain { display: block; opacity: 0.85; }
-.bf-chakra-spot[data-state="carrying-a-lot"] circle.bf-chakra-core { filter: hue-rotate(-8deg) saturate(0.85); }
-.bf-chakra-spot[data-state="radiant"] circle.bf-chakra-core { filter: brightness(1.1); }
-.bf-chakra-spot[data-state="clear"]   circle.bf-chakra-core { fill-opacity: 0.65; }
-.bf-chakra-spot[data-state="consolidating"] .bf-chakra-glow { opacity: calc(0.32 + 0.16 * var(--breath-pulse)); }
-.bf-chakra-spot.pulsing .bf-chakra-glow { animation: bf-glow-pulse 1800ms cubic-bezier(.2,.8,.2,1); }
-@keyframes bf-glow-pulse {
-  0%   { opacity: 0.55; filter: blur(4px); }
-  20%  { opacity: 1.0;  filter: blur(2px) brightness(1.5); }
-  100% { opacity: 0.55; filter: blur(4px); }
-}
-
-/* Block: damped wave + ghost + knot. Recolored violet-grey (different
-   chromatic register from gold spiral and chakra hues — reads as shadow
-   weather, not hot signal). Wave amplitude decays as breath fills (the
-   literal felt-sense of breath dissolving the block). */
-.bf-block-wave {
-  fill: none;
-  stroke: rgba(123,111,168,0.55);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  opacity: calc(0.85 + 0.15 * (1 - var(--breath-pulse)));
-}
-.bf-block-ghost {
-  fill: none;
-  stroke: rgba(123,111,168,0.22);
-  stroke-width: 0.7;
-  stroke-dasharray: 2 4;
-}
-.bf-block-knot {
-  fill: rgba(123,111,168,0.55);
-  filter: blur(1.5px);
-  opacity: calc(0.55 + 0.20 * (1 - var(--breath-pulse)));
-}
-
-/* Avatar tile (medium) + meta line below silhouette */
-.bf-avatar-row {
-  display: flex; align-items: center; gap: 16px;
-  font-size: 11px; color: var(--mid); letter-spacing: 0.04em;
-}
+/* v1.9.14: another ~130 lines DELETED. All belonged to the silhouette
+   SVG renderer (buildSilhouetteSVG, also deleted): .bf-aura-boundary-*,
+   .bf-body, .bf-body-anchor, .bf-chakra-spot family,
+   .bf-chakra-core/glow/ring/contain/positioner/anchor, .bf-block-wave/
+   ghost/knot, .bf-avatar-row, .bf-aura-caption, .bf-block-caption +
+   children, plus the @keyframes bf-glow-pulse. */
+/* Avatar tile (used by masthead — KEEP). */
 .bf-avatar-tile {
   width: 84px; height: 84px; border-radius: 50%;
   overflow: hidden; flex-shrink: 0;
@@ -1446,31 +957,6 @@ main { position: relative; z-index: 2; }
   box-shadow: 0 0 22px rgba(123,111,168,0.32);
 }
 .bf-avatar-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.bf-avatar-row .name { color: var(--light); font-weight: 500; font-family: var(--serif); font-size: 18px; font-style: italic; }
-.bf-aura-caption {
-  font-size: 11px; color: var(--mid); letter-spacing: 0.06em; line-height: 1.5;
-  font-style: italic; text-align: center;
-}
-.bf-aura-caption strong { color: var(--gold); font-weight: 500; font-style: normal; }
-.bf-block-caption {
-  margin-top: 4px;
-  padding: 12px 14px;
-  border-top: 1px solid rgba(240,180,90,0.18);
-  background: rgba(240,180,90,0.04);
-  border-radius: 0 0 12px 12px;
-}
-.bf-block-caption .label {
-  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
-  color: rgba(240,180,90,0.85); display: block; margin-bottom: 4px;
-}
-.bf-block-caption .quote {
-  font-family: var(--serif); font-style: italic; font-size: 16px;
-  color: var(--light); line-height: 1.4;
-}
-.bf-block-caption .holding {
-  font-size: 12px; color: var(--mid); line-height: 1.55; margin-top: 6px;
-  font-style: italic;
-}
 
 /* RIGHT COLUMN: Hawkins arc + DNA helix + archetype */
 .bf-readout {
@@ -1720,10 +1206,7 @@ main { position: relative; z-index: 2; }
 }
 
 /* v1.9.8: .bf-waveform stripe removed from the dashboard mount. CSS
-   left in place but inert (nothing in the rendered DOM uses it now)
-   so the buildWaveformSVG helper can be relocated later without
-   re-authoring styles. */
-.bf-waveform { display: none; }
+   left in place but inert (nothing in the rendered DOM uses it now). */
 
 /* Whisper line at section transitions (Principle 03 distributed) */
 .principle-whisper {
@@ -2155,109 +1638,9 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
    sacral release, heart-throat coherence, crown integration). An inline
    SVG accent layers a minimal geometric mark on top. No image asset
    required; phase.art still wins if set (future-proof plumbing). */
-.phase-banner {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 6;
-  border-radius: 18px;
-  overflow: hidden;
-  margin-bottom: 28px;
-  background: linear-gradient(135deg, rgba(86,76,112,0.42), rgba(31,22,50,0.85));
-}
-.phase-banner-img {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%; object-fit: cover; display: block;
-}
-.phase-banner::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, transparent 60%, rgba(11,8,15,0.45) 100%);
-}
-
-/* Week 1 — IN THE BODY (root, ground).
-   Bottom-anchored red bloom rising from earth, two side blooms suggest
-   wide stable base. Horizon hairline + 3 grounding dots in the SVG accent. */
-.phase-banner--styled[data-week="1"] {
-  background:
-    radial-gradient(ellipse 70% 55% at 50% 105%, rgba(220, 90, 90, 0.45), transparent 65%),
-    radial-gradient(ellipse 35% 30% at 25% 85%, rgba(180, 60, 60, 0.30), transparent 80%),
-    radial-gradient(ellipse 35% 30% at 75% 85%, rgba(180, 60, 60, 0.30), transparent 80%),
-    linear-gradient(180deg, rgba(20,15,30,0.95) 0%, rgba(40,18,22,0.95) 100%);
-}
-
-/* Week 2 — RELEASE THE CHARGE (sacral, lateral motion).
-   Orange bloom anchored to the right edge, smaller bloom on the left,
-   asymmetric so the eye reads sweep / clearing direction. Three sweeping
-   arcs in the SVG accent reinforce the release. */
-.phase-banner--styled[data-week="2"] {
-  background:
-    radial-gradient(ellipse 60% 80% at 105% 50%, rgba(240,147, 94, 0.42), transparent 60%),
-    radial-gradient(ellipse 40% 50% at 15% 60%, rgba(220,120, 80, 0.26), transparent 80%),
-    radial-gradient(ellipse 80% 30% at 50% 0%, rgba(240,147, 94, 0.18), transparent 75%),
-    linear-gradient(105deg, rgba(20,15,30,0.95) 0%, rgba(35,20,18,0.95) 100%);
-}
-
-/* Week 3 — HEART COHERENT, VOICE OPEN (heart-throat axis).
-   Two equal blooms — green from below-left, teal from above-right —
-   meeting along a vertical axis. Vertical hairline + 2 dot markers
-   in the SVG name the heart and throat centers. */
-.phase-banner--styled[data-week="3"] {
-  background:
-    radial-gradient(ellipse 55% 65% at 32% 75%, rgba(120,210,140, 0.40), transparent 65%),
-    radial-gradient(ellipse 55% 65% at 68% 25%, rgba(106,223,217, 0.40), transparent 65%),
-    linear-gradient(135deg, rgba(15,18,28,0.95) 0%, rgba(15,28,28,0.95) 100%);
-}
-
-/* Week 4 — INTEGRATION & CREATIVE FLOW (crown, golden spiral).
-   Gold bloom anchored upper-right, violet undercurrent on the lower-
-   left so the eye reads ascent / completion. Quarter-spiral arc in the
-   SVG accent echoes the body-aurora golden spiral. */
-.phase-banner--styled[data-week="4"] {
-  background:
-    radial-gradient(ellipse 60% 65% at 75% 25%, rgba(255,215,100, 0.45), transparent 65%),
-    radial-gradient(ellipse 40% 50% at 18% 78%, rgba(194, 47,205, 0.28), transparent 80%),
-    radial-gradient(ellipse 80% 30% at 50% 100%, rgba(255,215,100, 0.14), transparent 75%),
-    linear-gradient(135deg, rgba(15,12,22,0.95) 0%, rgba(28,22,15,0.95) 100%);
-}
-
-/* SVG accent overlays — minimal geometric marks per week. Stroke is
-   gold by default; week 3's heart dot tints green, throat tints teal. */
-.phase-banner-accent {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  opacity: 0.85;
-}
-.pba-line {
-  stroke: rgba(255,215,100,0.45);
-  stroke-width: 0.18;
-  stroke-dasharray: 0.6 0.4;
-  vector-effect: non-scaling-stroke;
-}
-.pba-line--vertical {
-  stroke: rgba(255,215,100,0.32);
-  stroke-dasharray: 0.4 0.4;
-}
-.pba-dot {
-  fill: rgba(255,215,100,0.85);
-  filter: drop-shadow(0 0 0.4px rgba(255,215,100,0.6));
-}
-.pba-dot--heart  { fill: rgba(120,210,140, 0.95); filter: drop-shadow(0 0 0.6px rgba(120,210,140,0.7)); }
-.pba-dot--throat { fill: rgba(106,223,217, 0.95); filter: drop-shadow(0 0 0.6px rgba(106,223,217,0.7)); }
-.pba-dot--spiral { fill: rgba(255,215,100, 0.95); filter: drop-shadow(0 0 0.6px rgba(255,215,100,0.7)); }
-.pba-arc {
-  fill: none;
-  stroke: rgba(240,147, 94, 0.42);
-  stroke-width: 0.16;
-  vector-effect: non-scaling-stroke;
-}
-.pba-spiral {
-  fill: none;
-  stroke: rgba(255,215,100, 0.55);
-  stroke-width: 0.18;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 0.4px rgba(255,215,100,0.45));
-}
+/* v1.9.14: .phase-banner family + .pba-* SVG accent rules DELETED
+   (~95 lines). Phase banners stopped mounting in v1.9.7; the
+   buildPhaseBannerAccent JS was deleted in this round too. */
 
 /* Vertical phase head — display number above the title */
 .phase-head--vertical {
@@ -2751,76 +2134,126 @@ textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
   font-family: var(--serif); font-style: italic;
   color: rgba(255,215,100,0.78);
 }
-.wow-pips {
-  display: flex; gap: 6px;
-  flex-wrap: wrap;
+/* v1.9.14: horizontal range slider (replaces v1.9.13 segmented pips). */
+.wow-track-wrap {
+  position: relative;
+  padding: 6px 0 2px;
 }
-.wow-pip {
-  flex: 1 1 0;
-  min-width: 44px;
-  padding: 8px 6px;
-  background: rgba(11,8,15,0.55);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 8px;
-  color: rgba(255,255,255,0.65);
-  font-family: var(--sans);
-  font-size: 13px; font-weight: 500;
+.wow-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+  outline: none;
   cursor: pointer;
-  transition: background .2s, border-color .2s, color .2s, transform .2s, box-shadow .2s;
-  white-space: nowrap;
+  margin: 0;
 }
-.wow-pip:hover {
-  background: rgba(11,8,15,0.72);
-  border-color: rgba(255,255,255,0.22);
-  color: rgba(255,255,255,0.92);
+/* WebKit track */
+.wow-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(106,223,217,0.55) 0%,
+    rgba(123,111,168,0.55) 50%,
+    rgba(255,215,100,0.85) 100%);
 }
-.wow-pip:focus-visible {
-  outline: 1px solid rgba(106,223,217,0.55);
+.wow-track--unset .wow-range::-webkit-slider-runnable-track {
+  background: rgba(255,255,255,0.14);
+}
+.wow-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(255,240,200,1);
+  border: 2px solid rgba(255,215,100,0.85);
+  margin-top: -7px;
+  box-shadow: 0 0 0 4px rgba(255,215,100,0.10), 0 0 14px rgba(255,215,100,0.40);
+  cursor: grab;
+}
+.wow-track--unset .wow-range::-webkit-slider-thumb {
+  background: rgba(11,8,15,0.85);
+  border-color: rgba(255,255,255,0.42);
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+}
+.wow-track--wow .wow-range::-webkit-slider-thumb {
+  background: linear-gradient(135deg, rgba(255,240,200,1), rgba(255,200,120,1));
+  border-color: rgba(255,215,100,1);
+  box-shadow: 0 0 0 4px rgba(255,215,100,0.18), 0 0 22px rgba(255,215,100,0.65);
+}
+.wow-range:active::-webkit-slider-thumb { cursor: grabbing; }
+/* Firefox track + thumb */
+.wow-range::-moz-range-track {
+  height: 4px; border-radius: 999px;
+  background: linear-gradient(90deg, rgba(106,223,217,0.55), rgba(123,111,168,0.55) 50%, rgba(255,215,100,0.85));
+}
+.wow-track--unset .wow-range::-moz-range-track { background: rgba(255,255,255,0.14); }
+.wow-range::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(255,240,200,1);
+  border: 2px solid rgba(255,215,100,0.85);
+  box-shadow: 0 0 0 4px rgba(255,215,100,0.10), 0 0 14px rgba(255,215,100,0.40);
+  cursor: grab;
+}
+.wow-track--unset .wow-range::-moz-range-thumb {
+  background: rgba(11,8,15,0.85);
+  border-color: rgba(255,255,255,0.42);
+}
+.wow-track--wow .wow-range::-moz-range-thumb {
+  background: linear-gradient(135deg, rgba(255,240,200,1), rgba(255,200,120,1));
+  border-color: rgba(255,215,100,1);
+  box-shadow: 0 0 0 4px rgba(255,215,100,0.18), 0 0 22px rgba(255,215,100,0.65);
+}
+.wow-range:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid rgba(106,223,217,0.55);
   outline-offset: 2px;
 }
-.wow-pip--selected {
-  background: rgba(106,223,217,0.14);
-  border-color: rgba(106,223,217,0.55);
-  color: var(--light);
-  box-shadow: 0 0 0 2px rgba(106,223,217,0.16);
+/* Tick labels — six positions matching min..max */
+.wow-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding: 0 4px;
 }
-/* WOW (value 6) — gold accent, sparkle, gradient when selected. */
-.wow-pip--wow {
+.wow-tick {
+  font-family: var(--sans);
+  font-size: 11px; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.42);
+  transition: color .2s;
+  user-select: none;
+  text-align: center;
+  flex: 1 1 0;
+}
+.wow-tick--active {
+  color: rgba(255,215,100,0.92);
+}
+.wow-tick--wow {
   font-family: var(--serif); font-style: italic;
   letter-spacing: 0.04em;
-  color: rgba(255,215,100,0.82);
-  border-color: rgba(255,215,100,0.32);
-  flex-grow: 1.4; /* slightly wider to fit "✨ WOW" */
+  color: rgba(255,215,100,0.65);
+  flex-grow: 1.4;
+  text-align: right;
 }
-.wow-pip--wow:hover {
+.wow-tick--wow.wow-tick--active {
   color: var(--gold);
-  border-color: rgba(255,215,100,0.55);
-  background: rgba(255,215,100,0.10);
-}
-.wow-pip--wow.wow-pip--selected {
-  background: linear-gradient(135deg, rgba(255,215,100,0.30), rgba(255,180,90,0.20));
-  border-color: rgba(255,215,100,0.85);
-  color: rgba(255,240,200,1);
-  box-shadow:
-    0 0 0 2px rgba(255,215,100,0.22),
-    0 0 18px rgba(255,215,100,0.35);
+  text-shadow: 0 0 8px rgba(255,215,100,0.55);
 }
 .wow-descriptor {
   font-family: var(--serif); font-style: italic;
   font-size: 12.5px; line-height: 1.5;
-  color: rgba(255,255,255,0.72);
+  color: rgba(255,255,255,0.78);
   min-height: 1.5em;
+  margin-top: 8px;
   opacity: 0;
   transition: opacity .25s;
 }
 .wow-descriptor.visible { opacity: 1; }
 @media (max-width: 480px) {
-  .wow-pips { gap: 5px; }
-  .wow-pip { min-width: 0; padding: 7px 4px; font-size: 12px; }
-  .wow-pip--wow { font-size: 12.5px; flex-grow: 1.6; }
+  .wow-tick { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wow-pip, .wow-descriptor { transition: none; }
+  .wow-tick, .wow-descriptor { transition: none; }
 }
 
 /* Per-card resolve action row */
@@ -3366,7 +2799,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.13';
+const VERSION = '1.9.14';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3965,221 +3398,9 @@ const SILHOUETTE_PATH =
    styling (consolidating throat dashed, clear third-eye thicker,
    carrying-a-lot crown bowed). Stroke uses a gold gradient defined in
    the SVG defs. */
-function buildGoldenSpiral(root) {
-  if (!Array.isArray(CHAKRA_STATES)) return;
-  const byId = {};
-  CHAKRA_STATES.forEach(c => { byId[c.id] = c; });
-  const yOf = (id) => {
-    const c = byId[id];
-    if (!c) return null;
-    return (c.yPct / 100) * 480 + 12;
-  };
-  const stateOf = (id) => (byId[id] && byId[id].state) || '';
-
-  // Spiral parameters
-  const cx = 160, cy = 174;       // origin = heart anchor
-  const b = Math.log(1.618) / (Math.PI / 2); // ≈ 0.3063
-  const a = 4;                    // initial radius at t=0
-  const tMin = -1.0;              // start slightly inside heart
-  const tMax = 5.4;               // end past auric perimeter at upper right
-  const samples = 64;
-
-  // Find which chakra zone a y-coordinate falls in
-  const yHeart = yOf('heart') || 174;
-  const yThroat = yOf('throat') || 110;
-  const yThirdEye = yOf('third-eye') || 72;
-  const yCrown = yOf('crown') || 40;
-  function zoneFor(y) {
-    if (y >= yHeart - 8) return 'heart';
-    if (y >= yThroat - 8) return 'throat';
-    if (y >= yThirdEye - 8) return 'third-eye';
-    if (y >= yCrown - 8) return 'crown';
-    return 'exit';
-  }
-
-  // Sample the spiral
-  const pts = [];
-  for (let i = 0; i <= samples; i++) {
-    const t = tMin + (tMax - tMin) * (i / samples);
-    const r = a * Math.exp(b * t);
-    // theta starts at -π/2 (downward from heart) and sweeps counterclockwise.
-    // The full sweep (~6.4 rad) takes the spiral up + outward to upper right.
-    const theta = -Math.PI / 2 + t;
-    const x = cx + r * Math.cos(theta);
-    const y = cy + r * Math.sin(theta);
-    pts.push({ x: x, y: y, t: t, zone: zoneFor(y) });
-  }
-
-  // Group consecutive samples by zone into segments
-  const segments = [];
-  let cur = { zone: pts[0].zone, points: [pts[0]] };
-  for (let i = 1; i < pts.length; i++) {
-    if (pts[i].zone === cur.zone) {
-      cur.points.push(pts[i]);
-    } else {
-      // Repeat the boundary point in both segments so they connect visually
-      cur.points.push(pts[i]);
-      segments.push(cur);
-      cur = { zone: pts[i].zone, points: [pts[i]] };
-    }
-  }
-  segments.push(cur);
-
-  // Render each segment with its zone's chakra state class
-  segments.forEach(s => {
-    if (s.points.length < 2) return;
-    const state = stateOf(s.zone) || s.zone;
-    const cls = 'bf-spiral-seg bf-spiral-seg--' + state + ' bf-spiral-seg--' + s.zone;
-    const d = 'M ' + s.points.map(p => p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' L ');
-    root.appendChild(svg('path', { class: cls, d: d }));
-  });
-
-  // Terminal mini-nucleus at the spiral's end point — the "emerging
-  // coherence event" the reading describes. 3 border rings + a core dot.
-  const last = pts[pts.length - 1];
-  const term = svg('g', {
-    class: 'bf-spiral-terminal',
-    transform: 'translate(' + last.x.toFixed(1) + ' ' + last.y.toFixed(1) + ')'
-  });
-  [4, 8, 12].forEach((rr, i) => {
-    term.appendChild(svg('circle', {
-      class: 'bf-spiral-terminal-ring',
-      r: String(rr), fill: 'none',
-      'stroke-opacity': (0.65 - i * 0.18).toFixed(2)
-    }));
-  });
-  term.appendChild(svg('circle', { class: 'bf-spiral-terminal-core', r: '1.6' }));
-  root.appendChild(term);
-}
-
-/* v1.7.0: Silhouette is now a quiet armature, not the visual subject.
-   Mode parameter:
-   - 'doorway'  — body wash + ONE outer aura ring breathing. That's it.
-                  Used in the collapsed door state pre-session.
-   - 'expanded' — body wash + outer aura ring + tiny chakra anchor dots
-                  on the spine (so the chakra column to the right has
-                  visible source points the eye can pair with).
-   Cuts vs v1.6.2: golden spiral, chakra-axis line, block wave, block
-   ghost, block knot, calibration hairline, 6 of 7 aura rings, in-body
-   chakra mini-nuclei, auric boundary tick + label, body-anchor gradient.
-   The chakras now live in the sidecar column (buildChakraColumn). */
-function buildSilhouetteSVG(mode) {
-  mode = mode || 'expanded';
-  const root = svg('svg', {
-    class: 'bf-silhouette bf-silhouette--' + mode,
-    viewBox: '0 0 320 480',
-    preserveAspectRatio: 'xMidYMid meet',
-    'aria-hidden': 'true'
-  });
-
-  // Body gradient — kept for the soft fill. Anchor + spiral gradients gone.
-  const defs = svg('defs');
-  const bodyGrad = svg('linearGradient', { id: 'bf-body-grad', x1: '0', y1: '1', x2: '0', y2: '0' });
-  bodyGrad.appendChild(svg('stop', { offset: '0%', 'stop-color': 'rgba(86,76,112,0.32)' }));
-  bodyGrad.appendChild(svg('stop', { offset: '100%', 'stop-color': 'rgba(31,22,50,0.20)' }));
-  defs.appendChild(bodyGrad);
-  root.appendChild(defs);
-
-  // Read view once (auric extent drives the single aura ring).
-  const view = getView();
-  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
-  const auricR = Math.max(120, Math.min(220, 80 + auricMeters * 9));
-
-  // ONE outer aura ring breathing on the master 10.91s clock. The whole field.
-  root.appendChild(svg('circle', {
-    class: 'bf-aura-ring bf-aura-ring--solo',
-    cx: '160', cy: '250',
-    r: auricR.toFixed(1),
-    fill: 'none',
-    stroke: 'rgba(255,215,100,0.40)',
-    'stroke-width': '0.8'
-  }));
-
-  // Body silhouette outline — flattened to a wash so chakras can win the
-  // figure-ground fight (per body-art lens). The .bf-body--washed CSS
-  // override drops the fill / stroke opacity for v1.7.
-  root.appendChild(svg('path', { class: 'bf-body bf-body--washed', d: SILHOUETTE_PATH }));
-
-  // Expanded mode only: tiny chakra anchor dots at each chakra y on the spine.
-  // The chakra column to the right pairs each row to one of these dots
-  // visually (matching y, matching color). For v1.7.0 we use a y-alignment
-  // pairing rather than literal SVG leader lines — leader lines are added
-  // in a follow-up if needed.
-  if (mode === 'expanded' && Array.isArray(CHAKRA_STATES)) {
-    CHAKRA_STATES.forEach(c => {
-      const cy = (c.yPct / 100) * 480 + 12;
-      root.appendChild(svg('circle', {
-        class: 'bf-chakra-anchor-dot',
-        'data-chakra-id': c.id,
-        cx: '160', cy: cy.toFixed(0),
-        r: '2.5',
-        fill: 'currentColor'
-      }));
-    });
-  }
-
-  return root;
-}
-
-/* v1.7.0: Chakra column — the visual subject of the expanded dashboard.
-   Replaces the in-body mini-nucleus rendering. Each row: disc (color =
-   identity, size = amplitude, saturation = vitality, gold ring at
-   threshold) + name + state word + 5-pip amplitude bar.
-   Order: crown at top → root at bottom (matches y-position in silhouette
-   so the eye pairs disc with anchor-dot via shared y-line). */
-function buildChakraColumn() {
-  const col = el('div', { class: 'bf-chakra-column' });
-  if (!Array.isArray(CHAKRA_STATES)) return col;
-  // CHAKRA_STATES is in energetic ascent order (crown → root by index 0..6
-  // when looking at yPct: yPct=7 for crown, yPct=76 for root). Render in
-  // visual top-to-bottom order, which matches array order if yPct is
-  // ascending. We sort defensively.
-  const ordered = [...CHAKRA_STATES].sort((a, b) => (a.yPct || 0) - (b.yPct || 0));
-  ordered.forEach(c => {
-    const v = CHAKRA_VISUAL[c.state] || { amp: 0.7 };
-    const row = el('div', {
-      class: 'bf-chakra-row',
-      dataset: { id: c.id, state: c.state }
-    });
-    row.style.setProperty('--amp', v.amp.toFixed(2));
-    row.style.setProperty('--threshold', v.amp >= 0.85 ? '1' : '0');
-
-    // Disc — color = identity (CSS), size driven by --amp (CSS scales 0.5..1.0)
-    const disc = el('div', { class: 'bf-chakra-disc', 'aria-hidden': 'true' });
-    row.appendChild(disc);
-
-    // Meta block: name + state word + amplitude bar
-    const meta = el('div', { class: 'bf-chakra-meta' });
-    const nameRow = el('div', { class: 'bf-chakra-name' });
-    nameRow.appendChild(document.createTextNode(c.label));
-    if (v.amp >= 0.85) {
-      const star = el('span', { class: 'bf-chakra-threshold-star', 'aria-label': 'threshold reached', text: ' ★' });
-      nameRow.appendChild(star);
-    }
-    meta.appendChild(nameRow);
-
-    // State word — replace dashes with spaces for readability
-    const stateText = c.state.replace(/-/g, ' ');
-    meta.appendChild(el('div', { class: 'bf-chakra-state-word', text: stateText }));
-
-    // 5-pip amplitude bar
-    const bar = el('div', { class: 'bf-chakra-bar', 'aria-label': 'amplitude ' + Math.round(v.amp * 100) + ' percent' });
-    const filled = Math.max(1, Math.round(v.amp * 5));
-    for (let i = 0; i < 5; i++) {
-      bar.appendChild(el('span', { class: 'bf-chakra-pip' + (i < filled ? ' filled' : '') }));
-    }
-    meta.appendChild(bar);
-
-    // Practitioner note (if present in chakra state)
-    if (c.note) {
-      meta.appendChild(el('div', { class: 'bf-chakra-note', text: c.note }));
-    }
-
-    row.appendChild(meta);
-    col.appendChild(row);
-  });
-  return col;
-}
+/* v1.9.14: function buildGoldenSpiral() deleted (orphan — not called anywhere). */
+/* v1.9.14: function buildSilhouetteSVG() deleted (orphan — not called anywhere). */
+/* v1.9.14: function buildChakraColumn() deleted (orphan — not called anywhere). */
 
 function buildHelixSVG() {
   /* DNA helix driven by USER.dna = { phaseLocked, consolidating, of }.
@@ -4303,208 +3524,11 @@ const HAWKINS_TICKS = [
   { v: 600, label: 'Peace' },
   { v: 700, label: 'Enlightenment' }
 ];
-function buildHawkinsLadder() {
-  const root = svg('svg', {
-    class: 'bf-ladder bf-ladder--hawkins',
-    viewBox: '0 0 60 480',
-    preserveAspectRatio: 'xMidYMid meet',
-    'aria-label': 'Hawkins consciousness calibration ladder'
-  });
-  const valToY = (v) => 460 - (v - 200) / 800 * 436;
+/* v1.9.14: function buildHawkinsLadder() deleted (orphan — not called anywhere). */
+/* v1.9.14: function buildCalibrationHairline() deleted (orphan — not called anywhere). */
+/* v1.9.14: function buildSolfeggioScale() deleted (orphan — not called anywhere). */
 
-  // Track
-  root.appendChild(svg('line', {
-    class: 'bf-ladder-track',
-    x1: '12', x2: '12', y1: '24', y2: '460'
-  }));
-
-  // Named ticks + labels
-  HAWKINS_TICKS.forEach(t => {
-    const y = valToY(t.v);
-    root.appendChild(svg('line', {
-      class: 'bf-ladder-tick',
-      x1: '8', x2: '16', y1: y.toFixed(1), y2: y.toFixed(1)
-    }));
-    const valLabel = svg('text', {
-      class: 'bf-ladder-num', x: '20', y: (y + 3).toFixed(1)
-    });
-    valLabel.textContent = String(t.v);
-    root.appendChild(valLabel);
-    const nameLabel = svg('text', {
-      class: 'bf-ladder-name', x: '36', y: (y + 3).toFixed(1)
-    });
-    nameLabel.textContent = t.label;
-    root.appendChild(nameLabel);
-  });
-
-  // Current calibration: gold beam at user's level
-  const view = getView();
-  const level = Number(view.hawkinsLevel) || 525;
-  const target = Number(view.hawkinsTarget) || null;
-  const yLevel = valToY(level);
-
-  // Soft connecting line from level to target (if any)
-  if (target) {
-    const yTarget = valToY(target);
-    root.appendChild(svg('line', {
-      class: 'bf-ladder-link',
-      x1: '12', x2: '12',
-      y1: Math.min(yLevel, yTarget).toFixed(1),
-      y2: Math.max(yLevel, yTarget).toFixed(1)
-    }));
-    root.appendChild(svg('circle', {
-      class: 'bf-ladder-target',
-      cx: '12', cy: yTarget.toFixed(1), r: '2'
-    }));
-  }
-
-  // The gold beam itself — extends to the right edge of this ladder's viewBox
-  // so it visually connects across to the Solfeggio scale's matching hairline.
-  root.appendChild(svg('line', {
-    class: 'bf-ladder-beam',
-    x1: '4', x2: '60',
-    y1: yLevel.toFixed(1), y2: yLevel.toFixed(1)
-  }));
-  const lvlText = svg('text', {
-    class: 'bf-ladder-current', x: '20', y: (yLevel + 3).toFixed(1)
-  });
-  lvlText.textContent = String(level);
-  root.appendChild(lvlText);
-
-  return root;
-}
-
-/* The horizontal "calibration row" hairline that joins the two vertical
-   scales. Drawn inside the silhouette SVG at y = valToY(level), spanning
-   the full silhouette viewBox width with overflow:visible so it bleeds
-   slightly into the ladder gutters. The ladders draw their own short
-   matching hairlines so the eye reads one continuous line. */
-function buildCalibrationHairline(view) {
-  const level = Number(view && view.hawkinsLevel) || 525;
-  const y = 460 - (level - 200) / 800 * 436;
-  return svg('line', {
-    class: 'bf-calib-hairline',
-    x1: '0', x2: '320',
-    y1: y.toFixed(1), y2: y.toFixed(1)
-  });
-}
-
-/* ---- Vertical Solfeggio Hz scale ----
-   Lives on the right side of the silhouette stage. Log-mapped so octaves
-   read as ratios. Shows 3 prominent markers (user's current frequency plus
-   the two flanking) — everything else collapses to barely-visible ticks. */
-const SOLFEGGIO_HZ = [
-  { hz: 174, dim: true },
-  { hz: 285, dim: true },
-  { hz: 396, dim: true },
-  { hz: 432, dim: false },
-  { hz: 528, dim: false, miracle: true },
-  { hz: 639, dim: false },
-  { hz: 741, dim: true },
-  { hz: 852, dim: true },
-  { hz: 963, dim: true }
-];
-function buildSolfeggioScale() {
-  const root = svg('svg', {
-    class: 'bf-ladder bf-ladder--solfeggio',
-    viewBox: '0 0 80 480',
-    preserveAspectRatio: 'xMidYMid meet',
-    'aria-label': 'Solfeggio frequency scale'
-  });
-  const hzMin = 174, hzMax = 963;
-  const logMin = Math.log(hzMin), logMax = Math.log(hzMax);
-  const hzToY = (hz) => 460 - (Math.log(hz) - logMin) / (logMax - logMin) * 436;
-
-  // Calibration-row hairline coming in from the left (matches the silhouette's
-  // version at the same y, so the eye reads them as one line)
-  const view = getView();
-  const level = Number(view && view.hawkinsLevel) || 525;
-  const calY = 460 - (level - 200) / 800 * 436;
-  root.appendChild(svg('line', {
-    class: 'bf-calib-hairline',
-    x1: '0', x2: '12',
-    y1: calY.toFixed(1), y2: calY.toFixed(1)
-  }));
-
-  // Track
-  root.appendChild(svg('line', {
-    class: 'bf-ladder-track',
-    x1: '12', x2: '12', y1: '24', y2: '460'
-  }));
-
-  SOLFEGGIO_HZ.forEach(s => {
-    const y = hzToY(s.hz);
-    const cls = 'bf-ladder-tick' + (s.dim ? ' dim' : '') + (s.miracle ? ' miracle' : '');
-    root.appendChild(svg('line', {
-      class: cls,
-      x1: '8', x2: s.dim ? '14' : '18',
-      y1: y.toFixed(1), y2: y.toFixed(1)
-    }));
-    if (!s.dim) {
-      const t = svg('text', {
-        class: 'bf-ladder-hz' + (s.miracle ? ' miracle' : ''),
-        x: '22', y: (y + 3).toFixed(1)
-      });
-      t.textContent = s.hz + ' Hz' + (s.miracle ? ' · Miracles' : '');
-      root.appendChild(t);
-    }
-  });
-
-  return root;
-}
-
-function buildWaveformSVG(week) {
-  /* Composite waveform: slow breath envelope × current week's Solfeggio carrier.
-     Visualized at 1.5 Hz so the eye reads rhythm. */
-  const KEYNOTES = { 1: 174, 2: 396, 3: 432, 4: 639 };
-  const hz = KEYNOTES[week] || 174;
-
-  const W = 800, H = 28;
-  const root = svg('svg', {
-    viewBox: '0 0 ' + W + ' ' + H,
-    preserveAspectRatio: 'none',
-    'aria-hidden': 'true'
-  });
-  const defs = svg('defs');
-  const grad = svg('linearGradient', { id: 'wf-grad', x1: '0', y1: '0', x2: '1', y2: '0' });
-  grad.appendChild(svg('stop', { offset: '0%',  'stop-color': 'rgba(106,223,217,0.55)' }));
-  grad.appendChild(svg('stop', { offset: '50%', 'stop-color': 'rgba(194,47,205,0.55)' }));
-  grad.appendChild(svg('stop', { offset: '100%','stop-color': 'rgba(255,215,100,0.55)' }));
-  defs.appendChild(grad);
-  root.appendChild(defs);
-
-  // We sample N points across the width.
-  const N = 240;
-  const carrierCycles = 3;  // v1.6.0: reduced from 12 — too many peaks read as
-                             // visual noise. The silhouette already breathes;
-                             // the waveform now reads as a single, slow sweep.
-  const envelopeCycles = 1.0; // single breath envelope across the stripe
-  const pts = [];
-  for (let i = 0; i <= N; i++) {
-    const t = i / N;
-    const env = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 * envelopeCycles - Math.PI / 2);
-    const carrier = Math.sin(t * Math.PI * 2 * carrierCycles);
-    const y = H / 2 + carrier * (H * 0.42) * env;
-    const x = t * W;
-    pts.push((i === 0 ? 'M ' : 'L ') + x.toFixed(1) + ' ' + y.toFixed(2));
-  }
-  root.appendChild(svg('path', { class: 'wf-curve', d: pts.join(' ') }));
-
-  return { svg: root, hz };
-}
-
-/* v1.7.0: dashboard is now a two-state controller.
-   - Doorway (default): a settling cue card. Portrait + holding-quote +
-     still silhouette + one outer aura ring breathing + 5.5 BPM dot.
-     "Open the field" affordance below.
-   - Expanded (sidecar): silhouette demoted to a quiet armature on the
-     left, chakra column to its right, Hawkins ladder, horizontal
-     Solfeggio strip, headshot at bottom (thangka anchor), archetype +
-     helix + delta below.
-   State persists in LS.dashOpen. */
-/* v1.8.0: doorway/expanded gate removed — dashboard is always one state.
-   These stubs remain so any lingering references compile, but the body
-   image is now always visible and there's no "open the field" interaction. */
+/* v1.9.14: function buildWaveformSVG() deleted (orphan — not called anywhere). */
 function isDashboardOpen() { return true; }
 function openDashboard() { mountBiofieldDashboard(); }
 function closeDashboard() { mountBiofieldDashboard(); }
@@ -4533,68 +3557,7 @@ function buildPortraitImg(extraClass) {
 /* Horizontal Solfeggio strip — replaces the vertical right-rail scale in
    the expanded state. Log-mapped 174..963; renders 174 / 396 / 432 / 528
    (miracle, gold) / 639 / 741 / 963 along a single line. */
-function buildSolfeggioStrip() {
-  const root = svg('svg', {
-    class: 'bf-solfeggio-strip',
-    viewBox: '0 0 800 36',
-    preserveAspectRatio: 'none',
-    'aria-label': 'Solfeggio frequency scale'
-  });
-  const hzMin = 174, hzMax = 963;
-  const logMin = Math.log(hzMin), logMax = Math.log(hzMax);
-  const xLo = 16, xHi = 784;
-  const hzToX = (hz) => xLo + (Math.log(hz) - logMin) / (logMax - logMin) * (xHi - xLo);
-  // Track
-  root.appendChild(svg('line', {
-    class: 'bf-solfeggio-strip-track',
-    x1: String(xLo), x2: String(xHi), y1: '14', y2: '14'
-  }));
-  const ticks = [
-    { hz: 174, dim: true },
-    { hz: 396, dim: true },
-    { hz: 432, dim: false },
-    { hz: 528, dim: false, miracle: true },
-    { hz: 639, dim: false },
-    { hz: 741, dim: true },
-    { hz: 963, dim: true }
-  ];
-  ticks.forEach(t => {
-    const x = hzToX(t.hz);
-    root.appendChild(svg('line', {
-      class: 'bf-solfeggio-strip-tick' + (t.dim ? ' dim' : '') + (t.miracle ? ' miracle' : ''),
-      x1: x.toFixed(1), x2: x.toFixed(1),
-      y1: '8', y2: '20'
-    }));
-    if (!t.dim) {
-      const lbl = svg('text', {
-        class: 'bf-solfeggio-strip-label' + (t.miracle ? ' miracle' : ''),
-        x: x.toFixed(1), y: '32',
-        'text-anchor': 'middle'
-      });
-      lbl.textContent = t.hz + ' Hz' + (t.miracle ? ' · Miracles' : '');
-      root.appendChild(lbl);
-    }
-  });
-  return root;
-}
-
-/* Doorway state — the settling default. Three animated surfaces:
-   outer aura ring, breath dot, slow aurora blob. Full instrument lives
-   behind the "open the field" affordance. */
-/* Map a Hawkins level (200..1000) to a tier name. Returns the named tier
-   the user is closest to, plus a relational verb ("at" if within ±15 of a
-   tier center, "approaching" if rising toward the next, "past" if falling
-   below). Used by the body-aurora hero's Hawkins card for semantic context
-   (raw numbers without a name read as a score; tiers tell a story). */
-const HAWKINS_TIERS = [
-  { v: 200, name: 'Courage' },
-  { v: 350, name: 'Acceptance' },
-  { v: 400, name: 'Reason' },
-  { v: 500, name: 'Love' },
-  { v: 540, name: 'Joy' },
-  { v: 600, name: 'Peace' },
-  { v: 700, name: 'Enlightenment' }
-];
+/* v1.9.14: function buildSolfeggioStrip() deleted (orphan — not called anywhere). */
 function hawkinsTier(level) {
   if (typeof level !== 'number' || isNaN(level)) return { tier: 'Reason', frame: 'at' };
   // Find the tier the level is in or approaching
@@ -4680,7 +3643,7 @@ function buildBodyAuroraHero() {
   const reducedData = window.matchMedia && window.matchMedia('(prefers-reduced-data: reduce)').matches;
   const img = el('img', {
     class: 'bf-body-image',
-    src: reducedData ? '' : 'assets/dashboard/body-aurora.png',
+    src: reducedData ? '' : 'assets/dashboard/body-aurora.webp',
     alt: 'translucent figure rendered in violet and rose light',
     loading: 'eager',
     decoding: 'async'
@@ -4698,9 +3661,12 @@ function buildBodyAuroraHero() {
   // overall stage width.
   bodyWrap.appendChild(buildAuricRingsOverlay(auricMeters));
 
-  // v1.9.9: Big glowing meter readout above the body, with a tick line
-  // visually connecting it to the rings expanding from the heart.
-  bodyWrap.appendChild(buildAuricReadout(auricMeters));
+  // v1.9.9 → v1.9.14: Big glowing meter readout in the BOTTOM-RIGHT
+  // quadrant of the stage, with a hairline diameter notation
+  // connecting it leftward into the body's atmosphere.
+  const readout = buildAuricReadout(auricMeters);
+  bodyWrap.appendChild(readout);
+  if (readout._tickEl) bodyWrap.appendChild(readout._tickEl);
 
   // Chakra overlay — each chakra glows from within the body. Inside
   // .bf-body-wrap so left:50% / top:N% coordinates land on the figure.
@@ -4833,11 +3799,12 @@ function buildAuricRingsOverlay(auricMeters) {
   return root;
 }
 
-/* v1.9.9: Big glowing auric readout — HTML overlay so the text is
-   always crisp regardless of stage scale. Positioned above the body's
-   crown with a fine vertical tick line dropping toward the rings,
-   visually connecting "your field reaches 13.4 m" to the rings drawn
-   around the body. */
+/* v1.9.9 → v1.9.14: Big glowing auric readout. Now lives in the
+   BOTTOM-RIGHT quadrant of the body stage (was top-of-head). A
+   horizontal hairline tick runs leftward from the readout into the
+   body's atmosphere, anchoring the diameter notation to the halo
+   rings drawn around the body. Returns an array [readout, tick] so
+   the caller can append both to the body wrap. */
 function buildAuricReadout(auricMeters) {
   const r = el('div', { class: 'bf-auric-readout' });
   r.appendChild(el('span', { class: 'label', text: 'Field reaches' }));
@@ -4845,9 +3812,15 @@ function buildAuricReadout(auricMeters) {
   value.appendChild(el('strong', { text: auricMeters.toFixed(1) }));
   value.appendChild(document.createTextNode(' m'));
   r.appendChild(value);
-  // Connector tick — a thin gold gradient line dropping toward the
-  // outermost ring's top arc.
-  r.appendChild(el('span', { class: 'bf-auric-tick', 'aria-hidden': 'true' }));
+  r.appendChild(el('span', {
+    class: 'diameter-hint',
+    text: '◀  diameter of halo around body'
+  }));
+  // Hairline tick is a sibling so it can be positioned absolutely
+  // against the body wrap (not the readout). Caller appends both.
+  const tick = el('span', { class: 'bf-auric-tick', 'aria-hidden': 'true' });
+  // Tag tick onto readout via a property so the caller can find it.
+  r._tickEl = tick;
   return r;
 }
 
@@ -5178,7 +4151,18 @@ function renderSessionCard(slug, s) {
   const card = el('article', { class: 'session-card reveal', dataset: { slug } });
 
   const artWrap = el('div', { class: 'session-art' });
-  artWrap.appendChild(el('img', { src: s.art, alt: s.heading, loading: 'lazy' }));
+  // v1.9.14: decoding=async + onerror fallback to the chakra-tinted
+  // styled composition (same treatment as reserve cards). Lets us drop
+  // the 600×600 hero album-art jpg on cards whose art is missing without
+  // showing a broken image icon. The data-chakra attr drives the
+  // .session-art--no-image[data-chakra=*] gradient + glyph treatment.
+  const img = el('img', { src: s.art || '', alt: s.heading, loading: 'lazy', decoding: 'async' });
+  img.addEventListener('error', () => {
+    img.style.display = 'none';
+    artWrap.classList.add('session-art--no-image');
+    artWrap.dataset.chakra = (window.SLUG_TO_CHAKRA && window.SLUG_TO_CHAKRA[slug]) || (s.chakra || 'crown');
+  });
+  artWrap.appendChild(img);
   artWrap.appendChild(el('span', { class: 'ring-mask', 'aria-hidden': 'true' }));
   card.appendChild(artWrap);
 
@@ -5471,63 +4455,7 @@ function renderReserveList() {
    - Week 3 (heart-throat, coherence)   → vertical axis hairline + 2 dot markers
    - Week 4 (crown, integration)        → arc echoing a golden spiral
    ViewBox is 100x37.5 (matches 16:6 aspect at any width). */
-function buildPhaseBannerAccent(week) {
-  const root = svg('svg', {
-    class: 'phase-banner-accent',
-    viewBox: '0 0 100 37.5',
-    preserveAspectRatio: 'none',
-    'aria-hidden': 'true'
-  });
-  if (week === 1) {
-    // Horizon hairline near the bottom + 3 grounding marks
-    root.appendChild(svg('line', {
-      class: 'pba-line', x1: '8', y1: '28', x2: '92', y2: '28'
-    }));
-    [22, 50, 78].forEach(x => {
-      root.appendChild(svg('circle', {
-        class: 'pba-dot', cx: String(x), cy: '28', r: '0.5'
-      }));
-    });
-  } else if (week === 2) {
-    // Three sweeping arcs from the right edge — release/clearing motion
-    [10, 18, 26].forEach((dy) => {
-      root.appendChild(svg('path', {
-        class: 'pba-arc',
-        d: 'M 100 ' + dy + ' Q 50 ' + (dy + 6) + ' 0 ' + dy + ' '
-      }));
-    });
-  } else if (week === 3) {
-    // Vertical axis hairline + heart/throat dot markers
-    root.appendChild(svg('line', {
-      class: 'pba-line pba-line--vertical', x1: '50', y1: '4', x2: '50', y2: '34'
-    }));
-    root.appendChild(svg('circle', {
-      class: 'pba-dot pba-dot--heart', cx: '50', cy: '24', r: '1.4'
-    }));
-    root.appendChild(svg('circle', {
-      class: 'pba-dot pba-dot--throat', cx: '50', cy: '13', r: '1.4'
-    }));
-  } else if (week === 4) {
-    // Quarter-arc echoing a golden spiral, anchored upper-right
-    root.appendChild(svg('path', {
-      class: 'pba-spiral',
-      d: 'M 100 4 Q 80 4 70 14 T 55 30'
-    }));
-    // Small radiant dot at the spiral's terminal
-    root.appendChild(svg('circle', {
-      class: 'pba-dot pba-dot--spiral', cx: '55', cy: '30', r: '0.8'
-    }));
-  }
-  return root;
-}
-
-/* v1.9.0: Vertical-progressive week sections.
-   - All four weeks render as a continuous scroll; no tab interaction.
-   - Each week is a hero with: thematic visual (top, full-width banner)
-     + display-text week number + display-text title + body-text intent
-     + responds-to line + 4 session cards in a 2x2 grid + capture panel.
-   - Image renders from phase.art if present; otherwise a chakra-themed
-     gradient placeholder hints at the week's energetic register. */
+/* v1.9.14: function buildPhaseBannerAccent() deleted (orphan — not called anywhere). */
 function renderPhasePanels() {
   const root = document.getElementById('phases');
   while (root.firstChild) root.removeChild(root.firstChild);
@@ -5601,12 +4529,13 @@ function readWeekFromHash() {
   return m ? parseInt(m[1], 10) : 1;
 }
 
-/* v1.9.13: Build the WOW felt-sense selector that lives inside each
-   session card's After-the-session note block. Six segmented buttons
-   (1-5 + ✨ WOW). Selecting a pip writes to LS.wow, updates the
-   descriptor line below, marks the button active, and re-evaluates the
-   resolve-button gate so "See the reflection" only enables once both
-   notes have content AND a rating is selected. */
+/* v1.9.14: WOW felt-sense slider — true horizontal range input (1-6
+   where 6 = WOW). Lives inside each session card's After-the-session
+   note block. Dragging shows the value's long-form descriptor below.
+   "See the reflection" only enables once a rating is chosen. Six tick
+   labels run beneath the track (1 · 2 · 3 · 4 · 5 · ✨ WOW); the
+   currently-selected tick is gold. Replaces the v1.9.13 segmented
+   pip array. */
 function buildWowSelector(slug) {
   const wrap = el('div', { class: 'wow-selector', dataset: { slug } });
 
@@ -5621,8 +4550,7 @@ function buildWowSelector(slug) {
   header.appendChild(infoBtn);
   wrap.appendChild(header);
 
-  // Inline explainer (collapsed by default). Condensed from
-  // ~/Desktop/Opus/Connect/skills/reflections-and-patterns/SKILL.md.
+  // Inline explainer (collapsed by default).
   const explainer = el('div', { class: 'wow-explainer' });
   explainer.appendChild(el('p', { text: 'WOW isn’t the top of a linear scale — it’s a categorical shift into a state where the feeling exceeds language. In deeply immersive states, the brain’s language centers can quiet while sensory and emotional networks become more active.' }));
   explainer.appendChild(el('p', { class: 'wow-explainer-cite', text: '“When words come later, WOW was already happening.”' }));
@@ -5634,37 +4562,73 @@ function buildWowSelector(slug) {
     infoBtn.classList.toggle('open');
   });
 
-  const pipsRow = el('div', { class: 'wow-pips', role: 'radiogroup', 'aria-label': 'Felt-sense rating' });
+  // Track wrap holds the range input + the six visible tick labels.
+  // The range starts unset (no value) — class .wow-track--unset hides
+  // the thumb's gold ring until the user touches it, so a first-time
+  // user sees a neutral track rather than a pre-claimed rating.
+  const trackWrap = el('div', { class: 'wow-track-wrap wow-track--unset' });
+
+  const range = el('input', {
+    class: 'wow-range',
+    type: 'range',
+    min: '1', max: '6', step: '1',
+    value: '3',
+    'aria-label': 'Felt-sense rating from 1 to WOW',
+    dataset: { slug }
+  });
+  trackWrap.appendChild(range);
+
+  const ticksRow = el('div', { class: 'wow-ticks', 'aria-hidden': 'true' });
   [1,2,3,4,5,6].forEach(v => {
-    const pip = el('button', {
-      class: 'wow-pip' + (v === 6 ? ' wow-pip--wow' : ''),
-      type: 'button',
-      role: 'radio',
-      'aria-checked': 'false',
-      dataset: { slug, value: String(v) },
+    const t = el('span', {
+      class: 'wow-tick' + (v === 6 ? ' wow-tick--wow' : ''),
+      dataset: { value: String(v) },
       text: v === 6 ? '✨ WOW' : String(v)
     });
-    pip.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const all = getWow();
-      all[slug] = v;
-      saveWow(all);
-      // visual update
-      pipsRow.querySelectorAll('.wow-pip').forEach(p => {
-        const isSel = (Number(p.dataset.value) === v);
-        p.classList.toggle('wow-pip--selected', isSel);
-        p.setAttribute('aria-checked', isSel ? 'true' : 'false');
-      });
-      desc.textContent = WOW_LABELS[v].long;
-      desc.classList.add('visible');
-      updateResolveButton(slug);
-    });
-    pipsRow.appendChild(pip);
+    ticksRow.appendChild(t);
   });
-  wrap.appendChild(pipsRow);
+  trackWrap.appendChild(ticksRow);
+
+  wrap.appendChild(trackWrap);
 
   const desc = el('div', { class: 'wow-descriptor', 'aria-live': 'polite' });
   wrap.appendChild(desc);
+
+  // Update descriptor + tick highlight + persistence. `commit=true` saves
+  // to LS and re-evaluates the resolve gate; `commit=false` is a live
+  // preview during drag.
+  function applyValue(v, commit) {
+    const val = Math.max(1, Math.min(6, Number(v) | 0));
+    trackWrap.classList.remove('wow-track--unset');
+    trackWrap.classList.toggle('wow-track--wow', val === 6);
+    ticksRow.querySelectorAll('.wow-tick').forEach(t => {
+      t.classList.toggle('wow-tick--active', Number(t.dataset.value) === val);
+    });
+    desc.textContent = WOW_LABELS[val].long;
+    desc.classList.add('visible');
+    if (commit) {
+      const all = getWow();
+      all[slug] = val;
+      saveWow(all);
+      updateResolveButton(slug);
+    }
+  }
+
+  // Live drag — preview only. Commit on change (release).
+  range.addEventListener('input', (e) => {
+    e.stopPropagation();
+    applyValue(range.value, false);
+  });
+  range.addEventListener('change', (e) => {
+    e.stopPropagation();
+    applyValue(range.value, true);
+  });
+  // First click on an untouched track should commit (mobile single-tap).
+  range.addEventListener('pointerup', (e) => {
+    if (trackWrap.classList.contains('wow-track--unset')) {
+      applyValue(range.value, true);
+    }
+  });
 
   return wrap;
 }
@@ -6479,18 +5443,24 @@ function loadNotesIntoUI() {
   });
 }
 
-/* v1.9.13: Restore the WOW selection per session card from localStorage
-   on page load. Marks the matching pip active and shows its descriptor. */
+/* v1.9.13/.14: Restore the WOW selection per session card from
+   localStorage on page load. Sets the slider thumb position, ticks,
+   and descriptor. */
 function loadWowIntoUI() {
   const wowMap = getWow();
   document.querySelectorAll('.wow-selector').forEach(sel => {
     const slug = sel.dataset.slug;
     const v = wowMap[slug];
     if (!Number.isInteger(v) || v < 1 || v > 6) return;
-    sel.querySelectorAll('.wow-pip').forEach(p => {
-      const isSel = (Number(p.dataset.value) === v);
-      p.classList.toggle('wow-pip--selected', isSel);
-      p.setAttribute('aria-checked', isSel ? 'true' : 'false');
+    const range = sel.querySelector('input.wow-range');
+    const trackWrap = sel.querySelector('.wow-track-wrap');
+    if (range) range.value = String(v);
+    if (trackWrap) {
+      trackWrap.classList.remove('wow-track--unset');
+      trackWrap.classList.toggle('wow-track--wow', v === 6);
+    }
+    sel.querySelectorAll('.wow-tick').forEach(t => {
+      t.classList.toggle('wow-tick--active', Number(t.dataset.value) === v);
     });
     const desc = sel.querySelector('.wow-descriptor');
     if (desc && WOW_LABELS[v]) {
