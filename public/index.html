@@ -340,7 +340,19 @@ main { position: relative; z-index: 2; }
   display: flex; flex-direction: column;
   gap: 14px;
   z-index: 2;
+  /* v1.9.17: slide in from right alongside the chakra build-in. */
+  animation: pane-slide-in 800ms 600ms cubic-bezier(.2,.8,.2,1) backwards;
 }
+@keyframes pane-slide-in {
+  0%   { opacity: 0; transform: translateX(28px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.bf-stage-pane > * + * {
+  /* Cascade — each card lands ~150ms after the previous one. */
+  animation: pane-slide-in 700ms cubic-bezier(.2,.8,.2,1) backwards;
+  animation-delay: 800ms;
+}
+.bf-stage-pane > *:nth-child(2) { animation-delay: 950ms; }
 @media (max-width: 720px) {
   /* Mobile: stage shrinks; side pane flows below. */
   .bf-stage-pane {
@@ -373,8 +385,19 @@ main { position: relative; z-index: 2; }
   stroke-width: 0.24;
   stroke-dasharray: 0.5 0.8;
   vector-effect: non-scaling-stroke;
-  animation: bf-auric-ring-breath 10910ms ease-in-out infinite;
+  /* v1.9.17: spiral build-in — rings bloom outward in sequence,
+     innermost first (the spiral visual: field rippling out from heart).
+     Chained with the breath. Delay set inline per ring (--ring-i index). */
+  animation:
+    ring-spiral-in 1000ms cubic-bezier(.2,.8,.2,1) backwards,
+    bf-auric-ring-breath 10910ms ease-in-out infinite;
+  animation-delay: calc(var(--ring-i, 0) * 200ms), calc(var(--ring-i, 0) * 200ms + 1000ms);
   transform-origin: 36% 29%;
+}
+@keyframes ring-spiral-in {
+  0%   { opacity: 0; transform: scale(0.15); }
+  60%  { opacity: 0.85; transform: scale(1.06); }
+  100% { opacity: 0.55; transform: scale(1); }
 }
 .bf-auric-ring--user {
   /* v1.9.14: brightest outer ring = user's measured extent. Gold glow. */
@@ -415,6 +438,16 @@ main { position: relative; z-index: 2; }
   text-align: right;
   white-space: nowrap;
   pointer-events: none;
+  /* v1.9.17: fade up after the rings + chakras have built in (~1.4s). */
+  animation: readout-fade-up 700ms 1400ms cubic-bezier(.2,.8,.2,1) backwards;
+}
+@keyframes readout-fade-up {
+  0%   { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+/* v1.9.17: the hairline diameter tick fades in alongside the readout. */
+.bf-auric-tick {
+  animation: readout-fade-up 700ms 1500ms cubic-bezier(.2,.8,.2,1) backwards;
 }
 .bf-auric-readout .label {
   display: block;
@@ -480,6 +513,146 @@ main { position: relative; z-index: 2; }
   pointer-events: none;
   z-index: 3;
 }
+
+/* ============================================================
+   v1.9.17: tap-a-chakra callout + first-time prompt.
+   - .bf-chakra-callout: panel overlaying lower-left of the stage,
+     showing the tapped chakra's name + state + reading note.
+   - .bf-chakra-hint: pulsing "tap a center" affordance that drifts
+     near the radiant chakra after build-in. Hides on first tap.
+   ============================================================ */
+.bf-chakra-callout {
+  position: absolute;
+  left: 4%; bottom: 6%;
+  width: clamp(220px, 38%, 320px);
+  z-index: 6;
+  padding: 14px 16px;
+  background: rgba(11,8,15,0.86);
+  border: 1px solid color-mix(in srgb, var(--callout-hue, var(--gold)) 45%, transparent);
+  border-left: 2px solid var(--callout-hue, var(--gold));
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 12px 36px -12px rgba(0,0,0,0.55), 0 0 24px color-mix(in srgb, var(--callout-hue, var(--gold)) 18%, transparent);
+  color: var(--light);
+  pointer-events: auto;
+  animation: callout-rise 280ms cubic-bezier(.2,.8,.2,1) backwards;
+}
+.bf-chakra-callout--closing { animation: callout-fall 200ms ease-in forwards; }
+@keyframes callout-rise {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes callout-fall {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(8px) scale(0.98); }
+}
+.bf-chakra-callout-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.bf-chakra-callout-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 19px;
+  color: var(--light);
+}
+.bf-chakra-callout-state {
+  font-size: 10px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--callout-hue, var(--gold));
+  font-style: italic;
+}
+.bf-chakra-callout-note {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.82);
+}
+.bf-chakra-callout-close {
+  position: absolute;
+  top: 8px; right: 10px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: color .2s;
+}
+.bf-chakra-callout-close:hover { color: var(--light); }
+
+/* Per-chakra hue inheritance into the callout (the callout's left-border
+   + accent text picks up the tapped chakra's hue). */
+.bf-chakra-callout[data-chakra="root"]      { --callout-hue: rgb(220, 90, 90); }
+.bf-chakra-callout[data-chakra="sacral"]    { --callout-hue: rgb(240,147, 94); }
+.bf-chakra-callout[data-chakra="solar"]     { --callout-hue: rgb(255,215,100); }
+.bf-chakra-callout[data-chakra="heart"]     { --callout-hue: rgb(120,210,140); }
+.bf-chakra-callout[data-chakra="throat"]    { --callout-hue: rgb(106,223,217); }
+.bf-chakra-callout[data-chakra="third-eye"] { --callout-hue: rgb(123,111,168); }
+.bf-chakra-callout[data-chakra="crown"]     { --callout-hue: rgb(194, 47,205); }
+
+/* First-time tap-hint: a small italic prompt that drifts near a chakra,
+   appears after build-in completes, and dismisses on first chakra tap.
+   Stored once-per-user via localStorage so we don't nag returners. */
+.bf-chakra-hint {
+  position: absolute;
+  top: var(--hint-top, 30%);
+  left: var(--hint-left, 50%);
+  transform: translate(-4px, -50%);
+  z-index: 4;
+  padding: 6px 12px 6px 14px;
+  background: rgba(11,8,15,0.78);
+  border: 1px solid rgba(255,215,100,0.42);
+  border-radius: 999px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: rgba(255,236,180,0.96);
+  white-space: nowrap;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 18px rgba(255,215,100,0.30);
+  animation:
+    hint-arrive 600ms 2000ms cubic-bezier(.2,.8,.2,1) backwards,
+    hint-pulse 2400ms 2600ms ease-in-out infinite;
+}
+.bf-chakra-hint::before {
+  /* Tiny arrow pointing toward the chakra (sits just to the left of the pill). */
+  content: '';
+  position: absolute;
+  left: -8px; top: 50%;
+  transform: translateY(-50%);
+  border-style: solid;
+  border-width: 5px 8px 5px 0;
+  border-color: transparent rgba(255,215,100,0.45) transparent transparent;
+}
+.bf-chakra-hint--dismissed {
+  animation: hint-leave 320ms ease-in forwards;
+  pointer-events: none;
+}
+@keyframes hint-arrive {
+  0%   { opacity: 0; transform: translate(8px, -50%); }
+  100% { opacity: 1; transform: translate(-4px, -50%); }
+}
+@keyframes hint-pulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(255,215,100,0.30); border-color: rgba(255,215,100,0.42); }
+  50%      { box-shadow: 0 0 30px rgba(255,215,100,0.55); border-color: rgba(255,215,100,0.75); }
+}
+@keyframes hint-leave {
+  0%   { opacity: 1; }
+  100% { opacity: 0; transform: translate(-12px, -50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-chakra-hint { animation: hint-arrive 1ms backwards; }
+}
+
 .bf-body-image {
   /* v1.9.4: image fills its parent .bf-body-wrap, which is aspect-locked
      to 703/1024 so the figure never crops. */
@@ -526,8 +699,18 @@ main { position: relative; z-index: 2; }
    - a state-specific border style + per-state animation (see rules
      below) so the diagnostic state is visually identifiable at a
      glance without needing labels.
-   Sizes scale with --amp (0.30 undercharged → 1.0 radiant). */
+   Sizes scale with --amp (0.30 undercharged → 1.0 radiant).
+   v1.9.17: tappable — click opens a callout panel with the reading's
+   note for that chakra. Active chakra brightens; siblings dim. */
 .bf-chakra-glow-pt {
+  /* v1.9.17: element is now a <button> so it's keyboard-focusable and
+     announces "tap to read" to screen readers. Reset the UA button
+     defaults so the visual is unchanged. */
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
+  margin: 0; padding: 0;
   position: absolute;
   top: var(--top); left: var(--left);
   width: calc(34px + 30px * var(--amp));
@@ -548,6 +731,37 @@ main { position: relative; z-index: 2; }
     0 0 calc(30px + 36px * var(--amp)) color-mix(in srgb, var(--hue) calc(20% + 20% * var(--amp)), transparent);
   opacity: 0.95;
   will-change: transform, opacity, filter;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: filter 200ms ease, opacity 200ms ease;
+}
+/* v1.9.17: invisible larger hit target via pseudo-element so the chakra
+   stays tappable on touch devices even when the disc itself is small. */
+.bf-chakra-glow-pt::before {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+}
+/* Tap-active state: this chakra reads brighter, siblings dim. */
+.bf-body-wrap.has-active-chakra .bf-chakra-glow-pt:not(.is-active) {
+  opacity: 0.32;
+  filter: brightness(0.55) saturate(0.6) blur(0.5px);
+}
+.bf-chakra-glow-pt.is-active {
+  filter: brightness(1.15) saturate(1.1);
+  z-index: 5;
+}
+
+/* v1.9.17: BUILD-IN bloom for chakras on first mount.
+   Staggered root → crown so the body lights up from the ground up —
+   a felt sense of an energetic spiral ascending. Chained with the
+   per-state breath animation below (the breath kicks in once bloom
+   completes). */
+@keyframes chakra-build-bloom {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+  60%  { opacity: 0.96; transform: translate(-50%, -50%) scale(1.18); }
+  100% { opacity: 0.95; transform: translate(-50%, -50%) scale(1); }
 }
 
 /* State: UNDERCHARGED — dim, contracted, faint reaching pulse. Energy
@@ -556,7 +770,9 @@ main { position: relative; z-index: 2; }
   border-style: dashed;
   border-width: 1px;
   opacity: 0.70;
-  animation: bf-chakra-undercharged 7200ms ease-in-out infinite;
+  animation:
+    chakra-build-bloom 900ms cubic-bezier(.2,.8,.2,1) backwards,
+    bf-chakra-undercharged 7200ms ease-in-out infinite;
 }
 @keyframes bf-chakra-undercharged {
   0%, 100% { transform: translate(-50%, -50%) scale(0.78); filter: brightness(0.7) saturate(0.85); }
@@ -566,7 +782,9 @@ main { position: relative; z-index: 2; }
 /* State: STABILIZING — slow even pulse, finding its rhythm. */
 .bf-chakra-glow-pt[data-state="stabilizing"] {
   border-width: 1.5px;
-  animation: bf-chakra-stabilizing 8000ms ease-in-out infinite;
+  animation:
+    chakra-build-bloom 900ms cubic-bezier(.2,.8,.2,1) backwards,
+    bf-chakra-stabilizing 8000ms ease-in-out infinite;
 }
 @keyframes bf-chakra-stabilizing {
   0%, 100% { transform: translate(-50%, -50%) scale(0.94); }
@@ -576,7 +794,9 @@ main { position: relative; z-index: 2; }
 /* State: HOLDING — settled, quiet. Very subtle breath. */
 .bf-chakra-glow-pt[data-state="holding"] {
   border-width: 1.5px;
-  animation: bf-chakra-holding 9500ms ease-in-out infinite;
+  animation:
+    chakra-build-bloom 900ms cubic-bezier(.2,.8,.2,1) backwards,
+    bf-chakra-holding 9500ms ease-in-out infinite;
 }
 @keyframes bf-chakra-holding {
   0%, 100% { transform: translate(-50%, -50%) scale(0.98); }
@@ -589,7 +809,9 @@ main { position: relative; z-index: 2; }
 .bf-chakra-glow-pt[data-state="consolidating"] {
   border-style: dashed;
   border-width: 1.5px;
-  animation: bf-chakra-consolidating 5500ms ease-in-out infinite;
+  animation:
+    chakra-build-bloom 900ms cubic-bezier(.2,.8,.2,1) backwards,
+    bf-chakra-consolidating 5500ms ease-in-out infinite;
 }
 @keyframes bf-chakra-consolidating {
   0%   { transform: translate(-50%, -50%) scale(1.06); filter: brightness(1.0); }
@@ -606,7 +828,9 @@ main { position: relative; z-index: 2; }
     0 0 0 3px color-mix(in srgb, var(--hue) 25%, transparent),
     0 0 18px color-mix(in srgb, var(--hue) 70%, transparent),
     0 0 38px color-mix(in srgb, var(--hue) 40%, transparent);
-  animation: bf-chakra-clear 8500ms ease-in-out infinite;
+  animation:
+    chakra-build-bloom 900ms cubic-bezier(.2,.8,.2,1) backwards,
+    bf-chakra-clear 8500ms ease-in-out infinite;
 }
 @keyframes bf-chakra-clear {
   0%, 100% { filter: brightness(1.0) saturate(1.0); }
@@ -622,7 +846,9 @@ main { position: relative; z-index: 2; }
     0 0 0 2.5px color-mix(in srgb, var(--hue) 45%, transparent),
     0 0 24px color-mix(in srgb, var(--hue) 60%, transparent),
     0 0 48px color-mix(in srgb, var(--hue) 32%, transparent);
-  animation: bf-chakra-carrying 10800ms ease-in-out infinite;
+  animation:
+    chakra-build-bloom 900ms cubic-bezier(.2,.8,.2,1) backwards,
+    bf-chakra-carrying 10800ms ease-in-out infinite;
 }
 @keyframes bf-chakra-carrying {
   0%, 100% { transform: translate(-50%, -50%) scale(0.96); filter: brightness(0.94); }
@@ -638,7 +864,9 @@ main { position: relative; z-index: 2; }
     0 0 32px color-mix(in srgb, var(--hue) 80%, transparent),
     0 0 64px color-mix(in srgb, var(--hue) 50%, transparent),
     0 0 96px color-mix(in srgb, var(--hue) 28%, transparent);
-  animation: bf-chakra-radiant 6500ms ease-in-out infinite;
+  animation:
+    chakra-build-bloom 900ms cubic-bezier(.2,.8,.2,1) backwards,
+    bf-chakra-radiant 6500ms ease-in-out infinite;
 }
 @keyframes bf-chakra-radiant {
   0%, 100% { transform: translate(-50%, -50%) scale(0.92); filter: brightness(1.0); }
@@ -656,17 +884,18 @@ main { position: relative; z-index: 2; }
 .bf-chakra-glow-pt[data-chakra="throat"]    { --hue: rgb(106,223,217); }
 .bf-chakra-glow-pt[data-chakra="third-eye"] { --hue: rgb(123,111,168); }
 .bf-chakra-glow-pt[data-chakra="crown"]     { --hue: rgb(194, 47,205); }
-/* v1.9.10: per-chakra phase offsets. Each chakra now runs a state-specific
-   animation duration (5.5–10.8s), so these negative delays produce naturally
-   uncoordinated pulses across the body — the field reads as a living system
-   rather than seven simultaneous heartbeats. */
-.bf-chakra-glow-pt[data-chakra="root"]      { animation-delay:     0ms; }
-.bf-chakra-glow-pt[data-chakra="sacral"]    { animation-delay: -1559ms; }
-.bf-chakra-glow-pt[data-chakra="solar"]     { animation-delay: -3118ms; }
-.bf-chakra-glow-pt[data-chakra="heart"]     { animation-delay: -4677ms; }
-.bf-chakra-glow-pt[data-chakra="throat"]    { animation-delay: -6236ms; }
-.bf-chakra-glow-pt[data-chakra="third-eye"] { animation-delay: -7795ms; }
-.bf-chakra-glow-pt[data-chakra="crown"]     { animation-delay: -9354ms; }
+/* v1.9.10/.17: per-chakra delays are now 2-value to cover both animations
+   in the chain. First value = build-in stagger (root→crown ascent, ~120ms
+   apart — the visual feel is energy rising up the body); second value =
+   breath-phase offset (negative; keeps the seven breaths from beating in
+   lockstep after the build-in completes). */
+.bf-chakra-glow-pt[data-chakra="root"]      { animation-delay: 200ms,  200ms; }
+.bf-chakra-glow-pt[data-chakra="sacral"]    { animation-delay: 320ms,  calc(320ms - 1559ms); }
+.bf-chakra-glow-pt[data-chakra="solar"]     { animation-delay: 440ms,  calc(440ms - 3118ms); }
+.bf-chakra-glow-pt[data-chakra="heart"]     { animation-delay: 560ms,  calc(560ms - 4677ms); }
+.bf-chakra-glow-pt[data-chakra="throat"]    { animation-delay: 680ms,  calc(680ms - 6236ms); }
+.bf-chakra-glow-pt[data-chakra="third-eye"] { animation-delay: 800ms,  calc(800ms - 7795ms); }
+.bf-chakra-glow-pt[data-chakra="crown"]     { animation-delay: 920ms,  calc(920ms - 9354ms); }
 
 /* v1.9.2: Featured portrait masthead — sits ABOVE the body-aurora stage.
    Ramon's face is the protagonist of the page; the body figure is the
@@ -2808,7 +3037,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.16';
+const VERSION = '1.9.17';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -2834,6 +3063,7 @@ function makeLS(slug) {
   return {
     notes:              slug + '.notes.v1',
     wow:                slug + '.wow.v1',            // v1.9.13: { <slug>: 1..6 } felt-sense rating per session
+    chakraHintSeen:     slug + '.chakraHintSeen.v1', // v1.9.17: '1' once user has tapped a chakra (hides tap-hint)
     field:              slug + '.field.v1',
     fieldHistory:       slug + '.field.history.v1',
     reflections:        slug + '.reflections.v1',
@@ -3706,23 +3936,60 @@ function buildBodyAuroraHero() {
 
   // Chakra overlay — each chakra glows from within the body. Inside
   // .bf-body-wrap so left:50% / top:N% coordinates land on the figure.
-  const overlay = el('div', { class: 'bf-chakra-overlay', 'aria-hidden': 'true' });
+  // v1.9.17: each glow is also tappable; click opens a callout panel
+  // with the reading's note for that chakra.
+  const overlay = el('div', { class: 'bf-chakra-overlay' });
+  let radiantPos = null;
   if (Array.isArray(CHAKRA_STATES)) {
     CHAKRA_STATES.forEach(c => {
       const pos = CHAKRA_IMAGE_POS[c.id];
       if (!pos) return;
       const v = CHAKRA_VISUAL[c.state] || { amp: 0.7 };
-      const glow = el('div', {
+      const glow = el('button', {
         class: 'bf-chakra-glow-pt',
-        dataset: { chakra: c.id, state: c.state }
+        type: 'button',
+        dataset: { chakra: c.id, state: c.state },
+        'aria-label': (c.label || c.id) + ' chakra — tap to read'
       });
       glow.style.setProperty('--top', pos.top + '%');
       glow.style.setProperty('--left', pos.left + '%');
       glow.style.setProperty('--amp', v.amp.toFixed(2));
+      glow.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openChakraCallout(c, bodyWrap, glow);
+      });
       overlay.appendChild(glow);
+      // Capture the most-radiant chakra position so we can park the
+      // tap-hint near it (most visually inviting target).
+      if (c.state === 'radiant' && !radiantPos) radiantPos = pos;
     });
   }
   bodyWrap.appendChild(overlay);
+
+  // v1.9.17: first-time tap-hint. Drifts in 2s after build, points at
+  // the radiant chakra (or heart if no radiant). Dismisses on any
+  // chakra tap. Persisted per slug so it doesn't nag returners.
+  const hintSeenKey = LS.chakraHintSeen;
+  const hintAlreadySeen = hintSeenKey && localStorage.getItem(hintSeenKey) === '1';
+  if (!hintAlreadySeen) {
+    const hintPos = radiantPos || CHAKRA_IMAGE_POS.heart || { top: 29, left: 36 };
+    const hint = el('div', {
+      class: 'bf-chakra-hint',
+      text: 'tap a center to read'
+    });
+    // Park the hint ~6% to the right of the chakra it points at.
+    hint.style.setProperty('--hint-top', hintPos.top + '%');
+    hint.style.setProperty('--hint-left', (hintPos.left + 6) + '%');
+    bodyWrap.appendChild(hint);
+  }
+
+  // Body-wrap-level click dismisses any open callout when clicking
+  // outside a chakra glow.
+  bodyWrap.addEventListener('click', (e) => {
+    if (e.target.closest('.bf-chakra-glow-pt') || e.target.closest('.bf-chakra-callout')) return;
+    closeChakraCallout(bodyWrap);
+  });
+
   stage.appendChild(bodyWrap);
 
   /* v1.9.4: Side pane absolutely overlays the right portion of the
@@ -3823,13 +4090,17 @@ function buildAuricRingsOverlay(auricMeters) {
   stops.forEach((frac, i) => {
     const r = maxR * frac;
     const isUser = (i === stops.length - 1);
-    root.appendChild(svg('circle', {
+    const circle = svg('circle', {
       class: 'bf-auric-ring' + (isUser ? ' bf-auric-ring--user' : ''),
       cx: String(cx),
       cy: String(cy),
       r: r.toFixed(1),
       fill: 'none'
-    }));
+    });
+    // v1.9.17: ring-i drives the spiral build-in stagger via CSS calc.
+    // Inner ring (i=0) blooms first, outer ring (i=3) blooms last.
+    circle.style.setProperty('--ring-i', String(i));
+    root.appendChild(circle);
   });
 
   return root;
@@ -3858,6 +4129,71 @@ function buildAuricReadout(auricMeters) {
   // Tag tick onto readout via a property so the caller can find it.
   r._tickEl = tick;
   return r;
+}
+
+/* v1.9.17: open a callout panel beside the body showing the reading's
+   note for the tapped chakra. The state-word + chakra label come from
+   the user's `chakraStates` entry; that's the same prose the reading
+   surfaced. Tapping another chakra swaps the callout; tapping outside
+   any glow closes it (handled on the body-wrap click listener).
+   Also persists "the user has interacted at least once" to LS so the
+   tap-hint stops appearing on future loads. */
+function openChakraCallout(chakra, bodyWrap, glowEl) {
+  // Mark the LS so the tap-hint stops appearing next visit, and dismiss
+  // any visible hint right now.
+  try { if (LS.chakraHintSeen) localStorage.setItem(LS.chakraHintSeen, '1'); } catch {}
+  const hint = bodyWrap.querySelector('.bf-chakra-hint');
+  if (hint && !hint.classList.contains('bf-chakra-hint--dismissed')) {
+    hint.classList.add('bf-chakra-hint--dismissed');
+    setTimeout(() => hint.remove(), 360);
+  }
+
+  // Close any existing callout (will swap to the new one).
+  closeChakraCallout(bodyWrap, /*skipActiveCleanup=*/true);
+
+  bodyWrap.classList.add('has-active-chakra');
+  bodyWrap.querySelectorAll('.bf-chakra-glow-pt').forEach(g => g.classList.remove('is-active'));
+  if (glowEl) glowEl.classList.add('is-active');
+
+  const callout = el('div', {
+    class: 'bf-chakra-callout',
+    dataset: { chakra: chakra.id },
+    role: 'dialog',
+    'aria-live': 'polite'
+  });
+  const head = el('div', { class: 'bf-chakra-callout-head' });
+  head.appendChild(el('div', { class: 'bf-chakra-callout-name', text: chakra.label || chakra.id }));
+  head.appendChild(el('div', { class: 'bf-chakra-callout-state', text: (chakra.state || '').replace(/-/g, ' ') }));
+  callout.appendChild(head);
+  callout.appendChild(el('div', {
+    class: 'bf-chakra-callout-note',
+    text: chakra.note || 'No note captured for this center in the reading.'
+  }));
+  const closeBtn = el('button', {
+    class: 'bf-chakra-callout-close',
+    type: 'button',
+    text: '×',
+    'aria-label': 'Close'
+  });
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeChakraCallout(bodyWrap);
+  });
+  callout.appendChild(closeBtn);
+  bodyWrap.appendChild(callout);
+}
+
+function closeChakraCallout(bodyWrap, skipActiveCleanup) {
+  if (!bodyWrap) return;
+  const existing = bodyWrap.querySelector('.bf-chakra-callout');
+  if (existing) {
+    existing.classList.add('bf-chakra-callout--closing');
+    setTimeout(() => { try { existing.remove(); } catch {} }, 220);
+  }
+  if (!skipActiveCleanup) {
+    bodyWrap.classList.remove('has-active-chakra');
+    bodyWrap.querySelectorAll('.bf-chakra-glow-pt.is-active').forEach(g => g.classList.remove('is-active'));
+  }
 }
 
 /* Expanded (sidecar) state — silhouette small + chakra column + ladders +
