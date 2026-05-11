@@ -2808,7 +2808,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.15';
+const VERSION = '1.9.16';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3567,6 +3567,25 @@ function buildPortraitImg(extraClass) {
    the expanded state. Log-mapped 174..963; renders 174 / 396 / 432 / 528
    (miracle, gold) / 639 / 741 / 963 along a single line. */
 /* v1.9.14: function buildSolfeggioStrip() deleted (orphan — not called anywhere). */
+
+/* v1.9.16: HAWKINS_TIERS table restored. It was accidentally swept up
+   in the v1.9.14 cleanup (lived adjacent to one of the orphan builders
+   that did get deleted), but hawkinsTier() below still references it
+   and the Calibration card on the body-aurora stage calls hawkinsTier
+   on every mount — without this constant the dashboard threw
+   "HAWKINS_TIERS is not defined" before appending the body image,
+   which is why the body figure was missing from the page since v1.9.14.
+   Source: Hawkins consciousness levels (raw numbers without a name read
+   as a score; tiers tell a story). */
+const HAWKINS_TIERS = [
+  { v: 200, name: 'Courage' },
+  { v: 350, name: 'Acceptance' },
+  { v: 400, name: 'Reason' },
+  { v: 500, name: 'Love' },
+  { v: 540, name: 'Joy' },
+  { v: 600, name: 'Peace' },
+  { v: 700, name: 'Enlightenment' }
+];
 function hawkinsTier(level) {
   if (typeof level !== 'number' || isNaN(level)) return { tier: 'Reason', frame: 'at' };
   // Find the tier the level is in or approaching
