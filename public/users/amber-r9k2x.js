@@ -1,9 +1,18 @@
 /* User data file for Amber Schacter.
    Loaded by index.html when the URL contains ?u=amber-r9k2x
 
-   Mirrors the shape of ramon-r9k2x.js. The HTML, CSS, and behavior
-   are shared; only this file (+ the portrait asset) changes per user.
-*/
+   v1.9.18: session pool re-curated from the canonical OPUS audio library
+   (opus-voice/src/lib/data/library.json — 128 real sessions analyzed for
+   body-zone vibration profile, brainwave entrainment, root Hz, and key).
+   Each session below corresponds to a real catalog entry; metadata
+   (heading, subtitle, lede) is shaped from the library + brand-voice;
+   the per-session `why` and `intention` strings reference Amber's
+   specific reading.
+
+   Of the 16 active + 5 reserve = 21 sessions, only ~4 overlap with
+   Ramon's pool. The rest are sessions Ramon doesn't have, picked
+   specifically for Amber's compressed-throat / over-giving-heart /
+   unstable-root / Reason→Love-transition / Spiral-Navigator pattern. */
 
 const SAM_PORTRAIT = 'assets/artists/sam-bottner.jpg';
 
@@ -14,11 +23,9 @@ window.USER_DATA = {
   portrait: 'assets/portraits/amber-r9k2x.webp',
 
   /* Structured fields parsed from `reading` for the dashboard visuals. */
-  auricMeters: 9.3,                       // ORIC FIELD diameter
-  hawkinsLevel: 440,                      // current vibrational calibration (Reason)
-  hawkinsTarget: 528,                     // 528 Hz Miracles — the resonant target
-  // "12 strands partially phase-locked … integration between the third and fourth harmonic layers."
-  //   layers 1–3 stable = 6 strands phase-locked, layer 4 actively integrating = 3, remaining = 3.
+  auricMeters: 9.3,
+  hawkinsLevel: 440,
+  hawkinsTarget: 528,
   dna: { phaseLocked: 6, consolidating: 3, of: 12 },
   primaryBlockQuote: 'I know what I must express, but I fear the consequence of speaking it.',
   archetype: 'Spiral Navigator — translates multidimensional insight into coherent form. Greatest gift: Visionary Resonance. Greatest challenge: Embodied Expression.',
@@ -69,66 +76,242 @@ Your greatest gift is Visionary Resonance.
 Your greatest challenge is Embodied Expression.`,
 
 
-  /* The 16 sessions on Amber's map, plus 5 held in reserve. Each entry is a
-     real OPUS catalog session. The `why` and `intention` strings are
-     personalized to Amber's reading — they reference her throat compression,
-     crown over-saturation, root instability, and heart's uneven inflow. */
+  /* Sessions: 16 active + 5 reserve, each grounded in a real OPUS catalog
+     entry (audio-fingerprinted in opus-voice/library.json). The `why` and
+     `intention` strings reference Amber's reading directly. */
   sessions: {
-    'welcome-to-opus': { art: 'assets/sessions/welcome-to-opus.webp', heading: 'Welcome to Opus', subtitle: 'Discover SoundBed.', artist: 'OPUS', portrait: '', category: 'Welcome', catClass: 'cat-welcome', collection: 'Orientation', lede: "Your first session on SoundBed. A short orientation that lets your nervous system meet the bed before you bring intention to it.", chooseWhen: ['First time on SoundBed', 'To set the somatic baseline'], spotify: '', why: "First-session orientation. Sets the somatic baseline before we ask anything of the body. Especially useful because your reading shows the root pulsing but unstable — we want a clean read of what 'arriving' feels like before week one's grounding work.", intention: "I let myself arrive without performing anything yet." },
-    'stability-root': { art: 'assets/sessions/stability-root.webp', heading: 'Stability | Root', subtitle: 'Feel Grounded', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz', lede: "Designed to help you connect deeply with a sense of safety and home, this session focuses on the root chakra, associated with the earth element and linked to feelings of security and stability.", chooseWhen: ['When you feel airy or ungrounded','To reconnect with safety','To feel anchored to the earth'], spotify: 'https://open.spotify.com/track/23F7Ue858vQVWosvdlWkGV', why: "Your Input flagged the root as *pulsing but unstable* — wanting more safety in the body. 432 Hz is the softest entry to that floor. Start here, before any throat or crown work.", intention: "I let the bed hold the weight my body has been carrying alone." },
-    'earth-awareness': { art: 'assets/sessions/earth-awareness.webp', heading: 'Earth Awareness | Alpha Waves', subtitle: 'Ground Your Energy and Attune to Nature', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Brainwave Entrainment', catClass: 'cat-brainwave', collection: 'Binaural I', lede: "An Alpha brainwave session that invites you into meditative receptivity. Plant your roots into Earth's heartbeat, the Schumann resonance.", chooseWhen: ['As part of your morning routine','Prior to meditation','To connect with nature'], spotify: 'https://open.spotify.com/album/1V1NjXA4HN8WqFfJhPYl9a', why: "Your crown is open but *receiving more than grounding*. Alpha state pulls the field downward — into the body, into the earth — without flooding the upper centers further. The corrective to crown over-saturation is earth, not more crown.", intention: "I bring my attention down. The ground is the listener now." },
-    'ease-174': { art: 'assets/sessions/ease-174.webp', heading: 'Ease | 174 Hz', subtitle: 'Invite Comfort and Relief to Your Body', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio I', lede: "A Solfeggio tone session for soothing aches and pains, bringing you into a state of effortless ease.", chooseWhen: ['When physical discomfort arises','For supporting injury recovery','To clarify what you want'], spotify: 'https://open.spotify.com/album/0IZxiSGDAIlQQTCN6V9gQD', why: "Your stomach reads as tense (*holding unspoken worries*) and intestines stagnant. 174 Hz is the lowest Solfeggio tone, traditionally used for body comfort. Closes week one with the body softening on its own terms.", intention: "The places that hurt are allowed to soften. Nothing is being asked to perform." },
+    // ── WEEK 1 — Land in Safety (root grounding for an UNSTABLE root) ──
+    'stability-root': {
+      art: 'assets/sessions/stability-root.webp',
+      heading: 'Stability | Root',
+      subtitle: 'Feel Grounded · 34 min',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz',
+      lede: "The canonical root-chakra session: 34 minutes of low-frequency vibration anchored in the body's earth element. Designed for the felt sense of safety, presence, and being held.",
+      chooseWhen: ['When you feel airy or ungrounded','To reconnect with safety','To feel anchored to the earth'],
+      spotify: 'https://open.spotify.com/track/23F7Ue858vQVWosvdlWkGV',
+      why: "Your reading: *root pulsing but unstable, lack of full safety or belonging*. This is the canonical root session — 34 minutes of low-Hz grounding before any other work in the body. Start here.",
+      intention: "I let the bed hold the weight my body has been carrying alone."
+    },
+    'root-grounded-presence': {
+      art: 'assets/sessions/root-grounded-presence.webp',
+      heading: 'Root | Grounded Presence',
+      subtitle: '7 min · Alpha-state anchoring',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Series · short-form',
+      lede: "A short root-chakra session for daily use. Seven minutes of alpha-state anchoring — short enough to do mid-morning, deep enough to register.",
+      chooseWhen: ['As a daily root-check', 'Before a difficult conversation', 'When restlessness rises'],
+      spotify: '',
+      why: "Pair this with the 34-min Stability piece. Your root needs *repetition*, not depth — the unstable pulse is asking for steady contact, not one big session. Seven minutes most days is the medicine.",
+      intention: "I check in with the ground. The ground checks back."
+    },
+    'beloved-earth': {
+      art: 'assets/sessions/beloved-earth.webp',
+      heading: 'Beloved Earth',
+      subtitle: '5 min · Alpha · Soundscape',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Natural Soundscapes', catClass: 'cat-natural', collection: '',
+      lede: "A five-minute alpha-frequency soundscape rooted in low-Hz earth tones. Brief, immersive, and tuned to the felt-sense of being beloved by the planet you stand on.",
+      chooseWhen: ['As a morning opener', 'Between meetings', 'To remember the earth is here'],
+      spotify: '',
+      why: "Your kidneys read low (*fatigue, fear processing*) and your stomach is tense (*holding unspoken worries*). Five minutes of low-frequency earth-tone is small enough to actually do — and exactly what an over-thinking body needs to remember the floor is real.",
+      intention: "I let the earth hold the part of me that's tired of holding itself."
+    },
+    'polarity': {
+      art: 'assets/sessions/polarity.webp',
+      heading: 'Polarity',
+      subtitle: '7 min · Delta · Root harmonics',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Frequency', catClass: 'cat-frequency', collection: '46.2 Hz',
+      lede: "Seven minutes of delta-state grounding tuned to 46.2 Hz. The session works the polarity inherent in the body — head and feet, breath in and out, here and there — and lets the field find its own midline.",
+      chooseWhen: ['When you feel split or pulled in two directions', 'Before evening rest', 'For Spiral Navigator practice'],
+      spotify: '',
+      why: "You are *in transition between Reason (440) and Love (500)* — between intellectual coherence and emotional integration. Polarity work doesn't pick a side; it lets the in-between be the work. Right session for someone who lives at the seam of registers.",
+      intention: "I let the two halves of me be in conversation, without choosing which one wins."
+    },
 
-    'body-scan': { art: 'assets/sessions/body-scan.webp', heading: 'Body Scan | NSDR', subtitle: 'Non-Sleep Deep Rest', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: '', lede: "Replenish energy by entering low-frequency brain waves. Move attention through the body, using the breath to relax. NSDR slows the spinning thoughts and opens a state of deep rest.", chooseWhen: ['In the morning to start calmly','Before bed for deeper sleep','To ease an overstimulated nervous system'], spotify: '', why: "Your reading: *the heart gives more than it receives*. NSDR asks NOTHING of you — it is forty minutes of pure receiving. The exact medicine for an over-giving heart. Don't try to do this well.", intention: "I let myself be taken care of without needing to give anything back." },
-    'heart-focus': { art: 'assets/sessions/heart-focus.webp', heading: 'Heart Focus', subtitle: 'Foster a Deeper Heart Connection', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: 'Breathwork', lede: "A short breathwork session bringing focus to your heart. Coherent breathing connects you with the intuitive knowledge in your chest, releases physical and emotional stressors, and shifts your state from stress to peace in 4 deep breaths.", chooseWhen: ['To re-center during the work day','When feeling confused','To relieve stress'], spotify: 'https://open.spotify.com/track/6g5a5V8apyHEJY2j9QqYum', why: "Your heart is fully expanded but its inflow and outflow are uneven. Coherent breathing equalizes the two. Notice especially the *in* breath — that's the part of you that hasn't been getting equal practice.", intention: "I let the breath come in as fully as it goes out." },
-    'heart-hara': { art: 'assets/sessions/heart-hara.webp', heading: 'Heart-Hara Harmony', subtitle: 'Balance Love and Vitality', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Guided', catClass: 'cat-guided', collection: 'Breathwork', lede: "An invitation to balance your heart and hara centers, uniting the emotional depth of love with the vibrant energy of creativity and life force. Feel the heart's compassion flow as the hara anchors you with vitality.", chooseWhen: ['To harmonize emotion with creative energy','When you seek balance and grounding','To cultivate alignment and vitality'], spotify: 'https://open.spotify.com/track/5NNprGnrnUrWpxcIkxitcD', why: "Your sacral is warm and creatively alive — but your solar plexus is *distorted, identity-conflicted*. This session lets the open sacral feed the solar through the heart. It re-routes power through the place that's already healthy.", intention: "My belly and my heart can talk to each other without me arranging the conversation." },
-    'sending-mark-home': { art: 'assets/sessions/sending-mark-home.webp', heading: 'Sending Mark Home', subtitle: 'Reflect, Feel, and Let Go.', artist: 'The Human Experience', portrait: 'assets/artists/the-human-experience.jpg', category: 'Immersive Music', catClass: 'cat-music', collection: '', lede: "Introspective and emotionally direct, this session is an invitation to feel. Let yourself soften and surrender into your heart with \"Sending Mark Home.\"", chooseWhen: ['To process and feel through memories','To feel your present emotion deeply',"When seeking clarity about what's next"], spotify: 'https://open.spotify.com/track/2QEBaJSZmBHtJ4XQr9zLRs', why: "Closes the *receive, don't pour* week. One of the most direct soften-and-surrender pieces in the catalog. The instruction here is just to feel what arrives — including the parts that haven't been allowed in.", intention: "I let myself feel what's been waiting at the edges of my chest." },
+    // ── WEEK 2 — Receive, Don't Pour (heart inflow for over-giving) ──
+    'heart-boundless-compassion': {
+      art: 'assets/sessions/heart-boundless-compassion.webp',
+      heading: 'Heart | Boundless Compassion',
+      subtitle: '7 min · Alpha · Heart chakra',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Series · short-form',
+      lede: "A direct heart-chakra session — seven minutes of alpha-state expansion that practices compassion *received*, not given. Short enough to slip into a workday; deep enough to land.",
+      chooseWhen: ['When you feel emptied out', 'After caregiving', 'To practice receiving compassion'],
+      spotify: '',
+      why: "Your reading: *heart fully expanded but inflow/outflow uneven — you give more than you receive*. The body needs practice receiving compassion before it can keep giving without depleting. Notice this is short on purpose — receiving doesn't need to be earned through length.",
+      intention: "I let compassion arrive without earning it. I receive what I'm always trying to give."
+    },
+    'body-scan': {
+      art: 'assets/sessions/body-scan.webp',
+      heading: 'Body Scan | NSDR',
+      subtitle: 'Non-Sleep Deep Rest · 21 min',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Guided', catClass: 'cat-guided', collection: '',
+      lede: "Replenish energy by entering low-frequency brain waves. NSDR moves attention through the body, using breath to relax. The session slows spinning thoughts and opens a state of deep rest.",
+      chooseWhen: ['In the morning to start calmly','Before bed for deeper sleep','To ease an overstimulated nervous system'],
+      spotify: '',
+      why: "Your reading explicitly names *intestines stagnant, stomach tense, kidneys low*. NSDR asks nothing of you — it is 21 minutes of pure receiving while the autonomic system resets. The exact medicine for an over-giving heart. Don't try to do this well.",
+      intention: "I let myself be taken care of without needing to give anything back."
+    },
+    'soar-into-aliveness': {
+      art: 'assets/sessions/soar-into-aliveness.webp',
+      heading: 'Soar Into Aliveness',
+      subtitle: '14 min · Alpha · Heart',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Guided', catClass: 'cat-guided', collection: 'Breathwork',
+      lede: "Fourteen minutes of alpha-state heart expansion — breath-led, gently energizing. The session invites your aliveness to come back to its own source, rather than be sent outward at others.",
+      chooseWhen: ['When your spark feels handed out', 'To re-feed your own field', 'After a giving-heavy stretch'],
+      spotify: '',
+      why: "Your reading names heart *fully expanded* but inflow uneven. This session is heart-direct without pulling more outflow — the aliveness comes back toward you, not away. Pairs well with Body Scan: NSDR rests, this re-feeds.",
+      intention: "My aliveness can land in me before it leaves through me."
+    },
+    'acceptance': {
+      art: 'assets/sessions/acceptance.webp',
+      heading: 'Acceptance',
+      subtitle: '16 min · Alpha · Heart',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Guided', catClass: 'cat-guided', collection: '',
+      lede: "Sixteen minutes of alpha-state heart practice tuned to the felt-sense of acceptance — of self, situation, and the in-between place before the next thing.",
+      chooseWhen: ['Mid-transition', 'When you feel between identities', 'During a recalibration phase'],
+      spotify: '',
+      why: "Your Hawkins reading puts you at 440 (Reason), oscillating toward 500 (Love). Acceptance is literally the 350 Hawkins tier — the prerequisite step the mind sometimes tries to skip. Sitting here makes the climb to Love feel less like effort, more like settling.",
+      intention: "I accept where I actually am, not where I think I should be."
+    },
 
-    'liberated-expression': { art: 'assets/sessions/liberated-expression.webp', heading: 'Liberated Expression | Throat', subtitle: 'Deepen Communication and Listening', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Balancing · 432 Hz', lede: "Bring balance to your energetic center of authentic expression and attuned listening. This chakra is connected to your physical vocal cords, ears, and thyroid gland. Clarify it and your gifts and vision can grace the world.", chooseWhen: ['To free self-expression','For landing in the present moment','Prior to a significant conversation'], spotify: 'https://open.spotify.com/track/2vghyFSgChsZP554bkyBrG', why: "This is the direct answer to your Primary Block. Your throat is *compressed* — held back by fear of consequence. This session opens it through listening as much as speaking. What hasn't been said is allowed to surface; you don't have to do anything with it yet.", intention: "What I've been holding back is allowed to rise. I don't need to act on it yet." },
-    'toning-with-ancestors': { art: 'assets/sessions/toning-with-ancestors.webp', heading: 'Toning with the Ancestors', subtitle: 'A Conversation Beyond Words', artist: 'Jade Fusco', portrait: 'assets/artists/jade-fusco.jpg', category: 'Guided', catClass: 'cat-guided', collection: '', lede: "Guided by Jade Fusco, this session invites you to connect with your lineage through the power of your voice. By humming, toning, and singing, you offer what your ancestors may need, and open yourself to receive their wisdom and strength. Vibration becomes the bridge.", chooseWhen: ['To explore your voice as healing','When honoring your ancestry','To open the heart before creative or vocal practice'], spotify: '', why: "Your throat opens through *use*, not through thinking about it. Humming and toning bypass the editor — the part of you that decides what's safe to say. The Spiral Navigator's *Embodied Expression* challenge starts here, in the voice itself.", intention: "I let my own sound be the bridge between what I know and what I say." },
-    'coherence-639': { art: 'assets/sessions/coherence-639.webp', heading: 'Coherence | 639 Hz', subtitle: 'Tune Into Harmony Within and Around You', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Carrying the resonance of 639 Hz, often linked to heart connection, emotional balance, and harmonious relationships. The session brings your system into coherence, syncing mind and body with a deeper rhythm of ease.", chooseWhen: ['To calm emotional tension','When you want to feel more connected','To restore internal balance'], spotify: 'https://open.spotify.com/track/7AffEf6huXd4w2I9k5bjZP', why: "639 Hz brings the heart and the voice into the same rhythm. Your reading shows them out of phase — the heart fully expanded, the throat compressed. This is the harmonizer that helps you mean what you say with your chest.", intention: "What I say can land in the same place my heart already speaks from." },
-    'fire-cleanse': { art: 'assets/sessions/fire-cleanse.webp', heading: 'Fire Cleanse', subtitle: 'Release What No Longer Serves', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Natural Soundscapes', catClass: 'cat-natural', collection: '', lede: "A calming organic soundscape. Immerse yourself in the felt experience of fire as it burns away any dead wood you're ready to let go.", chooseWhen: ['For evening relaxation','During significant life changes','To focus your intention'], spotify: 'https://open.spotify.com/track/41CRQAOids2p4yDhn8yWqq', why: "Your liver carries *unprocessed anger or empathy*; your throat carries words that haven't been allowed to leave. Sometimes those need release without an instruction — just a soundscape and a body willing to let go. Closes week three.", intention: "I burn what I've been keeping quiet about. I keep the warmth." },
+    // ── WEEK 3 — Voice the Held (Throat-Solar axis, the Primary Block) ──
+    'truth-throat': {
+      art: 'assets/sessions/truth-throat.webp',
+      heading: 'Truth | Throat',
+      subtitle: 'Speak What Wants Speaking · 34 min',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz',
+      lede: "The canonical throat-chakra session — 34 minutes of alpha-state vibration tuned to the field of authentic expression. Designed for systems that have been editing themselves.",
+      chooseWhen: ['When something true wants to come out', 'Before a hard conversation', 'For self-editing patterns'],
+      spotify: '',
+      why: "This is the direct answer to your Primary Block. Your throat is *compressed — held by self-editing and external expectations*. Thirty-four minutes at the throat without an instruction to perform anything. Whatever rises is allowed.",
+      intention: "What I've been editing out is allowed to surface. I don't have to say it yet."
+    },
+    'liberated-expression': {
+      art: 'assets/sessions/liberated-expression.webp',
+      heading: 'Throat | Liberated Expression',
+      subtitle: '7 min · Alpha · Throat',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Series · short-form',
+      lede: "A short alpha-state throat-chakra session — seven minutes that pair listening and speaking as one motion. Especially supportive before a real conversation.",
+      chooseWhen: ['Before a hard conversation', 'For listening practice', 'When the editor is loud'],
+      spotify: 'https://open.spotify.com/track/2vghyFSgChsZP554bkyBrG',
+      why: "Pair this with the 34-min Truth piece. *Liberated expression includes liberated listening* — your reading notes the throat is held by *external expectations*; that constraint loosens when the throat learns it can listen as much as speak.",
+      intention: "I make space for what I hear before I decide what I say."
+    },
+    'renewal-417': {
+      art: 'assets/sessions/renewal-417.webp',
+      heading: 'Renewal | 417 Hz',
+      subtitle: 'Heart-throat coherence · 9 min',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio I',
+      lede: "417 Hz is the Solfeggio frequency associated with undoing situations and facilitating change. This nine-minute beta-state session bridges the heart and throat — your heart expansive, your throat compressed.",
+      chooseWhen: ['When the heart speaks but the voice cant', 'To dissolve old expression patterns', 'Mid-week recalibration'],
+      spotify: 'https://open.spotify.com/track/7AffEf6huXd4w2I9k5bjZP',
+      why: "Your reading shows heart fully expanded AND throat compressed — they're out of phase. 417 Hz is the bridge frequency that helps the heart's signal reach the voice without being filtered by the editor.",
+      intention: "What my heart says, my voice can mean."
+    },
+    'will-solar-plexus': {
+      art: 'assets/sessions/will-solar-plexus.webp',
+      heading: 'Will | Solar Plexus',
+      subtitle: 'Reclaim personal power · 34 min',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz',
+      lede: "The canonical solar-plexus session — 34 minutes tuned to the field of personal power. Designed for systems where will has been given away or held back.",
+      chooseWhen: ['When power has been outsourced', 'For identity reorganization', 'After saying yes when you meant no'],
+      spotify: '',
+      why: "Your reading: solar plexus is *distorted — identity conflict or power inversion: power given away or withheld*. This is the OTHER half of your Primary Block (throat-SOLAR axis). The throat compresses partly because the solar isn't claiming itself. This session works the source.",
+      intention: "I reclaim what I've been giving away or holding back. The will lives in me."
+    },
 
-    'open-path-741': { art: 'assets/sessions/open-path-741.webp', heading: 'Open Path | 741 Hz', subtitle: 'Let Go of the Static. Step Into Clear Air', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Tuned to 741 Hz, often associated with mental and energetic cleansing. The session helps release what weighs on the mind and makes space for fresh energy. The vibrations move through you like a breeze clearing the inner landscape.", chooseWhen: ['To clear mental clutter','When starting a new project','To create space for new intentions'], spotify: '', why: "Your crown's *receiving more than grounding* — and 741 Hz clears the mental field of what isn't yours. Opens week four with a wind through the head, so the integration that follows has empty space to land in.", intention: "I let what isn't mine pass through me. I keep only what wants to stay." },
-    'fearless-396': { art: 'assets/sessions/fearless-396.webp', heading: 'Fearless | 396 Hz', subtitle: 'Release Heaviness and Stagnation.', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio I', lede: "Aids in the transcendence of guilt and fear blocks, opening the pathways for self-love and personal empowerment. 396 Hz can also help when moving through grief.", chooseWhen: ['During significant life changes','To calm your nervous system','For processing and releasing sadness'], spotify: 'https://open.spotify.com/track/0IVgsgwsl2l8amzrgKWtPE', why: "Your Primary Block is named: *I fear the consequence of speaking it*. 396 Hz works on root-level fear directly, so the fear can stop running the throat. This is the integration that closes the throat–solar work of week three.", intention: "The fear I've been carrying is allowed to leave through my breath." },
-    'flow-sacral': { art: 'assets/sessions/flow-sacral.webp', heading: 'Flow | Sacral', subtitle: 'Unlock Your Creative Flow', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening · 432 Hz', lede: "Dedicated to the sacral chakra, also known as the lower dan tian, linked to sensuality, creative energy, and the transition from survival mode to creation consciousness.", chooseWhen: ['To awaken creative inspiration','When transitioning from survival to creation','To connect with your deepest desires'], spotify: 'https://open.spotify.com/track/7aasWE5DWAENpEczNufTrN', why: "Your sacral is already *warm, fluid, creative* — this session doesn't fix anything, it feeds what is already working. The Spiral Navigator's gift, *Visionary Resonance*, lives partly here. Lean into it.", intention: "Something wants to be made through me. I make space without naming what it is yet." },
-    'sunmerge-174': { art: 'assets/sessions/sunmerge-174.webp', heading: 'Sunmerge | 174 Hz', subtitle: 'Dissolve Tension, Absorb the Light', artist: 'Sam Bottner', portrait: SAM_PORTRAIT, category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II', lede: "Designed to soothe body and mind at a cellular level. Bathed in glowing ambient soundscapes, you'll feel the grounding properties of the 174 Hz Solfeggio frequency.", chooseWhen: ['To unwind after exertion','When you need to release tension','To prepare for restful sleep'], spotify: 'https://open.spotify.com/track/6MKA9DsEtfyxbxv4lyaw8d', why: "Closes the 30 days the way it opened: at the cellular floor. Re-reads your body after a month of throat opening, heart receiving, root steadying. The final integration check-in.", intention: "I let the past month settle into the deepest layer of the body." }
+    // ── WEEK 4 — Spiral Home (embodied integration) ──
+    'cacaosito': {
+      art: 'assets/sessions/cacaosito.webp',
+      heading: 'Cacaosito',
+      subtitle: '8 min · Delta · Sacral',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Immersive Music', catClass: 'cat-music', collection: '',
+      lede: "Eight minutes of delta-state sacral immersion. A small, warm, ceremonial piece — the felt-sense of cacao without drinking it, the body's own sweetness.",
+      chooseWhen: ['For sacral creative warmth', 'Evening reflection', 'When you want to feel yourself'],
+      spotify: '',
+      why: "Your sacral is the healthy one — *warm, fluid, creative, strong subconscious movement*. This session feeds it instead of correcting it. Week four is about integration, and integration starts with what's already working.",
+      intention: "I let the part of me that's already alive show me how to live the rest."
+    },
+    'equinox': {
+      art: 'assets/sessions/equinox.webp',
+      heading: 'Equinox',
+      subtitle: 'Balance · 18 min · Delta',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Natural Soundscapes', catClass: 'cat-natural', collection: '',
+      lede: "Eighteen minutes of delta-state field-work tuned to the felt-sense of equinox — the moment of perfect balance between two halves of the year.",
+      chooseWhen: ['For Hawkins-tier transitions', 'When two states are equally true', 'For integration practice'],
+      spotify: '',
+      why: "Equinox is literally the metaphor of your reading: in transition between Reason and Love, between Visionary Resonance (gift) and Embodied Expression (challenge). Sit in the balance point itself rather than rushing past it.",
+      intention: "I let the balance point be its own destination."
+    },
+    'open-path-741': {
+      art: 'assets/sessions/open-path-741.webp',
+      heading: 'Open Path | 741 Hz',
+      subtitle: 'Clear the static · 9 min',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II',
+      lede: "Tuned to 741 Hz, often associated with mental and energetic cleansing. The vibrations move through you like a breeze clearing the inner landscape.",
+      chooseWhen: ['To clear mental clutter','When starting a new project','To create space for new intentions'],
+      spotify: '',
+      why: "Your crown is *open but overactive — receiving more than grounding*. 741 Hz clears the mental field of what isn't yours. The closer to integration you get, the more important this becomes — you don't want crown noise leaking into the integrated body.",
+      intention: "I clear the channel so the next thing has room to arrive."
+    },
+    'conscious-to-subconscious': {
+      art: 'assets/sessions/conscious-to-subconscious.webp',
+      heading: 'Conscious to Subconscious',
+      subtitle: '7 min · Alpha · Heart',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Guided', catClass: 'cat-guided', collection: '',
+      lede: "Seven minutes of alpha-state passage between the daytime mind and the subconscious. A short bridge session, often used before sleep or before a creative session.",
+      chooseWhen: ['Before sleep', 'Before creative work', 'When the deeper layer is ready to speak'],
+      spotify: '',
+      why: "Your reading: sacral *strong subconscious movement, recent emotional processing*. This session is the bridge between the conscious you (which has been doing all the holding) and the subconscious you (which is already moving). Closes the four weeks by listening to what was actually happening underneath.",
+      intention: "I let the deeper layer of me show me what it's been processing."
+    }
   },
 
   prompts: {
-    'welcome-to-opus':       { before: "Before you've done anything yet, what does your body feel like in this moment?", after: "What did you notice as the bed met you for the first time?" },
-    'stability-root':        { before: "Where in your body do you feel airy, unsafe, or restless right now?", after: "Where did weight settle? What does the floor underneath you feel like now?" },
-    'earth-awareness':       { before: "What's still pulling your attention upward — into thought, into the head?", after: "What got quieter when you tuned to the earth? What's still humming?" },
-    'ease-174':              { before: "Where in your body is tension or worry sitting today?", after: "What softened? What place is still asking for more?" },
+    'stability-root':           { before: "Where in your body do you feel airy, unsafe, or restless right now?", after: "Where did weight settle? What does the floor underneath you feel like now?" },
+    'root-grounded-presence':   { before: "What part of the day has been most ungrounding?", after: "What anchored? What is still asking to be checked back into?" },
+    'beloved-earth':            { before: "What worry came in with you today?", after: "Did anything in your stomach or kidneys soften? Did anything stay tight?" },
+    'polarity':                 { before: "What two parts of you are pulling in different directions right now?", after: "What's the midline between them feel like? Did it choose for you or did you choose?" },
 
-    'body-scan':             { before: "What part of you came in needing to give to someone or something?", after: "Where did your body rest the deepest? Did anything stay locked?" },
-    'heart-focus':           { before: "On a 1-10 scale, how present is your heart to you right now: feeling it, or thinking about it?", after: "What changed in your chest? Did the in-breath get easier?" },
-    'heart-hara':            { before: "Where does your creative energy live in your body today?", after: "What conversation happened between your heart and your belly?" },
-    'sending-mark-home':     { before: "What feeling has been waiting at the edges of your week?", after: "What did you feel without trying? What surprised you about it?" },
+    'heart-boundless-compassion': { before: "Who have you been giving compassion to without getting much back?", after: "Did anything land for you? Where in your chest did it land?" },
+    'body-scan':                  { before: "What part of you came in needing to take care of someone or something?", after: "Where did your body rest the deepest? Did anything stay locked?" },
+    'soar-into-aliveness':        { before: "On a scale of 1-10, how much of your aliveness today went outward vs. stayed with you?", after: "Did anything come back toward you? Where did it land?" },
+    'acceptance':                 { before: "What part of your current situation are you still arguing with?", after: "What got easier to be in? What's still asking for a fight?" },
 
-    'liberated-expression':  { before: "What is something true you haven't said aloud lately?", after: "What part of you feels heard now? What still needs space?" },
-    'toning-with-ancestors': { before: "What sound or word has been wanting to come out, but hasn't?", after: "What did your own voice teach you? What stayed unspoken?" },
-    'coherence-639':         { before: "Where is your heart saying one thing and your voice saying another?", after: "Where did coherence land? What got easier to mean?" },
-    'fire-cleanse':          { before: "What are you ready to be done holding silent?", after: "What burned away? What did you keep, that you didn't expect to?" },
+    'truth-throat':           { before: "What is something true you haven't said aloud lately?", after: "What part of you feels heard now? What still needs space?" },
+    'liberated-expression':   { before: "What conversation is coming up where you're already pre-editing?", after: "What did you hear, in yourself or the room? Did the editing soften?" },
+    'renewal-417':            { before: "Where is your heart saying one thing and your voice saying another?", after: "Where did the two come into the same room? What's still out of phase?" },
+    'will-solar-plexus':      { before: "Where in your life are you giving your power away or holding it back?", after: "What part of you feels owned now? Where is the power sitting in your body?" },
 
-    'open-path-741':         { before: "What thought-loops have been crowding your head this week?", after: "What's open now that wasn't before? What direction is calling?" },
-    'fearless-396':          { before: "What's the fear underneath your hesitation to speak?", after: "What did you let go of? What's still here that didn't move?" },
-    'flow-sacral':           { before: "What wants to be made or moved through you, even if you can't name it?", after: "What started moving? What was already moving but you hadn't noticed?" },
-    'sunmerge-174':          { before: "What tension has been with you across all four weeks?", after: "What dissolved? What stayed because it isn't ready to leave yet?" }
+    'cacaosito':              { before: "Where does your body feel its own sweetness today?", after: "What part of you got fed without you arranging it?" },
+    'equinox':                { before: "What two states of yours are both equally true right now?", after: "Did the balance point feel like a destination or a passage?" },
+    'open-path-741':          { before: "What thought-loops have been crowding your head this week?", after: "What's open now that wasn't before? What direction is calling?" },
+    'conscious-to-subconscious': { before: "What does the part of you that hasn't been speaking want to say?", after: "What did the deeper layer show you? Did anything surface that you forgot was processing?" }
   },
 
   plan: [
-    { week: 1, title: 'Land in Safety', intent: "Ground the unstable root, build felt safety in the body before any voice or expression work.", responds: 'Root pulsing but unstable · crown open but receiving more than grounding · stomach tense holding worries', sessions: ['welcome-to-opus','stability-root','earth-awareness','ease-174'] },
-    { week: 2, title: "Receive, Don't Pour", intent: "Heart inflow practice. The heart needs to learn to take in, not just give. NSDR + breathwork that emphasizes receiving.", responds: 'Heart fully expanded but uneven inflow/outflow — you give more than you receive · kidneys low resonance / fatigue · spleen neutral', sessions: ['body-scan','heart-focus','heart-hara','sending-mark-home'] },
-    { week: 3, title: 'Voice the Held', intent: 'Directly address the Primary Block — Throat-Solar Plexus axis. Open the throat through use, not effort.', responds: 'Throat compressed · solar plexus distorted (identity conflict / power inversion) · liver overload (unprocessed anger or empathy) · "I know what I must express, but I fear the consequence of speaking it"', sessions: ['liberated-expression','toning-with-ancestors','coherence-639','fire-cleanse'] },
-    { week: 4, title: 'Spiral Home', intent: "Integration of the Spiral Navigator archetype. Bring the crown's knowing down into embodied expression.", responds: 'Sacral warm/fluid (creative reservoir) · Hawkins 440 → 500 (Reason → Love transition) · Greatest gift: Visionary Resonance · Greatest challenge: Embodied Expression', sessions: ['open-path-741','fearless-396','flow-sacral','sunmerge-174'] }
+    { week: 1, title: 'Land in Safety',     intent: "Ground the unstable root. Pulse but unstable wants steady contact, not big sessions. Don't pile crown content on a system already over-saturated.", responds: 'Root pulsing but unstable · crown open but receiving more than grounding · stomach tense holding worries · kidneys low resonance', sessions: ['stability-root','root-grounded-presence','beloved-earth','polarity'] },
+    { week: 2, title: "Receive, Don't Pour", intent: "Heart inflow practice. The heart needs to learn to take in, not just give. NSDR + heart-direct practice + Acceptance as the Hawkins-tier step.", responds: 'Heart fully expanded but uneven inflow/outflow — gives more than receives · Hawkins 440 (Reason) oscillating toward 500 (Love) · spleen neutral · liver overload', sessions: ['heart-boundless-compassion','body-scan','soar-into-aliveness','acceptance'] },
+    { week: 3, title: 'Voice the Held',     intent: 'Directly address the Primary Block — Throat-Solar Plexus axis. Open the throat through use, not effort. Reclaim the solar half of the axis too.', responds: 'Throat compressed · solar plexus distorted (identity conflict / power inversion) · liver overload (unprocessed anger or empathy) · "I know what I must express, but I fear the consequence of speaking it"', sessions: ['truth-throat','liberated-expression','renewal-417','will-solar-plexus'] },
+    { week: 4, title: 'Spiral Home',        intent: "Integration of the Spiral Navigator archetype. Feed the sacral that's already alive. Sit in the equinox between Reason and Love. Bring the crown's knowing down into embodied expression.", responds: 'Sacral warm/fluid/creative · subconscious movement · Hawkins 440→500 transition · Greatest gift: Visionary Resonance · Greatest challenge: Embodied Expression', sessions: ['cacaosito','equinox','open-path-741','conscious-to-subconscious'] }
   ],
 
-  /* Chakra states parsed from Amber's reading. Order = energetic ascent (crown
-     → root by yPct ascending). Each state maps to a defined visual signature
-     in index.html (see .bf-chakra-glow-pt[data-state="..."] CSS).
-     Mapping logic in the plan file: "compressed" → undercharged, "distorted"
-     → consolidating, "pulsing but unstable" → stabilizing, etc. */
+  /* Chakra states (same as v1.9.13 — mapping from her reading's chakra
+     scan into the 7 canonical animation states). */
   chakraStates: [
     { id: 'crown',     label: 'Crown',        state: 'carrying-a-lot', yPct: 7,  note: 'Open but overactive — receiving more than grounding' },
     { id: 'third-eye', label: 'Third Eye',    state: 'clear',          yPct: 14, note: 'Clear, slightly shielded — protecting vision' },
@@ -139,115 +322,102 @@ Your greatest challenge is Embodied Expression.`,
     { id: 'root',      label: 'Root',         state: 'stabilizing',    yPct: 76, note: 'Pulsing but unstable — seeking full safety' }
   ],
 
-  /* Sessions intentionally NOT in Week 1-4. Same shape as `sessions` so they
-     render as identical session cards (art-at-top, expandable). The `held`
-     reason is personalized to Amber's reading — these are all crown-direct
-     sessions held back because the crown is already over-saturated. */
+  /* Held in reserve — direct crown / third-eye work. Amber's crown is
+     already over-saturated, so these are explicitly NOT in the 4-week
+     plan. Each `held` reason references her reading's specific crown
+     and third-eye situation. */
   heldInReserve: [
     {
-      slug: 'rest-in-love-852',
-      name: 'Rest in Love · 852 Hz',
-      heading: 'Rest in Love',
-      subtitle: '852 Hz · Universal Love',
-      artist: 'Sam Bottner',
-      portrait: 'assets/artists/sam-bottner.jpg',
-      category: 'Frequency',
-      catClass: 'cat-frequency',
-      collection: 'Solfeggio II',
-      chakra: 'third-eye',
-      art: 'assets/sessions/rest-in-love.webp',
-      lede: "Tuned to 852 Hz, often associated with returning to spiritual order, releasing illusion, and resting in unconditional love.",
-      chooseWhen: ['When the head is loud', 'To soften strain on the third-eye', 'For evening contemplation'],
-      note: 'third-eye, universal love',
-      held: "Your third-eye is already shielded and your crown is already overactive. Adding 852 Hz here would feed the upper-field saturation we're trying to balance. Useful later, once the root is steadier."
+      slug: 'interbeing-crown',
+      name: 'Interbeing | Crown',
+      heading: 'Interbeing | Crown',
+      subtitle: 'Direct crown work · 34 min',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening',
+      chakra: 'crown',
+      art: 'assets/sessions/interbeing-crown.webp',
+      lede: "The canonical crown-chakra session — 34 minutes of gamma-state vibration tuned to the field of unity consciousness and dissolved separation.",
+      chooseWhen: ['Once the root is steadier', 'For unity-consciousness practice', 'When the lower body is online'],
+      note: 'direct crown work, 34 min',
+      held: "Your crown is already over-saturated — *receiving more than grounding*. Direct crown work right now would feed the imbalance we're trying to correct. Re-evaluate once Week 3's throat-solar work has landed."
     },
     {
-      slug: 'pure-awareness-crown',
-      name: 'Pure Awareness · Crown',
-      heading: 'Pure Awareness',
-      subtitle: 'Direct Crown Work',
-      artist: 'Sam Bottner',
-      portrait: 'assets/artists/sam-bottner.jpg',
-      category: 'Chakras',
-      catClass: 'cat-chakras',
-      collection: 'Chakra Awakening',
+      slug: 'transcend-soul-star',
+      name: 'Transcend | Soul Star',
+      heading: 'Transcend | Soul Star',
+      subtitle: '34 min · Gamma · Above-crown',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening',
       chakra: 'crown',
-      art: 'assets/sessions/pure-awareness.webp',
-      lede: "Direct, unmediated crown work. The session asks the system to receive without the mind organizing what's happening.",
-      chooseWhen: ['When ready for direct crown work', 'After the lower chakras have charge', 'For deep stillness'],
-      note: 'direct crown work',
-      held: "Your crown is the over-saturated center. Direct crown work right now would be more of the same imbalance. Re-evaluate after the throat-solar axis opens in week three."
+      art: 'assets/sessions/transcend-soul-star.webp',
+      lede: "A 34-minute gamma-state session tuned to the soul-star chakra — the field above the crown. For systems already practiced in non-dual states.",
+      chooseWhen: ['After the lower chakras stabilize', 'For above-crown practice', 'When ready for non-dual rest'],
+      note: 'above-crown · 34 min · gamma',
+      held: "Soul-star work asks the lower body to already be online. Your root is pulsing but unstable — too early. The Spiral Navigator archetype lives partly in this register, but the work this month is bringing the cosmic *down* into the body, not expanding further up."
+    },
+    {
+      slug: 'vision-third-eye',
+      name: 'Vision | Third Eye',
+      heading: 'Vision | Third Eye',
+      subtitle: '34 min · Direct third-eye',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Chakras', catClass: 'cat-chakras', collection: 'Chakra Awakening',
+      chakra: 'third-eye',
+      art: 'assets/sessions/vision-third-eye.webp',
+      lede: "The canonical third-eye session — 34 minutes of gamma-state vibration tuned to inner vision and the field of pattern-perception.",
+      chooseWhen: ['Once the protective shielding is understood', 'For Visionary Resonance practice', 'When ready for direct inner-sight work'],
+      note: 'direct third-eye · 34 min',
+      held: "Your third-eye is *clear but slightly shielded — protecting vision or mistrust of perceived reality*. Opening the aperture before the shielding is understood would push past the protection rather than work with it. Add later, after the lower work."
+    },
+    {
+      slug: 'highest-timeline-963',
+      name: 'Highest Timeline | 963 Hz',
+      heading: 'Highest Timeline | 963 Hz',
+      subtitle: '9 min · Beta · 963 Hz crown ceiling',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Frequency', catClass: 'cat-frequency', collection: 'Solfeggio II',
+      chakra: 'crown',
+      art: 'assets/sessions/highest-timeline-963.webp',
+      lede: "963 Hz — the highest Solfeggio tone, associated with crown opening and timeline coherence. Nine minutes of beta-state ceiling work.",
+      chooseWhen: ['When timeline-level clarity is asked for', 'After the throat-solar axis opens', 'For Spiral Navigator integration work'],
+      note: '963 Hz crown ceiling · 9 min',
+      held: "963 Hz lives at the ceiling of the field. You're already operating high up — *crown over-active*. The right move is to come *down* into the body first. Save this for a later month."
     },
     {
       slug: 'pineal-aperture',
       name: 'Pineal Aperture',
       heading: 'Pineal Aperture',
-      subtitle: 'Third-eye attunement',
-      artist: 'Sam Bottner',
-      portrait: 'assets/artists/sam-bottner.jpg',
-      category: 'Guided',
-      catClass: 'cat-guided',
-      collection: '',
+      subtitle: 'Third-eye attunement · 30 min',
+      artist: 'Sam Bottner', portrait: SAM_PORTRAIT,
+      category: 'Guided', catClass: 'cat-guided', collection: '',
       chakra: 'third-eye',
       art: 'assets/sessions/pineal-aperture.webp',
-      lede: "An attunement to the pineal — the third-eye gateway. Subtle, slow, and best done after the body is grounded.",
+      lede: "An attunement to the pineal — the third-eye gateway. Subtle, slow, 30 minutes of delta-state inner-vision practice. Best done after the body is grounded.",
       chooseWhen: ['Once the root is steadier', 'For inner-vision practice', 'When seeking clarity through stillness'],
-      note: 'third-eye attunement',
-      held: "Your third-eye is *clear but shielded*. Opening the aperture before the shielding is understood would push past the protection rather than work with it."
-    },
-    {
-      slug: 'aum-136',
-      name: 'AUM · 136 Hz',
-      heading: 'AUM · 136 Hz',
-      subtitle: 'Cosmic attune',
-      artist: 'Sam Bottner',
-      portrait: 'assets/artists/sam-bottner.jpg',
-      category: 'Frequency',
-      catClass: 'cat-frequency',
-      collection: 'Solfeggio II',
-      chakra: 'crown',
-      art: 'assets/sessions/aum-136.webp',
-      lede: "The Om frequency. 136 Hz is the resonance often associated with the Earth's natural year, used as a tuning anchor for cosmic alignment.",
-      chooseWhen: ['As an evening tune-in', 'Before contemplative practice', 'When seeking the largest frame'],
-      note: 'cosmic attune',
-      held: "AUM lands in the crown, which you don't need more of right now. The Spiral Navigator archetype lives in the cosmic frame — but the work this month is bringing that frame *down* into the body, not expanding it further."
-    },
-    {
-      slug: 'bridging-worlds',
-      name: 'Bridging Worlds',
-      heading: 'Bridging Worlds',
-      subtitle: 'Earth / Spirit bridge',
-      artist: 'Sam Bottner',
-      portrait: 'assets/artists/sam-bottner.jpg',
-      category: 'Guided',
-      catClass: 'cat-guided',
-      collection: '',
-      chakra: 'crown',
-      art: 'assets/sessions/bridging-worlds.webp',
-      lede: "A guided journey between earth-rooted and spirit-receptive states. Holds both registers without forcing either.",
-      chooseWhen: ['When the root + crown both have charge', 'For practitioner-level integration', 'In moments of liminality'],
-      note: 'Earth / Spirit bridge',
-      held: "Bridge work asks for both poles to be online. Your root is pulsing but not yet stable; come back to this when both ends of your field have charge."
+      note: 'third-eye attunement · 30 min',
+      held: "Your third-eye is already clear-but-shielded, and the root is unstable. Pineal opening on an unstable root pushes consciousness up rather than down. Add this once the root has been steady for several weeks."
     }
   ],
 
-  /* Map session slugs to chakras for the delight-pulse on resolve */
+  /* Map session slugs to chakras for the delight-pulse on resolve.
+     v1.9.18: Amber's NEW session pool — each slug maps to its primary
+     working chakra (not necessarily the audio's dominant body-zone). */
   slugToChakra: {
-    'welcome-to-opus':        'crown',
-    'stability-root':         'root',
-    'earth-awareness':        'root',
-    'ease-174':               'root',
-    'body-scan':              'heart',
-    'heart-focus':            'heart',
-    'heart-hara':             'heart',
-    'sending-mark-home':      'heart',
-    'liberated-expression':   'throat',
-    'toning-with-ancestors':  'throat',
-    'coherence-639':          'heart',
-    'fire-cleanse':           'sacral',
-    'open-path-741':          'crown',
-    'fearless-396':           'root',
-    'flow-sacral':            'sacral',
-    'sunmerge-174':           'sacral'
+    'stability-root':              'root',
+    'root-grounded-presence':      'root',
+    'beloved-earth':               'root',
+    'polarity':                    'root',
+    'heart-boundless-compassion':  'heart',
+    'body-scan':                   'heart',
+    'soar-into-aliveness':         'heart',
+    'acceptance':                  'heart',
+    'truth-throat':                'throat',
+    'liberated-expression':        'throat',
+    'renewal-417':                 'throat',
+    'will-solar-plexus':           'solar',
+    'cacaosito':                   'sacral',
+    'equinox':                     'sacral',
+    'open-path-741':               'crown',
+    'conscious-to-subconscious':   'heart'
   }
 };
