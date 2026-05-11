@@ -563,13 +563,17 @@ main { position: relative; z-index: 2; }
   filter: drop-shadow(2px 0 4px rgba(0,0,0,0.35));
 }
 .bf-chakra-callout--closing { animation: callout-fall 200ms ease-in forwards; }
+/* v1.9.19: keyframe end-state preserves the base translateY(-50%)
+   that vertically centers the callout on the chakra. Was: translateY(0)
+   at 100%, which caused a visible "snap up" when the animation finished
+   and the element reverted to the CSS base of translateY(-50%). */
 @keyframes callout-rise {
-  0%   { opacity: 0; transform: translateY(12px) scale(0.96); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0%   { opacity: 0; transform: translateY(calc(-50% + 12px)) scale(0.96); }
+  100% { opacity: 1; transform: translateY(-50%) scale(1); }
 }
 @keyframes callout-fall {
-  0%   { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(8px) scale(0.98); }
+  0%   { opacity: 1; transform: translateY(-50%) scale(1); }
+  100% { opacity: 0; transform: translateY(calc(-50% + 8px)) scale(0.98); }
 }
 .bf-chakra-callout-head {
   display: flex; align-items: baseline; justify-content: space-between;
@@ -1450,17 +1454,63 @@ main { position: relative; z-index: 2; }
 .bf-helix-svg-wrap {
   width: 110px;
   height: 320px;
+  /* v1.9.19: build-in — the helix fades up and scales in from below,
+     landing ~1.0 s after the body chakras start blooming. Lets the
+     body lead, then the DNA reveals as a secondary instrument. */
+  animation: helix-build-in 900ms 1000ms cubic-bezier(.2,.8,.2,1) backwards;
+}
+@keyframes helix-build-in {
+  0%   { opacity: 0; transform: translateY(18px) scale(0.92); filter: blur(2px); }
+  60%  { opacity: 0.95; transform: translateY(-2px) scale(1.02); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-helix-svg-wrap { animation: none; }
 }
 .bf-helix-svg-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .bf-helix .rail { fill: none; stroke-width: 1.5; stroke-linecap: round; }
-.bf-helix .rail.solid { stroke: url(#dna-grad); }
+.bf-helix .rail.solid {
+  stroke: url(#dna-grad);
+  /* v1.9.19: active rails glow gently. */
+  filter: drop-shadow(0 0 3px rgba(255,215,100,0.45));
+}
 .bf-helix .rail.ghost { stroke: rgba(123,111,168,0.4); stroke-dasharray: 2 4; stroke-width: 1; }
 .bf-helix .rung { stroke: rgba(255,215,100,0.45); stroke-width: 1; stroke-linecap: round; }
-/* Locked rungs are STILL — polyvagal: stillness below, becoming above. */
-.bf-helix .rung.locked  { stroke: rgba(255,215,100,0.80); opacity: 0.85; }
-.bf-helix .rung.partial { stroke: rgba(123,111,168,0.55); stroke-dasharray: 1 2; opacity: 0.42; }
-/* Only the topmost consolidating rung breathes — the becoming edge. */
-.bf-helix .rung.partial.breathing { opacity: calc(0.32 + 0.30 * var(--breath-pulse)); }
+/* v1.9.19: phase-locked rungs now read as ACTIVE — thicker stroke +
+   pulsing gold glow on a 4.5 s clock (offset per rung via inline
+   --rung-i so the locked group doesn't pulse in lockstep). */
+.bf-helix .rung.locked  {
+  stroke: rgba(255,236,180,0.95);
+  stroke-width: 1.6;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 4px rgba(255,215,100,0.65));
+  animation: locked-rung-pulse 4500ms ease-in-out infinite;
+  animation-delay: calc(var(--rung-i, 0) * 280ms);
+}
+@keyframes locked-rung-pulse {
+  0%, 100% {
+    stroke-width: 1.5;
+    opacity: 0.82;
+    filter: drop-shadow(0 0 3px rgba(255,215,100,0.45));
+  }
+  50% {
+    stroke-width: 2.0;
+    opacity: 1.0;
+    filter: drop-shadow(0 0 8px rgba(255,215,100,0.85));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-helix .rung.locked { animation: none; }
+}
+.bf-helix .rung.partial { stroke: rgba(123,111,168,0.55); stroke-width: 1.2; stroke-dasharray: 1 2; opacity: 0.42; }
+/* Only the topmost consolidating rung breathes — the becoming edge.
+   v1.9.19: bumped to width 1.4 so it reads as "active becoming" rather
+   than "faint." */
+.bf-helix .rung.partial.breathing {
+  stroke-width: 1.4;
+  opacity: calc(0.42 + 0.32 * var(--breath-pulse));
+  filter: drop-shadow(0 0 3px rgba(106,223,217,0.55));
+}
 .bf-helix .rung.notyet  { stroke: rgba(123,111,168,0.40); stroke-width: 0.5; opacity: 0.18; }
 .bf-helix-meta {
   display: flex; flex-direction: column; gap: 8px;
@@ -3099,7 +3149,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.18';
+const VERSION = '1.9.19';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3777,6 +3827,10 @@ function buildHelixSVG() {
 
   // Rungs: total rungs evenly spaced. Bottom = locked, middle = consolidating,
   // top = not-yet. Index 0 is the TOPMOST rung visually.
+  // Track the per-locked-rung index so each locked rung can have its
+  // own animation-delay (set via --rung-i CSS custom prop) — keeps the
+  // pulse from beating in lockstep across the whole locked band.
+  let lockedI = 0;
   for (let i = 0; i < total; i++) {
     const t = (i + 0.5) / total;
     const y = padTop + t * innerH;
@@ -3785,9 +3839,13 @@ function buildHelixSVG() {
     const xB = cx + amp * Math.sin(phase + Math.PI);
 
     let cls;
+    let inlineStyle = '';
     if (i >= total - locked) {
       // bottom band — phase-locked
       cls = 'rung locked';
+      // v1.9.19: stagger each locked rung's pulse phase
+      inlineStyle = '--rung-i:' + lockedI + ';';
+      lockedI++;
     } else if (i >= notYet) {
       // middle band — consolidating; topmost-of-this-group breathes
       const isTopmostConsolidating = (i === notYet);
@@ -3796,11 +3854,13 @@ function buildHelixSVG() {
       // top band — not-yet anchored
       cls = 'rung notyet';
     }
-    root.appendChild(svg('line', {
+    const attrs = {
       class: cls,
       x1: xA.toFixed(2), y1: y.toFixed(2),
       x2: xB.toFixed(2), y2: y.toFixed(2)
-    }));
+    };
+    if (inlineStyle) attrs.style = inlineStyle;
+    root.appendChild(svg('line', attrs));
   }
   return root;
 }
