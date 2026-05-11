@@ -2239,16 +2239,25 @@ textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
   color: var(--gold);
   text-shadow: 0 0 8px rgba(255,215,100,0.55);
 }
+/* v1.9.15: descriptor RESERVES height for the longest scale label
+   ("Beyond words. An expansive experience of ineffable emotion. The
+   feeling exceeds language." — wraps to 3-4 lines in a typical card
+   width). Fixed min-height prevents the After-block from resizing as
+   the user moves through the slider — input feels stable, not jumpy. */
 .wow-descriptor {
   font-family: var(--serif); font-style: italic;
   font-size: 12.5px; line-height: 1.5;
   color: rgba(255,255,255,0.78);
-  min-height: 1.5em;
+  min-height: 5.6em;  /* ~4 lines @ 1.5 line-height */
   margin-top: 8px;
   opacity: 0;
   transition: opacity .25s;
 }
 .wow-descriptor.visible { opacity: 1; }
+@media (max-width: 640px) {
+  /* Mobile cards are narrower; longest line wraps deeper. Add headroom. */
+  .wow-descriptor { min-height: 7em; }
+}
 @media (max-width: 480px) {
   .wow-tick { font-size: 10px; }
 }
@@ -2799,7 +2808,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.14';
+const VERSION = '1.9.15';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3639,17 +3648,25 @@ function buildBodyAuroraHero() {
   // ratio. Contains image + auric rings + chakra glows.
   const bodyWrap = el('div', { class: 'bf-body-wrap' });
 
-  // Body image — translucent figure on aurora gradient
-  const reducedData = window.matchMedia && window.matchMedia('(prefers-reduced-data: reduce)').matches;
+  // Body image — translucent figure on aurora gradient. v1.9.15:
+  // unconditionally load the webp (22KB, no perf reason to gate); if
+  // that fails, try the legacy .png; only after both fail do we drop
+  // into the "no image" treatment.
   const img = el('img', {
     class: 'bf-body-image',
-    src: reducedData ? '' : 'assets/dashboard/body-aurora.webp',
+    src: 'assets/dashboard/body-aurora.webp',
     alt: 'translucent figure rendered in violet and rose light',
     loading: 'eager',
     decoding: 'async'
   });
-  if (reducedData) stage.classList.add('bf-body-stage--no-image');
+  let bodyImgFallback = false;
   img.addEventListener('error', () => {
+    if (!bodyImgFallback) {
+      bodyImgFallback = true;
+      img.src = 'assets/dashboard/body-aurora.png';
+      return;
+    }
+    // Both webp and png failed — only now degrade.
     img.style.display = 'none';
     stage.classList.add('bf-body-stage--no-image');
   });
