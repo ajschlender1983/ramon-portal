@@ -515,28 +515,52 @@ main { position: relative; z-index: 2; }
 }
 
 /* ============================================================
-   v1.9.17: tap-a-chakra callout + first-time prompt.
-   - .bf-chakra-callout: panel overlaying lower-left of the stage,
-     showing the tapped chakra's name + state + reading note.
-   - .bf-chakra-hint: pulsing "tap a center" affordance that drifts
-     near the radiant chakra after build-in. Hides on first tap.
+   v1.9.17/.18: tap-a-chakra callout + first-time prompt.
+   - .bf-chakra-callout: panel positioned NEXT TO the tapped chakra
+     (v1.9.18: was bottom-left; now follows the chakra's y, anchored
+     to the left side of the body-wrap with a right-pointing arrow).
+   - .bf-chakra-hint: prominent gold tap-hint card that drifts near
+     the radiant chakra after build-in (v1.9.18: bigger + clearer
+     "tap" indicator + stronger pulse). Hides on first tap.
    ============================================================ */
 .bf-chakra-callout {
   position: absolute;
-  left: 4%; bottom: 6%;
-  width: clamp(220px, 38%, 320px);
+  /* v1.9.18: positioned NEXT TO the tapped chakra. --callout-top is
+     set inline per chakra (= chakra's top%). Clamped 10%..85% so a
+     crown/root tap doesn't clip vertically. Callout sits in the LEFT
+     aurora area beside the body (body is at x≈36%; this puts the
+     panel from ~2%..30% horizontally, with a right-arrow pointing
+     toward the chakra). */
+  left: 2%;
+  top: clamp(10%, var(--callout-top, 50%), 85%);
+  transform: translateY(-50%);
+  width: clamp(200px, 30%, 280px);
   z-index: 6;
   padding: 14px 16px;
   background: rgba(11,8,15,0.86);
   border: 1px solid color-mix(in srgb, var(--callout-hue, var(--gold)) 45%, transparent);
-  border-left: 2px solid var(--callout-hue, var(--gold));
+  border-right: 2px solid var(--callout-hue, var(--gold));
   border-radius: 14px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 12px 36px -12px rgba(0,0,0,0.55), 0 0 24px color-mix(in srgb, var(--callout-hue, var(--gold)) 18%, transparent);
+  box-shadow: 0 12px 36px -12px rgba(0,0,0,0.55), 0 0 24px color-mix(in srgb, var(--callout-hue, var(--gold)) 22%, transparent);
   color: var(--light);
   pointer-events: auto;
   animation: callout-rise 280ms cubic-bezier(.2,.8,.2,1) backwards;
+}
+/* v1.9.18: arrow on the right edge of the callout, pointing toward
+   the chakra. Color picks up the per-chakra hue. */
+.bf-chakra-callout::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 9px 0 9px 10px;
+  border-color: transparent transparent transparent var(--callout-hue, var(--gold));
+  filter: drop-shadow(2px 0 4px rgba(0,0,0,0.35));
 }
 .bf-chakra-callout--closing { animation: callout-fall 200ms ease-in forwards; }
 @keyframes callout-rise {
@@ -596,61 +620,99 @@ main { position: relative; z-index: 2; }
 .bf-chakra-callout[data-chakra="third-eye"] { --callout-hue: rgb(123,111,168); }
 .bf-chakra-callout[data-chakra="crown"]     { --callout-hue: rgb(194, 47,205); }
 
-/* First-time tap-hint: a small italic prompt that drifts near a chakra,
-   appears after build-in completes, and dismisses on first chakra tap.
+/* v1.9.18: prominent first-time tap-hint. Larger card, animated "tap"
+   indicator, stronger pulsing gold glow. Drifts in 2s after build-in,
+   parks next to the radiant chakra, dismisses on first chakra tap.
    Stored once-per-user via localStorage so we don't nag returners. */
 .bf-chakra-hint {
   position: absolute;
   top: var(--hint-top, 30%);
   left: var(--hint-left, 50%);
   transform: translate(-4px, -50%);
-  z-index: 4;
-  padding: 6px 12px 6px 14px;
-  background: rgba(11,8,15,0.78);
-  border: 1px solid rgba(255,215,100,0.42);
-  border-radius: 999px;
+  z-index: 5;
+  padding: 12px 18px 12px 16px;
+  background: linear-gradient(135deg, rgba(20,12,30,0.92), rgba(40,28,20,0.92));
+  border: 1.5px solid rgba(255,215,100,0.68);
+  border-radius: 14px;
   font-family: var(--serif);
   font-style: italic;
-  font-size: 12.5px;
-  letter-spacing: 0.02em;
-  color: rgba(255,236,180,0.96);
+  font-size: 17px;
+  letter-spacing: 0.01em;
+  color: rgba(255,240,200,1);
   white-space: nowrap;
   pointer-events: none;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 0 18px rgba(255,215,100,0.30);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 0 0 4px rgba(255,215,100,0.08),
+    0 0 28px rgba(255,215,100,0.55),
+    0 0 56px rgba(255,215,100,0.30);
+  display: inline-flex; align-items: center; gap: 10px;
   animation:
-    hint-arrive 600ms 2000ms cubic-bezier(.2,.8,.2,1) backwards,
-    hint-pulse 2400ms 2600ms ease-in-out infinite;
+    hint-arrive 720ms 2000ms cubic-bezier(.2,.8,.2,1) backwards,
+    hint-pulse 2200ms 2720ms ease-in-out infinite;
+}
+/* Animated "tap" icon — a small circle pulsing inside, suggesting a
+   fingertip pressing. Renders to the left of the hint text. */
+.bf-chakra-hint .bf-chakra-hint-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,240,200,1) 0%, rgba(255,215,100,0.75) 50%, transparent 80%);
+  box-shadow: 0 0 14px rgba(255,215,100,0.85);
+  animation: hint-dot-tap 1300ms 2700ms ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes hint-dot-tap {
+  0%, 100% { transform: scale(0.78); opacity: 0.65; }
+  35%      { transform: scale(1.10); opacity: 1.00; }
+  55%      { transform: scale(0.92); opacity: 0.85; }
 }
 .bf-chakra-hint::before {
-  /* Tiny arrow pointing toward the chakra (sits just to the left of the pill). */
+  /* Larger arrow pointing toward the chakra. */
   content: '';
   position: absolute;
-  left: -8px; top: 50%;
+  left: -11px; top: 50%;
   transform: translateY(-50%);
   border-style: solid;
-  border-width: 5px 8px 5px 0;
-  border-color: transparent rgba(255,215,100,0.45) transparent transparent;
+  border-width: 8px 12px 8px 0;
+  border-color: transparent rgba(255,215,100,0.68) transparent transparent;
+  filter: drop-shadow(-2px 0 6px rgba(255,215,100,0.45));
 }
 .bf-chakra-hint--dismissed {
-  animation: hint-leave 320ms ease-in forwards;
+  animation: hint-leave 360ms ease-in forwards;
   pointer-events: none;
 }
 @keyframes hint-arrive {
-  0%   { opacity: 0; transform: translate(8px, -50%); }
-  100% { opacity: 1; transform: translate(-4px, -50%); }
+  0%   { opacity: 0; transform: translate(16px, -50%) scale(0.88); }
+  100% { opacity: 1; transform: translate(-4px, -50%) scale(1); }
 }
 @keyframes hint-pulse {
-  0%, 100% { box-shadow: 0 0 18px rgba(255,215,100,0.30); border-color: rgba(255,215,100,0.42); }
-  50%      { box-shadow: 0 0 30px rgba(255,215,100,0.55); border-color: rgba(255,215,100,0.75); }
+  0%, 100% {
+    box-shadow:
+      0 0 0 4px rgba(255,215,100,0.08),
+      0 0 28px rgba(255,215,100,0.55),
+      0 0 56px rgba(255,215,100,0.30);
+    border-color: rgba(255,215,100,0.68);
+  }
+  50% {
+    box-shadow:
+      0 0 0 6px rgba(255,215,100,0.14),
+      0 0 44px rgba(255,215,100,0.85),
+      0 0 84px rgba(255,215,100,0.45);
+    border-color: rgba(255,215,100,1);
+  }
 }
 @keyframes hint-leave {
   0%   { opacity: 1; }
-  100% { opacity: 0; transform: translate(-12px, -50%); }
+  100% { opacity: 0; transform: translate(-16px, -50%) scale(0.92); }
+}
+@media (max-width: 640px) {
+  .bf-chakra-hint { font-size: 15px; padding: 10px 14px 10px 14px; }
+  .bf-chakra-hint .bf-chakra-hint-dot { width: 12px; height: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bf-chakra-hint { animation: hint-arrive 1ms backwards; }
+  .bf-chakra-hint,
+  .bf-chakra-hint .bf-chakra-hint-dot { animation: hint-arrive 1ms backwards; }
 }
 
 .bf-body-image {
@@ -3037,7 +3099,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.17';
+const VERSION = '1.9.18';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3966,20 +4028,20 @@ function buildBodyAuroraHero() {
   }
   bodyWrap.appendChild(overlay);
 
-  // v1.9.17: first-time tap-hint. Drifts in 2s after build, points at
-  // the radiant chakra (or heart if no radiant). Dismisses on any
-  // chakra tap. Persisted per slug so it doesn't nag returners.
+  // v1.9.17/.18: first-time tap-hint. Drifts in 2s after build, points
+  // at the radiant chakra (or heart if no radiant). v1.9.18 makes the
+  // hint larger + more prominent with an animated "tap" dot. Dismisses
+  // on any chakra tap; persisted per slug so it doesn't nag returners.
   const hintSeenKey = LS.chakraHintSeen;
   const hintAlreadySeen = hintSeenKey && localStorage.getItem(hintSeenKey) === '1';
   if (!hintAlreadySeen) {
     const hintPos = radiantPos || CHAKRA_IMAGE_POS.heart || { top: 29, left: 36 };
-    const hint = el('div', {
-      class: 'bf-chakra-hint',
-      text: 'tap a center to read'
-    });
-    // Park the hint ~6% to the right of the chakra it points at.
+    const hint = el('div', { class: 'bf-chakra-hint' });
+    hint.appendChild(el('span', { class: 'bf-chakra-hint-dot', 'aria-hidden': 'true' }));
+    hint.appendChild(document.createTextNode('Tap a center to read your reading'));
+    // Park the hint ~7% to the right of the chakra it points at.
     hint.style.setProperty('--hint-top', hintPos.top + '%');
-    hint.style.setProperty('--hint-left', (hintPos.left + 6) + '%');
+    hint.style.setProperty('--hint-left', (hintPos.left + 7) + '%');
     bodyWrap.appendChild(hint);
   }
 
@@ -4161,6 +4223,13 @@ function openChakraCallout(chakra, bodyWrap, glowEl) {
     role: 'dialog',
     'aria-live': 'polite'
   });
+  // v1.9.18: position the callout next to the tapped chakra by passing
+  // the chakra's y-percentage as a CSS custom property. CSS clamps it
+  // 10%..85% so crown / root taps don't clip the stage edge.
+  const chakraPos = (typeof CHAKRA_IMAGE_POS === 'object' && CHAKRA_IMAGE_POS[chakra.id]) || null;
+  if (chakraPos) {
+    callout.style.setProperty('--callout-top', chakraPos.top + '%');
+  }
   const head = el('div', { class: 'bf-chakra-callout-head' });
   head.appendChild(el('div', { class: 'bf-chakra-callout-name', text: chakra.label || chakra.id }));
   head.appendChild(el('div', { class: 'bf-chakra-callout-state', text: (chakra.state || '').replace(/-/g, ' ') }));
