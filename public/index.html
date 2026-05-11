@@ -2698,6 +2698,131 @@ textarea.note-input {
 textarea.note-input:focus { outline: none; border-color: rgba(106,223,217,0.35); background: rgba(11,8,15,0.7); }
 textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
 
+/* v1.9.13: WOW felt-sense selector — sits inside the After note block,
+   above the textarea. Six segmented buttons (1-5 + ✨ WOW). Selection
+   is required before "See the reflection" enables. Canonical labels
+   sourced from SKILL.md (Reflections & Patterns). */
+.wow-selector {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 4px 0 2px;
+  margin-bottom: 4px;
+}
+.wow-selector-header {
+  display: flex; align-items: center; gap: 8px;
+}
+.wow-eyebrow {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,215,100,0.78);
+  font-family: var(--sans);
+}
+.wow-info-btn {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(255,215,100,0.32);
+  color: rgba(255,215,100,0.78);
+  font-family: var(--serif); font-style: italic;
+  font-size: 11px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background .25s, border-color .25s, color .25s;
+}
+.wow-info-btn:hover,
+.wow-info-btn.open {
+  background: rgba(255,215,100,0.10);
+  border-color: rgba(255,215,100,0.55);
+  color: var(--gold);
+}
+.wow-explainer {
+  display: none;
+  background: rgba(11,8,15,0.55);
+  border: 1px solid rgba(255,215,100,0.18);
+  border-left: 2px solid rgba(255,215,100,0.45);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px; line-height: 1.55;
+  color: rgba(255,255,255,0.72);
+}
+.wow-explainer.open { display: block; }
+.wow-explainer p { margin: 0 0 6px; }
+.wow-explainer p:last-child { margin-bottom: 0; }
+.wow-explainer-cite {
+  font-family: var(--serif); font-style: italic;
+  color: rgba(255,215,100,0.78);
+}
+.wow-pips {
+  display: flex; gap: 6px;
+  flex-wrap: wrap;
+}
+.wow-pip {
+  flex: 1 1 0;
+  min-width: 44px;
+  padding: 8px 6px;
+  background: rgba(11,8,15,0.55);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.65);
+  font-family: var(--sans);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s, transform .2s, box-shadow .2s;
+  white-space: nowrap;
+}
+.wow-pip:hover {
+  background: rgba(11,8,15,0.72);
+  border-color: rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.92);
+}
+.wow-pip:focus-visible {
+  outline: 1px solid rgba(106,223,217,0.55);
+  outline-offset: 2px;
+}
+.wow-pip--selected {
+  background: rgba(106,223,217,0.14);
+  border-color: rgba(106,223,217,0.55);
+  color: var(--light);
+  box-shadow: 0 0 0 2px rgba(106,223,217,0.16);
+}
+/* WOW (value 6) — gold accent, sparkle, gradient when selected. */
+.wow-pip--wow {
+  font-family: var(--serif); font-style: italic;
+  letter-spacing: 0.04em;
+  color: rgba(255,215,100,0.82);
+  border-color: rgba(255,215,100,0.32);
+  flex-grow: 1.4; /* slightly wider to fit "✨ WOW" */
+}
+.wow-pip--wow:hover {
+  color: var(--gold);
+  border-color: rgba(255,215,100,0.55);
+  background: rgba(255,215,100,0.10);
+}
+.wow-pip--wow.wow-pip--selected {
+  background: linear-gradient(135deg, rgba(255,215,100,0.30), rgba(255,180,90,0.20));
+  border-color: rgba(255,215,100,0.85);
+  color: rgba(255,240,200,1);
+  box-shadow:
+    0 0 0 2px rgba(255,215,100,0.22),
+    0 0 18px rgba(255,215,100,0.35);
+}
+.wow-descriptor {
+  font-family: var(--serif); font-style: italic;
+  font-size: 12.5px; line-height: 1.5;
+  color: rgba(255,255,255,0.72);
+  min-height: 1.5em;
+  opacity: 0;
+  transition: opacity .25s;
+}
+.wow-descriptor.visible { opacity: 1; }
+@media (max-width: 480px) {
+  .wow-pips { gap: 5px; }
+  .wow-pip { min-width: 0; padding: 7px 4px; font-size: 12px; }
+  .wow-pip--wow { font-size: 12.5px; flex-grow: 1.6; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wow-pip, .wow-descriptor { transition: none; }
+}
+
 /* Per-card resolve action row */
 .note-actions {
   display: flex; align-items: center; justify-content: space-between;
@@ -3241,7 +3366,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.12';
+const VERSION = '1.9.13';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3266,6 +3391,7 @@ function getView() { return ACTIVE_VIEW || USER || {}; }
 function makeLS(slug) {
   return {
     notes:              slug + '.notes.v1',
+    wow:                slug + '.wow.v1',            // v1.9.13: { <slug>: 1..6 } felt-sense rating per session
     field:              slug + '.field.v1',
     fieldHistory:       slug + '.field.history.v1',
     reflections:        slug + '.reflections.v1',
@@ -3280,6 +3406,21 @@ function makeLS(slug) {
     dashOpen:           slug + '.dashOpen.v1'        // '1' if dashboard is in expanded (sidecar) state
   };
 }
+
+/* v1.9.13: 1-to-WOW Scale labels — canonical source is
+   ~/Desktop/Opus/Connect/skills/reflections-and-patterns/SKILL.md
+   lines 137-142. WOW (value 6) is a categorical 6th, not a linear
+   extension — "beyond words". Used by the post-session WOW selector
+   in each session card and emitted in the /reflect payload so the
+   worker prompt can register the felt magnitude. */
+const WOW_LABELS = {
+  1: { short: 'Didn’t land',  long: 'Didn’t land. Distracted or uncomfortable.' },
+  2: { short: 'Mild',          long: 'Mild. Noticed something but stayed in my head.' },
+  3: { short: 'Good',          long: 'Good. Relaxed, felt some real benefit.' },
+  4: { short: 'Deep',          long: 'Deep. Went somewhere. Real shift in how I feel.' },
+  5: { short: 'Profound',      long: 'Profound. Significant release, emotion, or insight.' },
+  6: { short: '✨ WOW',    long: 'Beyond words. An expansive experience of ineffable emotion. The feeling exceeds language.' }
+};
 let LS = makeLS('__pending__'); // overwritten in init()
 
 /* Per-state visual encoding (replaces the old `--amp` scale system).
@@ -5111,6 +5252,11 @@ function renderSessionCard(slug, s) {
     const promptText = el('div', { class: 'note-prompt' });
     promptText.appendChild(parseEm(promptsForSession[when]));
     block.appendChild(promptText);
+    // v1.9.13: WOW selector sits inside the After block only, above the
+    // textarea. The "See the reflection" gate also requires a rating.
+    if (when === 'after') {
+      block.appendChild(buildWowSelector(slug));
+    }
     const ta = el('textarea', {
       class: 'note-input',
       dataset: { slug, when },
@@ -5455,11 +5601,89 @@ function readWeekFromHash() {
   return m ? parseInt(m[1], 10) : 1;
 }
 
+/* v1.9.13: Build the WOW felt-sense selector that lives inside each
+   session card's After-the-session note block. Six segmented buttons
+   (1-5 + ✨ WOW). Selecting a pip writes to LS.wow, updates the
+   descriptor line below, marks the button active, and re-evaluates the
+   resolve-button gate so "See the reflection" only enables once both
+   notes have content AND a rating is selected. */
+function buildWowSelector(slug) {
+  const wrap = el('div', { class: 'wow-selector', dataset: { slug } });
+
+  const header = el('div', { class: 'wow-selector-header' });
+  header.appendChild(el('span', { class: 'wow-eyebrow', text: 'How did that land?' }));
+  const infoBtn = el('button', {
+    class: 'wow-info-btn',
+    type: 'button',
+    'aria-label': 'About the 1-to-WOW scale',
+    text: 'i'
+  });
+  header.appendChild(infoBtn);
+  wrap.appendChild(header);
+
+  // Inline explainer (collapsed by default). Condensed from
+  // ~/Desktop/Opus/Connect/skills/reflections-and-patterns/SKILL.md.
+  const explainer = el('div', { class: 'wow-explainer' });
+  explainer.appendChild(el('p', { text: 'WOW isn’t the top of a linear scale — it’s a categorical shift into a state where the feeling exceeds language. In deeply immersive states, the brain’s language centers can quiet while sensory and emotional networks become more active.' }));
+  explainer.appendChild(el('p', { class: 'wow-explainer-cite', text: '“When words come later, WOW was already happening.”' }));
+  wrap.appendChild(explainer);
+
+  infoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    explainer.classList.toggle('open');
+    infoBtn.classList.toggle('open');
+  });
+
+  const pipsRow = el('div', { class: 'wow-pips', role: 'radiogroup', 'aria-label': 'Felt-sense rating' });
+  [1,2,3,4,5,6].forEach(v => {
+    const pip = el('button', {
+      class: 'wow-pip' + (v === 6 ? ' wow-pip--wow' : ''),
+      type: 'button',
+      role: 'radio',
+      'aria-checked': 'false',
+      dataset: { slug, value: String(v) },
+      text: v === 6 ? '✨ WOW' : String(v)
+    });
+    pip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const all = getWow();
+      all[slug] = v;
+      saveWow(all);
+      // visual update
+      pipsRow.querySelectorAll('.wow-pip').forEach(p => {
+        const isSel = (Number(p.dataset.value) === v);
+        p.classList.toggle('wow-pip--selected', isSel);
+        p.setAttribute('aria-checked', isSel ? 'true' : 'false');
+      });
+      desc.textContent = WOW_LABELS[v].long;
+      desc.classList.add('visible');
+      updateResolveButton(slug);
+    });
+    pipsRow.appendChild(pip);
+  });
+  wrap.appendChild(pipsRow);
+
+  const desc = el('div', { class: 'wow-descriptor', 'aria-live': 'polite' });
+  wrap.appendChild(desc);
+
+  return wrap;
+}
+
 function getNotes() {
   try { return JSON.parse(localStorage.getItem(LS.notes)) || {}; }
   catch { return {}; }
 }
 function saveNotes(n) { localStorage.setItem(LS.notes, JSON.stringify(n)); }
+
+/* v1.9.13: WOW felt-sense ratings keyed by session slug. Shape:
+   { 'stability-root': 4, 'fearless-396': 6, ... }. Stored as integers
+   1-6 (6 = WOW). Mirrored to the /reflect payload so the worker prompt
+   can register magnitude. */
+function getWow() {
+  try { return JSON.parse(localStorage.getItem(LS.wow)) || {}; }
+  catch { return {}; }
+}
+function saveWow(w) { localStorage.setItem(LS.wow, JSON.stringify(w)); }
 
 /* ---- Per-week and per-session Biofield captures ----
    The original Input is the "week 0" baseline (LS.field). After each week
@@ -6255,6 +6479,27 @@ function loadNotesIntoUI() {
   });
 }
 
+/* v1.9.13: Restore the WOW selection per session card from localStorage
+   on page load. Marks the matching pip active and shows its descriptor. */
+function loadWowIntoUI() {
+  const wowMap = getWow();
+  document.querySelectorAll('.wow-selector').forEach(sel => {
+    const slug = sel.dataset.slug;
+    const v = wowMap[slug];
+    if (!Number.isInteger(v) || v < 1 || v > 6) return;
+    sel.querySelectorAll('.wow-pip').forEach(p => {
+      const isSel = (Number(p.dataset.value) === v);
+      p.classList.toggle('wow-pip--selected', isSel);
+      p.setAttribute('aria-checked', isSel ? 'true' : 'false');
+    });
+    const desc = sel.querySelector('.wow-descriptor');
+    if (desc && WOW_LABELS[v]) {
+      desc.textContent = WOW_LABELS[v].long;
+      desc.classList.add('visible');
+    }
+  });
+}
+
 function bindNoteAutosave() {
   document.querySelectorAll('textarea.note-input').forEach(t => {
     let savedTimer;
@@ -6302,7 +6547,10 @@ function updateResolveButton(slug) {
   const notes = getNotes();
   const before = (notes[slug + '__before'] || '').trim();
   const after  = (notes[slug + '__after']  || '').trim();
-  const ready = before.length > 0 && after.length > 0;
+  // v1.9.13: resolve also requires a felt-sense rating (1-6).
+  const wow = getWow()[slug];
+  const hasWow = Number.isInteger(wow) && wow >= 1 && wow <= 6;
+  const ready = before.length > 0 && after.length > 0 && hasWow;
   const stored = getSessionReflections()[slug];
   const isDirty = stored && stored.text && stored.dirty;
   btn.disabled = !ready;
@@ -6312,13 +6560,18 @@ function updateResolveButton(slug) {
     hint.classList.add('ready');
   } else if (ready) {
     btn.textContent = 'See the reflection';
-    hint.textContent = 'Both notes are written. Send when you\'re ready.';
+    hint.textContent = 'Both notes written, rating chosen. Send when you\'re ready.';
     hint.classList.add('ready');
   } else {
     btn.textContent = 'See the reflection';
-    hint.textContent = before || after
-      ? 'A line in each box, then send when you\'re ready.'
-      : 'A line in each box, then send when you\'re ready.';
+    // Compose hint based on what's still missing.
+    const missing = [];
+    if (!before.length) missing.push('a Before line');
+    if (!after.length)  missing.push('an After line');
+    if (!hasWow)        missing.push('a felt rating');
+    hint.textContent = missing.length === 3
+      ? 'A line in each box and a felt rating, then send when you\'re ready.'
+      : 'Add ' + missing.join(' + ') + ', then send when you\'re ready.';
     hint.classList.remove('ready');
   }
 }
@@ -6432,6 +6685,9 @@ function buildResolvePayload(slug) {
   const phase = PLAN.find(p => p.sessions.includes(slug)) || { week: 1 };
   // Most recent reading available for this slug, walking session -> week -> baseline.
   const currentField = getCurrentBiofield(slug);
+  // v1.9.13: felt-sense WOW rating (1-6; 6 = WOW).
+  const wow = getWow()[slug];
+  const wowEntry = WOW_LABELS[wow];
   return {
     slug,
     userName: (USER && USER.displayName) || '',
@@ -6451,6 +6707,8 @@ function buildResolvePayload(slug) {
     },
     before: notes[slug + '__before'] || '',
     after:  notes[slug + '__after']  || '',
+    wow:      Number.isInteger(wow) ? wow : null,
+    wowLabel: wowEntry ? wowEntry.long : null,
     journey: {
       week: phase.week,
       weeksCompleted: ramonState.weeksCompleted,
@@ -6815,6 +7073,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderReserveList();
   setActivePhase(readWeekFromHash(), false);
   loadNotesIntoUI();
+  loadWowIntoUI();
   bindNoteAutosave();
   // Re-collapse any session that already has a stored reflection
   const storedRefl = getSessionReflections();

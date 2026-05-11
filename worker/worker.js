@@ -262,6 +262,15 @@ ${frameLines || '(not parsed)'}`,
 Before: ${payload.before || '(empty)'}
 After:  ${payload.after  || '(empty)'}`,
 
+// v1.9.13: felt-sense rating on the canonical 1-to-WOW scale (SKILL.md /
+// Reflections & Patterns). The model uses this to register magnitude —
+// a 1 gets a grounding, gentle reflection; a WOW gets expansive language
+// honoring an experience that exceeds words.
+`FELT-SENSE RATING (1-to-WOW scale)
+${payload.wow
+  ? `${name} rated this session ${payload.wow}/6${payload.wow === 6 ? ' (✨ WOW — beyond words)' : ''}${payload.wowLabel ? '\n— ' + payload.wowLabel : ''}`
+  : '(not rated)'}`,
+
 `Now write the per-session reflection.`
   ].join('\n\n');
 }
