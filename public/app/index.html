@@ -149,13 +149,14 @@ window.__userDataPromise = (function () {
   <span class="footer-em"><em>We reflect. We never conclude.</em></span>
 </footer>
 
-<!-- App modules. Load order matters: helpers first, then components, then modes, then orchestrator. -->
+<!-- App modules. app.js MUST load first: it defines window.OPUS.el and friends
+     that each module captures at the top of its IIFE. -->
+<script src="app.js"></script>
 <script src="session-card.js"></script>
 <script src="reflections-panel.js"></script>
 <script src="field-digest.js"></script>
 <script src="intake.js"></script>
 <script src="mode-quest.js"></script>
-<script src="app.js"></script>
 
 </body>
 </html>
