@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#160F25">
+<title>OPUS · SoundBed</title>
+
+<!-- Per-user data loader. URL must include ?u=<slug>. Unknown slug → intake. -->
+<script>
+window.__userDataPromise = (function () {
+  var params = new URLSearchParams(window.location.search);
+  var slug = (params.get('u') || '').trim();
+  if (!slug) {
+    return Promise.resolve({ slug: '', status: 'no-slug' });
+  }
+  return new Promise(function (resolve) {
+    var s = document.createElement('script');
+    s.src = '../users/' + slug + '.js';
+    s.onload = function () {
+      if (window.USER_DATA && window.USER_DATA.slug === slug) {
+        resolve({ slug: slug, status: 'ok', source: 'file' });
+      } else {
+        resolve({ slug: slug, status: 'no-data' });
+      }
+    };
+    s.onerror = function () { resolve({ slug: slug, status: 'no-file' }); };
+    document.head.appendChild(s);
+  });
+})();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- Top bar — always visible -->
+<header class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <span class="brand-mark">OPUS</span>
+      <span class="brand-dot" aria-hidden="true"></span>
+      <span class="brand-tag">SoundBed</span>
+    </div>
+    <button class="topbar-portrait" id="topbar-portrait" type="button" aria-label="Settings">
+      <span class="portrait-ring" aria-hidden="true"></span>
+      <img class="portrait-img" alt="" />
+    </button>
+  </div>
+</header>
+
+<!-- View containers. The active view gets data-active=1; others hide. -->
+<main id="app" class="app">
+
+  <section class="view view-loading" data-view="loading" data-active="1">
+    <div class="loader">
+      <span class="loader-orb" aria-hidden="true"></span>
+      <p>preparing your field…</p>
+    </div>
+  </section>
+
+  <section class="view view-no-link" data-view="no-link">
+    <div class="gate">
+      <div class="gate-eyebrow">OPUS · SoundBed</div>
+      <h1 class="gate-title">This link is no longer <em>active</em>.</h1>
+      <p class="gate-body">If you were sent here, ask the person who sent the link to share the current one.</p>
+    </div>
+  </section>
+
+  <section class="view view-intake" data-view="intake">
+    <!-- intake.js mounts into #intake-mount -->
+    <div id="intake-mount"></div>
+  </section>
+
+  <section class="view view-dashboard" data-view="dashboard">
+    <!-- mode-quest.js (default) mounts here -->
+    <div id="dashboard-mount"></div>
+  </section>
+
+  <section class="view view-module" data-view="module">
+    <!-- Quest module detail view -->
+    <div id="module-mount"></div>
+  </section>
+
+  <section class="view view-session" data-view="session">
+    <div id="session-mount"></div>
+  </section>
+
+  <section class="view view-archive" data-view="archive">
+    <div class="view-inner">
+      <header class="view-head">
+        <button class="back" type="button" data-back>← back</button>
+        <h2 class="view-title">Reflections</h2>
+      </header>
+      <div id="archive-mount" class="archive-mount"></div>
+    </div>
+  </section>
+
+  <section class="view view-field" data-view="field">
+    <div class="view-inner">
+      <header class="view-head">
+        <button class="back" type="button" data-back>← back</button>
+        <h2 class="view-title">Your field</h2>
+      </header>
+      <div id="field-mount" class="field-mount"></div>
+    </div>
+  </section>
+
+  <section class="view view-settings" data-view="settings">
+    <div class="view-inner">
+      <header class="view-head">
+        <button class="back" type="button" data-back>← back</button>
+        <h2 class="view-title">Settings</h2>
+      </header>
+      <div id="settings-mount" class="settings-mount"></div>
+    </div>
+  </section>
+
+  <section class="view view-celebrate" data-view="celebrate">
+    <div id="celebrate-mount"></div>
+  </section>
+
+</main>
+
+<!-- Bottom nav — visible once user is past intake -->
+<nav class="botnav" id="botnav" hidden>
+  <button class="botnav-item" type="button" data-nav="dashboard">
+    <span class="botnav-glyph" aria-hidden="true">◐</span>
+    <span class="botnav-label">Today</span>
+  </button>
+  <button class="botnav-item" type="button" data-nav="archive">
+    <span class="botnav-glyph" aria-hidden="true">✦</span>
+    <span class="botnav-label">Reflections</span>
+  </button>
+  <button class="botnav-item" type="button" data-nav="field">
+    <span class="botnav-glyph" aria-hidden="true">⬡</span>
+    <span class="botnav-label">Field</span>
+  </button>
+</nav>
+
+<!-- Footer -->
+<footer class="footer">
+  <span class="footer-version" id="footer-version">v2.0.0-alpha</span>
+  <span class="footer-em"><em>We reflect. We never conclude.</em></span>
+</footer>
+
+<!-- App modules. Load order matters: helpers first, then components, then modes, then orchestrator. -->
+<script src="session-card.js"></script>
+<script src="reflections-panel.js"></script>
+<script src="field-digest.js"></script>
+<script src="intake.js"></script>
+<script src="mode-quest.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

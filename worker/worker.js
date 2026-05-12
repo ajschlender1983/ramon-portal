@@ -46,6 +46,10 @@ export default {
         const passes = await deepenChain(env, payload);
         return json({ deepReflection: passes[3], passes }, 200, cors);
       }
+      if (url.pathname === '/expand') {
+        const userData = await expandIntake(env, payload);
+        return json({ userData }, 200, cors);
+      }
       return json({ error: 'not found' }, 404, cors);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 502, cors);
@@ -330,4 +334,173 @@ function extractDeepenDraft(raw) {
     }
   } catch { /* fall through */ }
   return raw;
+}
+
+/* ============================================================ Expand — intake → USER_DATA shape
+
+   Powers the new web-app variant at /app/?u=<slug>. Takes a lightweight
+   intake (survey, biometric, paste-reading, or empty-slate) and synthesizes
+   a coherent reading + the 5 hand-tuned biofield numbers the dashboard
+   needs (auricMeters, hawkinsLevel/Target, dna, primaryBlockQuote, archetype,
+   chakraStates).
+
+   The 4-week plan + session catalogue is NOT synthesized here — the app
+   layers the user's biofield values onto a CANONICAL plan that lives in
+   public/app/canonical-plan.js. We keep the plan handcrafted so the
+   curriculum coherence Adam built into Ramon's + Amber's files is the
+   default for any user. /expand just produces the "reading" part. */
+
+function EXPAND_SYSTEM(userName) {
+  const name = nameOrFallback(userName);
+  return `You are synthesizing a "biofield reading" record for ${name} from a lightweight intake.
+
+Your job: produce a JSON record with the following exact shape. No prose, no commentary, no markdown fences. The user is about to enter a 30-day SoundBed wellness program; this record powers their personalized dashboard.
+
+{
+  "auricMeters": <number 6.5..15.5, one decimal>,
+  "hawkinsLevel": <integer 200..700; map: courage 200, willingness 310, acceptance 350, reason 400, love 500, joy 540, peace 600, enlightenment 700+>,
+  "hawkinsTarget": <integer 50..150 above hawkinsLevel; commonly 528 (Miracles) for love-range users>,
+  "dna": { "phaseLocked": <int 4..10>, "consolidating": <int 1..4>, "of": 12 },
+  "primaryBlockQuote": "<one short sentence, first-person, naming what's in the way>",
+  "archetype": "<one short evocative line ending with a felt-sense noun>",
+  "chakraStates": [
+    { "id": "crown",     "label": "Crown",        "state": "<canonical state>", "yPct": 7,  "note": "<short felt note>" },
+    { "id": "third-eye", "label": "Third Eye",    "state": "<canonical state>", "yPct": 14, "note": "..." },
+    { "id": "throat",    "label": "Throat",       "state": "<canonical state>", "yPct": 22, "note": "..." },
+    { "id": "heart",     "label": "Heart",        "state": "<canonical state>", "yPct": 36, "note": "..." },
+    { "id": "solar",     "label": "Solar Plexus", "state": "<canonical state>", "yPct": 48, "note": "..." },
+    { "id": "sacral",    "label": "Sacral",       "state": "<canonical state>", "yPct": 60, "note": "..." },
+    { "id": "root",      "label": "Root",         "state": "<canonical state>", "yPct": 76, "note": "..." }
+  ],
+  "reading": "<a 6-section narrative reading body. Sections are: 🜂 ORIC FIELD, 🜁 DNA STRAND ACTIVATION, 🜃 CHAKRA SCAN, 🜄 ORGANIC FIELD, 🜅 VIBRATIONAL LEVEL, 🜆 PRIMARY BLOCK, 🜇 ARCHETYPE. Write as if a thoughtful energetic practitioner wrote it for ${name} based on the intake provided. 350-500 words total. The numbers in the structured fields MUST match what's in the reading text.>"
+}
+
+The CANONICAL chakra state words (use ONLY these): undercharged, stabilizing, holding, consolidating, clear, carrying-a-lot, radiant.
+
+Constraints:
+- Honor the user's intake. If the intake suggests low energy, lower the auricMeters and hawkinsLevel; if high coherence, raise them.
+- The reading text MUST reference the intake's specifics by paraphrase, not verbatim quotes.
+- NEVER claim medical, psychological, or diagnostic insight. Stay in felt-sense / energetic language.
+- The reading is mirror, not conclusion.
+
+${HUMANIZER_RULES}`;
+}
+
+function buildExpandUser(payload) {
+  const mode = payload.mode || 'empty';
+  const f = payload.fields || {};
+  const name = nameOrFallback(payload.userName);
+  const lines = [`INTAKE MODE: ${mode}`, `Name: ${name}`];
+
+  if (mode === 'survey') {
+    if (f.intention) lines.push(`Today's intention: ${f.intention}`);
+    if (typeof f.energy === 'number') lines.push(`Energy 1-10: ${f.energy}`);
+    if (f.state) lines.push(`One-word state: ${f.state}`);
+    if (f.bodyFocus) lines.push(`Body focus area: ${f.bodyFocus}`);
+    if (f.mood) lines.push(`Mood 1-6: ${f.mood}`);
+  } else if (mode === 'biometric') {
+    if (typeof f.hrv === 'number') lines.push(`HRV (ms): ${f.hrv}`);
+    if (typeof f.restingHR === 'number') lines.push(`Resting HR (bpm): ${f.restingHR}`);
+    if (typeof f.sleepScore === 'number') lines.push(`Sleep score 0-100: ${f.sleepScore}`);
+    if (typeof f.readinessScore === 'number') lines.push(`Readiness score 0-100: ${f.readinessScore}`);
+  } else if (mode === 'reading') {
+    if (f.rawReading) lines.push(`PASTED READING (parse this as the source of truth):\n${f.rawReading}`);
+  } else {
+    lines.push(`No structured input provided — synthesize a neutral, welcoming starting point. auricMeters around 8, hawkinsLevel around 440 (Acceptance approaching Reason), 5/12 strands phase-locked, archetype "Seeker", chakra states clustered around "stabilizing" with one "holding" in the sacral.`);
+  }
+
+  lines.push('', `Now produce the JSON record. Return ONLY the JSON, no surrounding text.`);
+  return lines.join('\n');
+}
+
+async function expandIntake(env, payload) {
+  const raw = await callClaude(env, {
+    system: EXPAND_SYSTEM(payload.userName),
+    max_tokens: 1800,
+    messages: [{ role: 'user', content: buildExpandUser(payload) }]
+  });
+  // Extract JSON; tolerant of fences or surrounding text the model slips through.
+  let parsed = null;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (m) parsed = JSON.parse(m[0]);
+  } catch { /* fall through */ }
+  if (!parsed || typeof parsed !== 'object') {
+    // Fallback to a safe default if the model returns malformed JSON.
+    parsed = expandFallback(payload.userName);
+  }
+  return normalizeExpandResult(parsed, payload.userName);
+}
+
+function expandFallback(userName) {
+  return {
+    auricMeters: 8.0,
+    hawkinsLevel: 440,
+    hawkinsTarget: 528,
+    dna: { phaseLocked: 5, consolidating: 2, of: 12 },
+    primaryBlockQuote: 'I am still learning what I want.',
+    archetype: 'A Seeker becoming a Witness.',
+    chakraStates: [
+      { id: 'crown',     label: 'Crown',        state: 'stabilizing',   yPct: 7,  note: 'Open, settling.' },
+      { id: 'third-eye', label: 'Third Eye',    state: 'clear',         yPct: 14, note: 'Watching without grasping.' },
+      { id: 'throat',    label: 'Throat',       state: 'stabilizing',   yPct: 22, note: 'Words are arriving slowly.' },
+      { id: 'heart',     label: 'Heart',        state: 'holding',       yPct: 36, note: 'Tender, present.' },
+      { id: 'solar',     label: 'Solar Plexus', state: 'stabilizing',   yPct: 48, note: 'Steady, returning.' },
+      { id: 'sacral',    label: 'Sacral',       state: 'holding',       yPct: 60, note: 'Quiet, listening.' },
+      { id: 'root',      label: 'Root',         state: 'undercharged',  yPct: 76, note: 'Wants more ground.' }
+    ],
+    reading: `🜂 ORIC FIELD\nYour field reaches 8 meters. Settled, present.\n\n🜁 DNA STRAND ACTIVATION\n5 of 12 strands phase-locked. The system is gathering itself.\n\n🜃 CHAKRA SCAN\nThe lower body is asking for ground. The upper centers are open and receiving.\n\n🜄 ORGANIC FIELD\nNervous system in early integration. Breath shallow but steady.\n\n🜅 VIBRATIONAL LEVEL\n440 (Acceptance approaching Reason).\n\n🜆 PRIMARY BLOCK\nA quiet uncertainty about what you actually want.\n\n🜇 ARCHETYPE\nA Seeker becoming a Witness.`,
+    _fallback: true
+  };
+}
+
+function normalizeExpandResult(p, userName) {
+  // Coerce types + clamp ranges so the front-end never blows up on weird values.
+  const out = {};
+  out.auricMeters = clampNumber(p.auricMeters, 6.5, 15.5, 8);
+  out.hawkinsLevel = Math.round(clampNumber(p.hawkinsLevel, 200, 800, 440));
+  out.hawkinsTarget = Math.round(clampNumber(p.hawkinsTarget, out.hawkinsLevel + 1, 1000, 528));
+  const dna = p.dna || {};
+  out.dna = {
+    phaseLocked: clampInt(dna.phaseLocked, 4, 10, 5),
+    consolidating: clampInt(dna.consolidating, 1, 4, 2),
+    of: 12
+  };
+  out.primaryBlockQuote = typeof p.primaryBlockQuote === 'string' && p.primaryBlockQuote.trim()
+    ? p.primaryBlockQuote.trim().slice(0, 220)
+    : 'I am still learning what I want.';
+  out.archetype = typeof p.archetype === 'string' && p.archetype.trim()
+    ? p.archetype.trim().slice(0, 220)
+    : 'A Seeker becoming a Witness.';
+  const validStates = new Set(['undercharged','stabilizing','holding','consolidating','clear','carrying-a-lot','radiant']);
+  const defaultChakras = [
+    { id: 'crown',     label: 'Crown',        yPct: 7  },
+    { id: 'third-eye', label: 'Third Eye',    yPct: 14 },
+    { id: 'throat',    label: 'Throat',       yPct: 22 },
+    { id: 'heart',     label: 'Heart',        yPct: 36 },
+    { id: 'solar',     label: 'Solar Plexus', yPct: 48 },
+    { id: 'sacral',    label: 'Sacral',       yPct: 60 },
+    { id: 'root',      label: 'Root',         yPct: 76 }
+  ];
+  out.chakraStates = defaultChakras.map((d, i) => {
+    const inc = (Array.isArray(p.chakraStates) ? p.chakraStates : [])[i] || {};
+    const state = validStates.has(inc.state) ? inc.state : 'stabilizing';
+    const note = typeof inc.note === 'string' && inc.note.trim() ? inc.note.trim().slice(0, 140) : '';
+    return { id: d.id, label: d.label, state, yPct: d.yPct, note };
+  });
+  out.reading = typeof p.reading === 'string' && p.reading.length > 80
+    ? p.reading
+    : expandFallback(userName).reading;
+  return out;
+}
+
+function clampNumber(v, lo, hi, d) {
+  const n = Number(v);
+  if (!isFinite(n)) return d;
+  return Math.max(lo, Math.min(hi, n));
+}
+function clampInt(v, lo, hi, d) {
+  const n = parseInt(v, 10);
+  if (!isFinite(n)) return d;
+  return Math.max(lo, Math.min(hi, n));
 }
