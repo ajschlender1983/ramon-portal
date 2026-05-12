@@ -1454,9 +1454,10 @@ main { position: relative; z-index: 2; }
 .bf-helix-svg-wrap {
   width: 110px;
   height: 320px;
-  /* v1.9.19: build-in — the helix fades up and scales in from below,
-     landing ~1.0 s after the body chakras start blooming. Lets the
-     body lead, then the DNA reveals as a secondary instrument. */
+  /* v1.9.19: build-in — the helix fades up and scales in from below.
+     The RAILS animate via the wrap fade. The RUNGS animate individually
+     bottom-up (v1.9.20) so the locked strands appear like a ladder
+     being assembled from the ground up. */
   animation: helix-build-in 900ms 1000ms cubic-bezier(.2,.8,.2,1) backwards;
 }
 @keyframes helix-build-in {
@@ -1468,50 +1469,101 @@ main { position: relative; z-index: 2; }
   .bf-helix-svg-wrap { animation: none; }
 }
 .bf-helix-svg-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.bf-helix .rail { fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.bf-helix .rail { fill: none; stroke-width: 2.5; stroke-linecap: round; }
 .bf-helix .rail.solid {
   stroke: url(#dna-grad);
-  /* v1.9.19: active rails glow gently. */
-  filter: drop-shadow(0 0 3px rgba(255,215,100,0.45));
+  filter: drop-shadow(0 0 5px rgba(255,215,100,0.55));
 }
-.bf-helix .rail.ghost { stroke: rgba(123,111,168,0.4); stroke-dasharray: 2 4; stroke-width: 1; }
-.bf-helix .rung { stroke: rgba(255,215,100,0.45); stroke-width: 1; stroke-linecap: round; }
-/* v1.9.19: phase-locked rungs now read as ACTIVE — thicker stroke +
-   pulsing gold glow on a 4.5 s clock (offset per rung via inline
-   --rung-i so the locked group doesn't pulse in lockstep). */
+.bf-helix .rail.ghost { stroke: rgba(123,111,168,0.4); stroke-dasharray: 2 4; stroke-width: 1.5; }
+
+/* v1.9.20: rung sizes bumped substantially. Base rung is now 2px
+   (was 1px). Locked rungs are FAT and pulsing. */
+.bf-helix .rung {
+  stroke: rgba(255,215,100,0.45);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* Bottom-up build-in for every rung. --build-i is set inline per rung
+   (0 = bottom rung blooms first, total-1 = top rung blooms last).
+   100 ms apart per rung. After 1.0 s body lead + N×100 ms ladder stagger,
+   the rung lands, then any per-state pulse takes over. */
+@keyframes rung-build-up {
+  0%   { stroke-width: 0; opacity: 0; }
+  50%  { stroke-width: 3.2; opacity: 0.92; }
+  100% { stroke-width: var(--final-width, 2); opacity: var(--final-opacity, 0.85); }
+}
+
+/* Phase-locked rungs: ACTIVE — fat stroke + pulsing gold glow, staggered
+   pulse phase via --rung-i so the locked band doesn't beat in lockstep. */
 .bf-helix .rung.locked  {
-  stroke: rgba(255,236,180,0.95);
-  stroke-width: 1.6;
-  opacity: 0.92;
-  filter: drop-shadow(0 0 4px rgba(255,215,100,0.65));
-  animation: locked-rung-pulse 4500ms ease-in-out infinite;
-  animation-delay: calc(var(--rung-i, 0) * 280ms);
+  stroke: rgba(255,240,200,1);
+  stroke-width: 3;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 6px rgba(255,215,100,0.85));
+  --final-width: 3;
+  --final-opacity: 0.95;
+  animation:
+    rung-build-up 600ms cubic-bezier(.2,.8,.2,1) backwards,
+    locked-rung-pulse 3600ms ease-in-out infinite;
+  animation-delay:
+    calc(1400ms + var(--build-i, 0) * 90ms),
+    calc(2000ms + var(--build-i, 0) * 90ms + var(--rung-i, 0) * 220ms);
 }
 @keyframes locked-rung-pulse {
   0%, 100% {
-    stroke-width: 1.5;
-    opacity: 0.82;
-    filter: drop-shadow(0 0 3px rgba(255,215,100,0.45));
+    stroke-width: 2.6;
+    opacity: 0.85;
+    filter: drop-shadow(0 0 4px rgba(255,215,100,0.55));
   }
   50% {
-    stroke-width: 2.0;
+    stroke-width: 3.6;
     opacity: 1.0;
-    filter: drop-shadow(0 0 8px rgba(255,215,100,0.85));
+    filter: drop-shadow(0 0 12px rgba(255,215,100,0.95));
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .bf-helix .rung.locked { animation: none; }
 }
-.bf-helix .rung.partial { stroke: rgba(123,111,168,0.55); stroke-width: 1.2; stroke-dasharray: 1 2; opacity: 0.42; }
-/* Only the topmost consolidating rung breathes — the becoming edge.
-   v1.9.19: bumped to width 1.4 so it reads as "active becoming" rather
-   than "faint." */
-.bf-helix .rung.partial.breathing {
-  stroke-width: 1.4;
-  opacity: calc(0.42 + 0.32 * var(--breath-pulse));
-  filter: drop-shadow(0 0 3px rgba(106,223,217,0.55));
+
+.bf-helix .rung.partial {
+  stroke: rgba(123,111,168,0.7);
+  stroke-width: 1.8;
+  stroke-dasharray: 1 2;
+  opacity: 0.55;
+  --final-width: 1.8;
+  --final-opacity: 0.55;
+  animation: rung-build-up 600ms cubic-bezier(.2,.8,.2,1) backwards;
+  animation-delay: calc(1400ms + var(--build-i, 0) * 90ms);
 }
-.bf-helix .rung.notyet  { stroke: rgba(123,111,168,0.40); stroke-width: 0.5; opacity: 0.18; }
+/* Topmost consolidating rung breathes — the becoming edge. */
+.bf-helix .rung.partial.breathing {
+  stroke-width: 2.2;
+  opacity: calc(0.55 + 0.35 * var(--breath-pulse));
+  filter: drop-shadow(0 0 5px rgba(106,223,217,0.75));
+  --final-width: 2.2;
+  --final-opacity: 0.85;
+  animation:
+    rung-build-up 600ms cubic-bezier(.2,.8,.2,1) backwards;
+  animation-delay: calc(1400ms + var(--build-i, 0) * 90ms);
+}
+
+.bf-helix .rung.notyet  {
+  stroke: rgba(123,111,168,0.40);
+  stroke-width: 0.9;
+  opacity: 0.22;
+  --final-width: 0.9;
+  --final-opacity: 0.22;
+  animation: rung-build-up 600ms cubic-bezier(.2,.8,.2,1) backwards;
+  animation-delay: calc(1400ms + var(--build-i, 0) * 90ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bf-helix .rung.locked,
+  .bf-helix .rung.partial,
+  .bf-helix .rung.partial.breathing,
+  .bf-helix .rung.notyet { animation: none; }
+}
 .bf-helix-meta {
   display: flex; flex-direction: column; gap: 8px;
   min-width: 0;
@@ -3149,7 +3201,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.19';
+const VERSION = '1.9.20';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3805,31 +3857,28 @@ function buildHelixSVG() {
     d: 'M ' + railAPts.map(p => p.join(' ')).join(' L ')
   }));
 
-  // Rail B: solid for the bottom (locked + consolidating) / total fraction; ghost above.
-  const splitFrac = (locked + consolidating) / total;
-  const railBSolidY0 = padTop + (1 - splitFrac) * innerH; // top of solid region
-  const bSolidPts = [];
-  const bGhostPts = [];
+  // Rail B: full-length solid path. v1.9.20: was previously split into
+  // two paths (ghost above, solid below) which produced a visible gap +
+  // asymmetric top. Now both rails run full length symmetrically — the
+  // locked/consolidating/not-yet distinction lives in the rung treatment.
+  const railBPts = [];
   for (let i = 0; i <= samples; i++) {
     const t = i / samples;
     const y = padTop + t * innerH;
     const phase = t * Math.PI * 2 * cycles + Math.PI;
     const x = cx + amp * Math.sin(phase);
-    if (y >= railBSolidY0) bSolidPts.push([x.toFixed(2), y.toFixed(2)]);
-    else bGhostPts.push([x.toFixed(2), y.toFixed(2)]);
+    railBPts.push([x.toFixed(2), y.toFixed(2)]);
   }
-  if (bSolidPts.length) {
-    root.appendChild(svg('path', { class: 'rail solid', d: 'M ' + bSolidPts.map(p => p.join(' ')).join(' L ') }));
-  }
-  if (bGhostPts.length) {
-    root.appendChild(svg('path', { class: 'rail ghost', d: 'M ' + bGhostPts.map(p => p.join(' ')).join(' L ') }));
-  }
+  root.appendChild(svg('path', {
+    class: 'rail solid',
+    d: 'M ' + railBPts.map(p => p.join(' ')).join(' L ')
+  }));
 
   // Rungs: total rungs evenly spaced. Bottom = locked, middle = consolidating,
-  // top = not-yet. Index 0 is the TOPMOST rung visually.
-  // Track the per-locked-rung index so each locked rung can have its
-  // own animation-delay (set via --rung-i CSS custom prop) — keeps the
-  // pulse from beating in lockstep across the whole locked band.
+  // top = not-yet. Index 0 is the TOPMOST rung visually (i=0 is at the top).
+  // v1.9.20: each rung carries --build-i (counted from the BOTTOM upward)
+  // for the bottom-up build-in stagger. Locked rungs ALSO carry --rung-i
+  // for their pulse-phase stagger (so they don't pulse in lockstep).
   let lockedI = 0;
   for (let i = 0; i < total; i++) {
     const t = (i + 0.5) / total;
@@ -3838,13 +3887,17 @@ function buildHelixSVG() {
     const xA = cx + amp * Math.sin(phase);
     const xB = cx + amp * Math.sin(phase + Math.PI);
 
+    // Build-in index counts from the BOTTOM upward: i=total-1 (bottom) → 0,
+    // i=0 (top) → total-1. So the bottom rung blooms first, top rung last.
+    const buildI = (total - 1 - i);
+
     let cls;
-    let inlineStyle = '';
+    let inlineStyle = '--build-i:' + buildI + ';';
     if (i >= total - locked) {
       // bottom band — phase-locked
       cls = 'rung locked';
       // v1.9.19: stagger each locked rung's pulse phase
-      inlineStyle = '--rung-i:' + lockedI + ';';
+      inlineStyle += '--rung-i:' + lockedI + ';';
       lockedI++;
     } else if (i >= notYet) {
       // middle band — consolidating; topmost-of-this-group breathes
@@ -3857,9 +3910,9 @@ function buildHelixSVG() {
     const attrs = {
       class: cls,
       x1: xA.toFixed(2), y1: y.toFixed(2),
-      x2: xB.toFixed(2), y2: y.toFixed(2)
+      x2: xB.toFixed(2), y2: y.toFixed(2),
+      style: inlineStyle
     };
-    if (inlineStyle) attrs.style = inlineStyle;
     root.appendChild(svg('line', attrs));
   }
   return root;
