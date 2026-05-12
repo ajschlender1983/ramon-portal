@@ -330,6 +330,19 @@ main { position: relative; z-index: 2; }
   /* Fills the entire stage — body image IS the stage's background. */
   position: absolute; inset: 0;
 }
+/* v1.9.24: dark radial gradient anchored in the bottom-right corner.
+   Provides a backdrop for the auric readout text so it pops more
+   against the bright aurora image. Sits ABOVE the body image but BELOW
+   the readout text (z-index 2 vs readout's z-index 3). */
+.bf-body-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 42% at 95% 98%, rgba(11,8,15,0.78), rgba(11,8,15,0.32) 55%, transparent 75%);
+  z-index: 2;
+}
 .bf-stage-pane {
   /* Overlays the top-right of the body image, on the aurora area
      beside/above the body figure (which sits at x≈36%). */
@@ -627,6 +640,66 @@ main { position: relative; z-index: 2; }
   line-height: 1.55;
   color: rgba(255,255,255,0.82);
 }
+/* v1.9.24: chakra status bar — under ↔ balanced ↔ over continuum.
+   Lives below the note text inside .bf-chakra-callout. Position dot
+   inherits the callout's --callout-hue (per-chakra color). */
+.bf-chakra-callout-bar {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+}
+.bf-chakra-callout-bar .bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--sans);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.42);
+  margin-bottom: 6px;
+}
+.bf-chakra-callout-bar .bar-lbl--balanced { color: rgba(255,215,100,0.72); }
+.bf-chakra-callout-bar .bar-track {
+  position: relative;
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: visible;
+}
+.bf-chakra-callout-bar .bar-mid {
+  position: absolute;
+  left: 50%; top: -3px; bottom: -3px;
+  width: 1px;
+  background: rgba(255,215,100,0.52);
+}
+.bf-chakra-callout-bar .bar-fill {
+  position: absolute;
+  top: 1px; bottom: 1px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--callout-hue, var(--gold)) 65%, transparent),
+    color-mix(in srgb, var(--callout-hue, var(--gold)) 90%, white 10%));
+  border-radius: 999px;
+  opacity: 0.85;
+}
+.bf-chakra-callout-bar .bar-fill--under {
+  /* mirror the gradient direction so the brighter end is toward the dot (left side) */
+  background: linear-gradient(270deg,
+    color-mix(in srgb, var(--callout-hue, var(--gold)) 65%, transparent),
+    color-mix(in srgb, var(--callout-hue, var(--gold)) 90%, white 10%));
+}
+.bf-chakra-callout-bar .bar-dot {
+  position: absolute;
+  top: 50%;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--callout-hue, var(--gold));
+  border: 2px solid rgba(255,240,200,0.95);
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--callout-hue, var(--gold)) 20%, transparent),
+    0 0 14px color-mix(in srgb, var(--callout-hue, var(--gold)) 65%, transparent);
+}
+
 .bf-chakra-callout-close {
   position: absolute;
   top: 8px; right: 10px;
@@ -651,46 +724,47 @@ main { position: relative; z-index: 2; }
 .bf-chakra-callout[data-chakra="third-eye"] { --callout-hue: rgb(123,111,168); }
 .bf-chakra-callout[data-chakra="crown"]     { --callout-hue: rgb(194, 47,205); }
 
-/* v1.9.18: prominent first-time tap-hint. Larger card, animated "tap"
-   indicator, stronger pulsing gold glow. Drifts in 2s after build-in,
+/* v1.9.18/.24: very prominent first-time tap-hint. Larger card, bigger
+   text, brighter glow, animated tap dot. Drifts in 2s after build-in,
    parks next to the radiant chakra, dismisses on first chakra tap.
-   Stored once-per-user via localStorage so we don't nag returners. */
+   Stored once-per-user via localStorage. */
 .bf-chakra-hint {
   position: absolute;
   top: var(--hint-top, 30%);
   left: var(--hint-left, 50%);
   transform: translate(-4px, -50%);
   z-index: 5;
-  padding: 12px 18px 12px 16px;
-  background: linear-gradient(135deg, rgba(20,12,30,0.92), rgba(40,28,20,0.92));
-  border: 1.5px solid rgba(255,215,100,0.68);
-  border-radius: 14px;
+  padding: 14px 22px 14px 20px;
+  background: linear-gradient(135deg, rgba(28,16,38,0.96), rgba(54,36,22,0.96));
+  border: 2px solid rgba(255,215,100,0.85);
+  border-radius: 16px;
   font-family: var(--serif);
   font-style: italic;
-  font-size: 17px;
+  font-size: 20px;
   letter-spacing: 0.01em;
-  color: rgba(255,240,200,1);
+  color: rgba(255,242,210,1);
   white-space: nowrap;
   pointer-events: none;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   box-shadow:
-    0 0 0 4px rgba(255,215,100,0.08),
-    0 0 28px rgba(255,215,100,0.55),
-    0 0 56px rgba(255,215,100,0.30);
-  display: inline-flex; align-items: center; gap: 10px;
+    0 0 0 6px rgba(255,215,100,0.10),
+    0 0 36px rgba(255,215,100,0.70),
+    0 0 72px rgba(255,180,90,0.45),
+    0 0 120px rgba(194,47,205,0.30);
+  display: inline-flex; align-items: center; gap: 12px;
   animation:
     hint-arrive 720ms 2000ms cubic-bezier(.2,.8,.2,1) backwards,
-    hint-pulse 2200ms 2720ms ease-in-out infinite;
+    hint-pulse 2000ms 2720ms ease-in-out infinite;
 }
-/* Animated "tap" icon — a small circle pulsing inside, suggesting a
-   fingertip pressing. Renders to the left of the hint text. */
+/* Animated "tap" icon — pulsing inside the hint, suggesting a fingertip
+   pressing. v1.9.24 bumps size 14→18 px + brighter glow. */
 .bf-chakra-hint .bf-chakra-hint-dot {
-  width: 14px; height: 14px;
+  width: 18px; height: 18px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,240,200,1) 0%, rgba(255,215,100,0.75) 50%, transparent 80%);
-  box-shadow: 0 0 14px rgba(255,215,100,0.85);
-  animation: hint-dot-tap 1300ms 2700ms ease-in-out infinite;
+  background: radial-gradient(circle, rgba(255,255,230,1) 0%, rgba(255,215,100,0.85) 45%, transparent 78%);
+  box-shadow: 0 0 18px rgba(255,215,100,1), 0 0 32px rgba(255,180,90,0.65);
+  animation: hint-dot-tap 1200ms 2700ms ease-in-out infinite;
   flex-shrink: 0;
 }
 @keyframes hint-dot-tap {
@@ -1088,6 +1162,7 @@ main { position: relative; z-index: 2; }
    the body image directly. Compact layout so it fits in the right
    portion of the image without crowding the body figure. */
 .bf-helix--side {
+  position: relative;
   background: rgba(11,8,15,0.78);
   border: 1px solid rgba(255,215,100,0.24);
   border-radius: 14px;
@@ -1097,12 +1172,50 @@ main { position: relative; z-index: 2; }
   grid-template-columns: 56px 1fr;
   gap: 12px;
   align-items: start;
+  /* v1.9.24: card casts a gold + teal glow on the background. */
+  box-shadow:
+    0 0 28px rgba(255,215,100,0.18),
+    0 0 64px rgba(106,223,217,0.10),
+    0 12px 36px -16px rgba(0,0,0,0.55);
+  overflow: hidden;
+}
+/* v1.9.24: hexagonal pulsing texture overlay on the DNA card.
+   Subtle — opacity ~0.10 — but the eye reads it as the same molecular
+   geometry as DNA pairs. Animates gentle brightness. */
+.bf-helix--side::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 70' preserveAspectRatio='xMidYMid meet'><g fill='none' stroke='%23ffd766' stroke-width='0.6' opacity='0.85'><polygon points='20,5 35,12.5 35,27.5 20,35 5,27.5 5,12.5'/><polygon points='60,5 75,12.5 75,27.5 60,35 45,27.5 45,12.5'/><polygon points='40,40 55,47.5 55,62.5 40,70 25,62.5 25,47.5'/></g></svg>");
+  background-size: 80px 70px;
+  background-repeat: repeat;
+  opacity: 0.08;
+  pointer-events: none;
+  animation: helix-hex-pulse 5400ms ease-in-out infinite;
+}
+@keyframes helix-hex-pulse {
+  0%, 100% { opacity: 0.06; transform: scale(1.0); }
+  50%      { opacity: 0.12; transform: scale(1.015); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-helix--side::before { animation: none; }
+}
+/* Make sure card content sits ABOVE the hex texture. */
+.bf-helix--side > * {
+  position: relative;
+  z-index: 1;
 }
 .bf-helix--side .bf-helix-svg-wrap { width: 56px; height: 180px; }
 .bf-helix--side .bf-helix-meta .helix-label { font-size: 8.5px; }
-/* v1.9.23: side-pane variant — slightly smaller numbers to fit the narrower side area, but still dominant. */
-.bf-helix--side .bf-helix-meta .helix-stat .num { font-size: clamp(20px, 3vw, 26px); }
-.bf-helix--side .bf-helix-meta .helix-stat .lbl { font-size: 8px; letter-spacing: 0.16em; }
+/* v1.9.23/.24: side-pane variant tightens the vertical stat rows
+   (smaller numbers, smaller column for the number, descriptor stays
+   readable). */
+.bf-helix--side .bf-helix-meta .helix-stat {
+  grid-template-columns: 36px 1fr;
+  gap: 10px;
+  padding: 2px 0;
+}
+.bf-helix--side .bf-helix-meta .helix-stat .num { font-size: clamp(22px, 3.4vw, 28px); }
+.bf-helix--side .bf-helix-meta .helix-stat .lbl { font-size: 9px; letter-spacing: 0.16em; }
 .bf-helix--side .bf-helix-meta .helix-sub { font-size: 10.5px; line-height: 1.45; }
 /* v1.9.2/.5: Hawkins card lives in the side pane overlaying the body
    image's right portion. Compact value typography so it doesn't crowd
@@ -1601,52 +1714,52 @@ main { position: relative; z-index: 2; }
   min-width: 0;
 }
 .bf-helix-meta .helix-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
-/* v1.9.23: helix-count is now a 3-stat tile row. Numbers dominate; the
-   uppercase labels beneath each number are deliberately small. */
+/* v1.9.23/.24: helix-count is now a VERTICAL stack of 3 stat rows. Each
+   row reads as [big gold italic number] | [full descriptor + secondary
+   line]. Vertical stack means descriptors don't truncate. */
 .bf-helix-meta .helix-count {
   display: flex;
-  gap: 4px;
-  align-items: flex-start;
-  margin: 2px 0 4px;
-  /* Subtle divider rule between stats — done with a per-stat border. */
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 6px;
 }
 .bf-helix-meta .helix-stat {
-  flex: 1 1 0;
-  min-width: 0;
-  padding: 0 6px;
-  text-align: left;
-  border-left: 1px solid rgba(255,215,100,0.10);
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,215,100,0.08);
 }
-.bf-helix-meta .helix-stat:first-child { border-left: none; padding-left: 0; }
+.bf-helix-meta .helix-stat:last-child { border-bottom: none; }
 .bf-helix-meta .helix-stat .num {
   font-family: var(--serif);
   font-style: italic;
   font-weight: 500;
-  font-size: clamp(24px, 4vw, 32px);
+  font-size: clamp(26px, 3.8vw, 34px);
   line-height: 1;
   color: var(--gold);
   letter-spacing: 0.01em;
+  text-align: right;
 }
 .bf-helix-meta .helix-stat .lbl {
   font-family: var(--sans);
-  font-size: 8.5px;
-  letter-spacing: 0.20em;
+  font-size: 10px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
-  margin-top: 4px;
+  color: rgba(255,255,255,0.72);
   line-height: 1.35;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  white-space: normal;
 }
-/* The "primary" stat (phase-locked) reads brightest; the "total" stat
-   reads slightly quieter — it's a context number, not the headline. */
 .bf-helix-meta .helix-stat--primary .num {
   color: rgba(255,236,180,1);
-  text-shadow: 0 0 12px rgba(255,215,100,0.55);
+  text-shadow: 0 0 14px rgba(255,215,100,0.65);
 }
 .bf-helix-meta .helix-stat--total .num {
   color: rgba(255,215,100,0.72);
+}
+.bf-helix-meta .helix-stat--total .lbl {
+  color: rgba(255,255,255,0.45);
 }
 .bf-helix-meta .helix-sub { font-size: 11px; color: var(--mid); line-height: 1.55; font-style: italic; margin-top: 4px; }
 
@@ -3283,7 +3396,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.23';
+const VERSION = '1.9.24';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4341,11 +4454,12 @@ function buildAuricRingsOverlay(auricMeters) {
   // at x=36%; heart y bumped to 29% per the corrected chakra table.
   const cx = 36, cy = 29;
 
-  // Maximum visible radius in viewBox units (out of 100). With the body
-  // at x=36%, rings expand symmetrically. The outermost ring crosses
-  // beyond the top of the viewbox; .bf-auric-rings overflow:visible
-  // lets the visible arc segments still render around the figure.
-  const maxR = 50;
+  // Maximum visible radius in viewBox units (out of 100). v1.9.24:
+  // bumped 50 → 75 so the outer rings visibly extend PAST the stage
+  // edges, where the stage's overflow:hidden crops them naturally —
+  // produces the felt sense of energy rippling off the edge of the
+  // image (the field is larger than what we're showing).
+  const maxR = 75;
   const stops = [0.25, 0.50, 0.75, 1.0];
 
   stops.forEach((frac, i) => {
@@ -4437,6 +4551,12 @@ function openChakraCallout(chakra, bodyWrap, glowEl) {
     class: 'bf-chakra-callout-note',
     text: chakra.note || 'No note captured for this center in the reading.'
   }));
+
+  // v1.9.24: status bar — visualizes where this chakra sits relative to
+  // "balanced" on the under-charged ↔ over-charged axis. Position is
+  // mapped from the 7 canonical states (see CHAKRA_STATE_POS).
+  callout.appendChild(buildChakraStatusBar(chakra.state));
+
   const closeBtn = el('button', {
     class: 'bf-chakra-callout-close',
     type: 'button',
@@ -4449,6 +4569,51 @@ function openChakraCallout(chakra, bodyWrap, glowEl) {
   });
   callout.appendChild(closeBtn);
   bodyWrap.appendChild(callout);
+}
+
+/* v1.9.24: status bar inside the chakra callout. Shows where this
+   chakra sits on a continuum from undercharged (left) to overcharged
+   (right), with "balanced" at the midpoint. Position derived from the
+   chakra's state word per the practitioner's reading. */
+const CHAKRA_STATE_POS = {
+  'undercharged':   0.12,   // far left — energy below threshold
+  'stabilizing':    0.34,   // approaching balanced
+  'holding':        0.52,   // at balanced — steady
+  'consolidating':  0.62,   // active rebuild past balanced
+  'clear':          0.72,   // clean signal above balanced
+  'carrying-a-lot': 0.86,   // overcharged
+  'radiant':        0.96    // peak / projecting outward
+};
+function buildChakraStatusBar(state) {
+  const wrap = el('div', { class: 'bf-chakra-callout-bar' });
+  const labels = el('div', { class: 'bar-labels' });
+  labels.appendChild(el('span', { class: 'bar-lbl bar-lbl--under', text: 'under' }));
+  labels.appendChild(el('span', { class: 'bar-lbl bar-lbl--balanced', text: 'balanced' }));
+  labels.appendChild(el('span', { class: 'bar-lbl bar-lbl--over', text: 'over' }));
+  wrap.appendChild(labels);
+
+  const track = el('div', { class: 'bar-track' });
+  // midpoint marker (balanced)
+  track.appendChild(el('div', { class: 'bar-mid', 'aria-hidden': 'true' }));
+  // position indicator
+  const pos = (typeof CHAKRA_STATE_POS[state] === 'number') ? CHAKRA_STATE_POS[state] : 0.5;
+  const dot = el('div', { class: 'bar-dot', 'aria-hidden': 'true' });
+  dot.style.left = (pos * 100).toFixed(1) + '%';
+  track.appendChild(dot);
+  // filled portion from balanced to the dot
+  const fill = el('div', { class: 'bar-fill', 'aria-hidden': 'true' });
+  const balPct = 0.5;
+  const leftPct = Math.min(pos, balPct) * 100;
+  const widthPct = Math.abs(pos - balPct) * 100;
+  fill.style.left = leftPct.toFixed(1) + '%';
+  fill.style.width = widthPct.toFixed(1) + '%';
+  // direction class: drift right of balanced = "over", left = "under"
+  if (pos > balPct) fill.classList.add('bar-fill--over');
+  else fill.classList.add('bar-fill--under');
+  track.appendChild(fill);
+
+  wrap.appendChild(track);
+  return wrap;
 }
 
 function closeChakraCallout(bodyWrap, skipActiveCleanup) {
