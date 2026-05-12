@@ -62,6 +62,11 @@ body.compounded {
   background: linear-gradient(180deg, var(--void-compounded-top) 0%, var(--void-compounded-bot) 100%);
   filter: saturate(1.08);
 }
+/* v1.9.28: when a mobile chakra callout is open, suspend the body filter so
+   position:fixed on the callout is anchored to the viewport (not to body,
+   which becomes a containing block when filter is non-`none`). The
+   saturation boost re-attaches when the callout closes. */
+body.callout-open.compounded { filter: none; }
 ::selection { background: rgba(106,223,217,0.25); color: var(--light); }
 
 body::before {
@@ -768,6 +773,52 @@ main { position: relative; z-index: 2; }
 .bf-chakra-callout[data-chakra="throat"]    { --callout-hue: rgb(106,223,217); }
 .bf-chakra-callout[data-chakra="third-eye"] { --callout-hue: rgb(123,111,168); }
 .bf-chakra-callout[data-chakra="crown"]     { --callout-hue: rgb(194, 47,205); }
+
+/* v1.9.28: On mobile the side-anchored callout overlaps the body image
+   (body anatomy sits at ~36% of bodyWrap width, callout sits 2%..32% so
+   they collide). Float it as a fixed bottom-sheet instead so users can
+   still see the body and tap other chakras while a callout is open. */
+@media (max-width: 720px) {
+  .bf-chakra-callout {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 16px;
+    width: auto;
+    max-width: none;
+    transform: none;
+    /* Slightly stronger border-top so the colored accent reads as the
+       chakra-link cue (instead of the right-edge accent that was paired
+       with the right-pointing arrow on desktop). */
+    border-right: 1px solid color-mix(in srgb, var(--callout-hue, var(--gold)) 45%, transparent);
+    border-top: 3px solid var(--callout-hue, var(--gold));
+    border-radius: 18px;
+    padding: 16px 18px 18px;
+    box-shadow:
+      0 -2px 24px rgba(0,0,0,0.48),
+      0 0 36px color-mix(in srgb, var(--callout-hue, var(--gold)) 26%, transparent);
+    animation: callout-sheet-up 280ms cubic-bezier(.2,.8,.2,1) backwards;
+  }
+  /* No right-arrow on the bottom sheet — the colored top border carries
+     the chakra-link signal. */
+  .bf-chakra-callout::after { display: none; }
+  .bf-chakra-callout--closing { animation: callout-sheet-down 200ms ease-in forwards; }
+  /* Roomy close target for a thumb. */
+  .bf-chakra-callout-close {
+    top: 6px; right: 8px;
+    font-size: 22px;
+    padding: 8px 10px;
+  }
+}
+@keyframes callout-sheet-up {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes callout-sheet-down {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(16px); }
+}
 
 /* v1.9.18/.24/.26: prominent first-time tap-hint. v1.9.26 moves it from
    floating next to a chakra (which overlapped the body figure) into a
@@ -3676,7 +3727,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.27';
+const VERSION = '1.9.28';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4753,7 +4804,7 @@ function buildBodyAuroraHero() {
   const hkLevel = Number(view.hawkinsLevel) || 525;
   const hkTarget = Number(view.hawkinsTarget) || 528;
   const tierInfo = hawkinsTier(hkLevel);
-  const hkCard = el('div', { class: 'bf-stage-card bf-stage-hawkins' });
+  const hkCard = el('div', { class: 'bf-stage-card bf-stage-hawkins reveal' });
   hkCard.appendChild(el('div', { class: 'label', text: 'Calibration' }));
   const hkValue = el('div', { class: 'value' });
   hkValue.appendChild(el('strong', { text: String(hkLevel) }));
@@ -4948,7 +4999,19 @@ function openChakraCallout(chakra, bodyWrap, glowEl) {
     closeChakraCallout(bodyWrap);
   });
   callout.appendChild(closeBtn);
-  bodyWrap.appendChild(callout);
+  /* v1.9.28: mobile breakpoint — the `.section.reveal` ancestor's
+     transform + filter create a containing block, which would trap
+     a position:fixed child inside the section. Append to document.body
+     instead so the bottom-sheet float really floats relative to the
+     viewport. Also temporarily clear body's saturate filter, since
+     filter on body also creates a containing block. Desktop keeps the
+     side-anchored absolute behavior. */
+  if (window.matchMedia('(max-width: 720px)').matches) {
+    document.body.classList.add('callout-open');
+    document.body.appendChild(callout);
+  } else {
+    bodyWrap.appendChild(callout);
+  }
 }
 
 /* v1.9.24: status bar inside the chakra callout. Shows where this
@@ -4998,10 +5061,23 @@ function buildChakraStatusBar(state) {
 
 function closeChakraCallout(bodyWrap, skipActiveCleanup) {
   if (!bodyWrap) return;
-  const existing = bodyWrap.querySelector('.bf-chakra-callout');
+  /* v1.9.28: callout may live on document.body (mobile sheet) or
+     inside bodyWrap (desktop side-anchor). Query both places. */
+  const existing = bodyWrap.querySelector('.bf-chakra-callout') ||
+                   document.body.querySelector(':scope > .bf-chakra-callout');
   if (existing) {
     existing.classList.add('bf-chakra-callout--closing');
-    setTimeout(() => { try { existing.remove(); } catch {} }, 220);
+    setTimeout(() => {
+      try { existing.remove(); } catch {}
+      // Restore body filter only after the new callout (if any) is mounted,
+      // otherwise the chained open/close in openChakraCallout would briefly
+      // toggle it. We only clear when no other callout exists.
+      if (!document.querySelector('.bf-chakra-callout')) {
+        document.body.classList.remove('callout-open');
+      }
+    }, 220);
+  } else {
+    document.body.classList.remove('callout-open');
   }
   if (!skipActiveCleanup) {
     bodyWrap.classList.remove('has-active-chakra');
@@ -7457,19 +7533,24 @@ async function generateExampleReflection() {
 }
 
 function bindReveal() {
-  /* v1.9.26: more eager observer + safety net for mobile.
-     - rootMargin extends the observation area 200 px BELOW the viewport
-       so cards fade in just before they enter the screen (no late
-       "pop-in").
-     - Lower threshold to 0.01 so any sliver showing fires.
-     - Backup pass: after a short tick, every .reveal whose top is
-       within the viewport gets .visible — protects against observer
-       miss on browsers where the initial layout hasn't settled.
-     - Hard fallback on 'scroll' / 'resize': scan and mark anything
-       newly in view. Belt-and-suspenders for mobile Safari quirks. */
+  /* v1.9.28: reveal animates strictly when an element ENTERS the viewport,
+     not before. Earlier versions used a generous 200px-below rootMargin to
+     prevent late pop-in on mobile Safari, but that meant cards just below
+     the fold (DNA, Pattern, Breath) triggered on page load — losing the
+     scroll-triggered feel Adam wanted.
+     - rootMargin trims 60px off the bottom of the viewport so a card has
+       to be visibly entering before it fires. Keeps the trigger from
+       firing while the element is still entirely below the fold AND
+       avoids weird off-by-one cases where the very bottom edge counts.
+     - Strict viewport check in the safety-net fallback (no slack).
+     - Cards already in the initial viewport on load (masthead, body)
+       still animate on, but exactly once, as they should.
+     - Belt-and-suspenders: scroll/resize listeners re-scan to catch any
+       observer misses on mobile Safari restored-session quirks. */
   function inViewport(el) {
     const r = el.getBoundingClientRect();
-    return r.top < window.innerHeight + 200 && r.bottom > -200;
+    // Strict: any portion within the viewport counts.
+    return r.top < window.innerHeight && r.bottom > 0;
   }
   function markIfInView() {
     document.querySelectorAll('.reveal:not(.visible)').forEach(n => {
@@ -7484,9 +7565,10 @@ function bindReveal() {
           io.unobserve(e.target);
         }
       });
-    }, { threshold: 0.01, rootMargin: '0px 0px 200px 0px' });
+    }, { threshold: 0.05, rootMargin: '0px 0px -60px 0px' });
     document.querySelectorAll('.reveal').forEach(n => io.observe(n));
-    // Initial in-view scan after layout settles.
+    // Initial in-view scan after layout settles — for elements already
+    // fully visible on page load.
     setTimeout(markIfInView, 80);
   } else {
     document.querySelectorAll('.reveal').forEach(n => n.classList.add('visible'));
