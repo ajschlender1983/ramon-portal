@@ -353,19 +353,10 @@ main { position: relative; z-index: 2; }
   display: flex; flex-direction: column;
   gap: 14px;
   z-index: 2;
-  /* v1.9.17: slide in from right alongside the chakra build-in. */
-  animation: pane-slide-in 800ms 600ms cubic-bezier(.2,.8,.2,1) backwards;
+  /* v1.9.26: load-time pane-slide-in animation removed. The DNA card
+     (inside) now uses .reveal for scroll-triggered fade-in. The
+     Calibration card is above the fold; doesn't need an animation. */
 }
-@keyframes pane-slide-in {
-  0%   { opacity: 0; transform: translateX(28px); }
-  100% { opacity: 1; transform: translateX(0); }
-}
-.bf-stage-pane > * + * {
-  /* Cascade — each card lands ~150ms after the previous one. */
-  animation: pane-slide-in 700ms cubic-bezier(.2,.8,.2,1) backwards;
-  animation-delay: 800ms;
-}
-.bf-stage-pane > *:nth-child(2) { animation-delay: 950ms; }
 @media (max-width: 720px) {
   /* v1.9.25: Mobile re-stack. body-hero becomes a single vertical column.
      We use display:contents on .bf-body-stage and .bf-stage-pane to make
@@ -778,23 +769,19 @@ main { position: relative; z-index: 2; }
 .bf-chakra-callout[data-chakra="third-eye"] { --callout-hue: rgb(123,111,168); }
 .bf-chakra-callout[data-chakra="crown"]     { --callout-hue: rgb(194, 47,205); }
 
-/* v1.9.18/.24: very prominent first-time tap-hint. Larger card, bigger
-   text, brighter glow, animated tap dot. Drifts in 2s after build-in,
-   parks next to the radiant chakra, dismisses on first chakra tap.
-   Stored once-per-user via localStorage. */
+/* v1.9.18/.24/.26: prominent first-time tap-hint. v1.9.26 moves it from
+   floating next to a chakra (which overlapped the body figure) into a
+   banner ABOVE the body image (top of the stage). Arrow points down at
+   the chakras. Drifts in 2 s after build, dismisses on first chakra tap. */
 .bf-chakra-hint {
-  position: absolute;
-  top: var(--hint-top, 30%);
-  left: var(--hint-left, 50%);
-  transform: translate(-4px, -50%);
   z-index: 5;
-  padding: 14px 22px 14px 20px;
+  padding: 12px 22px;
   background: linear-gradient(135deg, rgba(28,16,38,0.96), rgba(54,36,22,0.96));
   border: 2px solid rgba(255,215,100,0.85);
-  border-radius: 16px;
+  border-radius: 999px;
   font-family: var(--serif);
   font-style: italic;
-  font-size: 20px;
+  font-size: 18px;
   letter-spacing: 0.01em;
   color: rgba(255,242,210,1);
   white-space: nowrap;
@@ -810,6 +797,13 @@ main { position: relative; z-index: 2; }
   animation:
     hint-arrive 720ms 2000ms cubic-bezier(.2,.8,.2,1) backwards,
     hint-pulse 2000ms 2720ms ease-in-out infinite;
+}
+/* v1.9.26 banner variant: positioned at top-center of the stage,
+   clearly outside the body image. */
+.bf-chakra-hint--banner {
+  position: absolute;
+  top: 14px; left: 50%;
+  transform: translateX(-50%);
 }
 /* Animated "tap" icon — pulsing inside the hint, suggesting a fingertip
    pressing. v1.9.24 bumps size 14→18 px + brighter glow. */
@@ -827,23 +821,26 @@ main { position: relative; z-index: 2; }
   55%      { transform: scale(0.92); opacity: 0.85; }
 }
 .bf-chakra-hint::before {
-  /* Larger arrow pointing toward the chakra. */
+  /* v1.9.26: arrow points DOWN at the body (banner sits above the
+     body image; arrow attaches to the bottom-center of the pill). */
   content: '';
   position: absolute;
-  left: -11px; top: 50%;
-  transform: translateY(-50%);
+  bottom: -10px; left: 50%;
+  transform: translateX(-50%);
   border-style: solid;
-  border-width: 8px 12px 8px 0;
-  border-color: transparent rgba(255,215,100,0.68) transparent transparent;
-  filter: drop-shadow(-2px 0 6px rgba(255,215,100,0.45));
+  border-width: 11px 8px 0 8px;
+  border-color: rgba(255,215,100,0.85) transparent transparent transparent;
+  filter: drop-shadow(0 2px 6px rgba(255,215,100,0.45));
 }
 .bf-chakra-hint--dismissed {
   animation: hint-leave 360ms ease-in forwards;
   pointer-events: none;
 }
 @keyframes hint-arrive {
-  0%   { opacity: 0; transform: translate(16px, -50%) scale(0.88); }
-  100% { opacity: 1; transform: translate(-4px, -50%) scale(1); }
+  /* v1.9.26: banner slides DOWN into place at the top of the stage,
+     transform anchored to translateX(-50%) for horizontal centering. */
+  0%   { opacity: 0; transform: translate(-50%, -16px) scale(0.92); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 @keyframes hint-pulse {
   0%, 100% {
@@ -863,7 +860,7 @@ main { position: relative; z-index: 2; }
 }
 @keyframes hint-leave {
   0%   { opacity: 1; }
-  100% { opacity: 0; transform: translate(-16px, -50%) scale(0.92); }
+  100% { opacity: 0; transform: translate(-50%, -10px) scale(0.94); }
 }
 @media (max-width: 640px) {
   .bf-chakra-hint { font-size: 15px; padding: 10px 14px 10px 14px; }
@@ -1363,8 +1360,31 @@ main { position: relative; z-index: 2; }
   --bb-hue-soft: rgba(255,215,100, 0.35);
 }
 .bb-meter[data-phase="rest"] {
-  --bb-hue: rgba(255,255,255, 0.85);
-  --bb-hue-soft: rgba(255,255,255, 0.20);
+  --bb-hue: rgba(255,236,180, 0.95);
+  --bb-hue-soft: rgba(255,215,100, 0.32);
+  --bb-scale: 0.14;
+}
+/* v1.9.26: at rest, the meter rings gently breathe-pulse on opacity
+   so the user reads it as INVITING. No play icon needed — the ring
+   itself signals "I'm waiting for you." When playing, this rest pulse
+   is replaced by the rAF-driven phase animation. */
+.bb-meter[data-phase="rest"] .bb-ring--outer {
+  animation: bb-rest-pulse-outer 3200ms ease-in-out infinite;
+}
+.bb-meter[data-phase="rest"] .bb-ring--inner {
+  animation: bb-rest-pulse-inner 3200ms ease-in-out infinite;
+}
+@keyframes bb-rest-pulse-outer {
+  0%, 100% { opacity: 0.65; box-shadow: 0 0 14px var(--bb-hue-soft); }
+  50%      { opacity: 1.0;  box-shadow: 0 0 30px var(--bb-hue-soft); }
+}
+@keyframes bb-rest-pulse-inner {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.85; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-meter[data-phase="rest"] .bb-ring--outer,
+  .bb-meter[data-phase="rest"] .bb-ring--inner { animation: none; }
 }
 .bb-ring {
   position: absolute;
@@ -1414,36 +1434,9 @@ main { position: relative; z-index: 2; }
 .bb-meter[data-phase="rest"] .bb-phase {
   color: rgba(255,255,255,0.55);
 }
-.bb-icon {
-  position: absolute;
-  right: -2px; top: -2px;
-  width: 22px; height: 22px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(11,8,15,0.65);
-  border: 1px solid rgba(255,215,100,0.30);
-  border-radius: 50%;
-  z-index: 3;
-  transition: background 200ms, border-color 200ms;
-}
-.bb-icon::before {
-  /* Play triangle (▶) by default; switches to pause bars when playing. */
-  content: '';
-  width: 0; height: 0;
-  border-style: solid;
-  border-width: 5px 0 5px 7px;
-  border-color: transparent transparent transparent rgba(255,215,100,0.85);
-  margin-left: 1px;
-}
-.bb-meter--playing .bb-icon { background: rgba(255,215,100,0.18); border-color: rgba(255,215,100,0.65); }
-.bb-meter--playing .bb-icon::before {
-  border: none;
-  width: 8px; height: 9px;
-  background:
-    linear-gradient(rgba(255,215,100,0.95), rgba(255,215,100,0.95)) 0 0/2px 100% no-repeat,
-    linear-gradient(rgba(255,215,100,0.95), rgba(255,215,100,0.95)) 6px 0/2px 100% no-repeat;
-  margin: 0;
-}
-.bb-meter:hover .bb-icon { background: rgba(255,215,100,0.10); border-color: rgba(255,215,100,0.55); }
+/* v1.9.26: .bb-icon (play/pause button overlay) removed. State signal
+   now comes from the meter itself — at rest the rings are quiet; when
+   playing they pulse with phase color. */
 .bb-meter:focus-visible {
   outline: 2px solid rgba(106,223,217,0.55);
   outline-offset: 4px;
@@ -1773,19 +1766,10 @@ main { position: relative; z-index: 2; }
 .bf-helix-svg-wrap {
   width: 110px;
   height: 320px;
-  /* v1.9.19: build-in — the helix fades up and scales in from below.
-     The RAILS animate via the wrap fade. The RUNGS animate individually
-     bottom-up (v1.9.20) so the locked strands appear like a ladder
-     being assembled from the ground up. */
-  animation: helix-build-in 900ms 1000ms cubic-bezier(.2,.8,.2,1) backwards;
-}
-@keyframes helix-build-in {
-  0%   { opacity: 0; transform: translateY(18px) scale(0.92); filter: blur(2px); }
-  60%  { opacity: 0.95; transform: translateY(-2px) scale(1.02); filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bf-helix-svg-wrap { animation: none; }
+  /* v1.9.26: load-time helix-build-in animation removed. The whole DNA
+     card now reveals on scroll via the .reveal class (parent), which
+     handles the fade + slide-up via the existing .reveal transition.
+     This solves Adam's "animate on scroll, not on load" preference. */
 }
 .bf-helix-svg-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .bf-helix .rail { fill: none; stroke-width: 2.5; stroke-linecap: round; }
@@ -3570,7 +3554,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.25';
+const VERSION = '1.9.26';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4193,7 +4177,7 @@ function buildBalancingBreath() {
   const CYCLE_MS = 10910;            // 5.5 breaths / min = resonant coherence
   const HALF = CYCLE_MS / 2;
 
-  const card = el('div', { class: 'bf-stage-card bf-stage-breath' });
+  const card = el('div', { class: 'bf-stage-card bf-stage-breath reveal' });
   card.appendChild(el('div', { class: 'label', text: 'Balancing Breath' }));
 
   const meter = el('button', {
@@ -4206,8 +4190,9 @@ function buildBalancingBreath() {
   meter.appendChild(el('span', { class: 'bb-ring bb-ring--inner', 'aria-hidden': 'true' }));
   const phaseEl = el('span', { class: 'bb-phase', text: 'Tap to begin' });
   meter.appendChild(phaseEl);
-  const icon = el('span', { class: 'bb-icon', 'aria-hidden': 'true' });
-  meter.appendChild(icon);
+  // v1.9.26: play/pause icon removed per Adam's preference. The meter
+  // signals state via the rings + label themselves (paused = at rest
+  // scale; playing = pulsing rings + breathe-in/-out label).
   card.appendChild(meter);
 
   const sub = el('div', { class: 'bb-sub' });
@@ -4612,21 +4597,19 @@ function buildBodyAuroraHero() {
   }
   bodyWrap.appendChild(overlay);
 
-  // v1.9.17/.18: first-time tap-hint. Drifts in 2s after build, points
-  // at the radiant chakra (or heart if no radiant). v1.9.18 makes the
-  // hint larger + more prominent with an animated "tap" dot. Dismisses
-  // on any chakra tap; persisted per slug so it doesn't nag returners.
+  // v1.9.17/.18/.26: first-time tap-hint. v1.9.26 moves it OUT of the
+  // body wrap (was overlapping the figure) — now a banner ABOVE the
+  // body image at the top of the stage. Arrow points down toward the
+  // chakras. Same dismiss logic: tap any chakra → fade + persist seen.
   const hintSeenKey = LS.chakraHintSeen;
   const hintAlreadySeen = hintSeenKey && localStorage.getItem(hintSeenKey) === '1';
   if (!hintAlreadySeen) {
-    const hintPos = radiantPos || CHAKRA_IMAGE_POS.heart || { top: 29, left: 36 };
-    const hint = el('div', { class: 'bf-chakra-hint' });
+    const hint = el('div', { class: 'bf-chakra-hint bf-chakra-hint--banner' });
     hint.appendChild(el('span', { class: 'bf-chakra-hint-dot', 'aria-hidden': 'true' }));
     hint.appendChild(document.createTextNode('Tap a center to read your reading'));
-    // Park the hint ~7% to the right of the chakra it points at.
-    hint.style.setProperty('--hint-top', hintPos.top + '%');
-    hint.style.setProperty('--hint-left', (hintPos.left + 7) + '%');
-    bodyWrap.appendChild(hint);
+    // Banner mounts at the TOP of the stage (above the body image),
+    // not inside the body-wrap, so it can't overlap the figure.
+    stage.appendChild(hint);
   }
 
   // Body-wrap-level click dismisses any open callout when clicking
@@ -4660,7 +4643,7 @@ function buildBodyAuroraHero() {
   // DNA helix block (relocated from below-hero detail per Adam's
   // request: "put DNA and Hawkins on the right side of the image").
   const dnaInfo = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
-  const dna = el('div', { class: 'bf-helix bf-helix--side' });
+  const dna = el('div', { class: 'bf-helix bf-helix--side reveal' });
   const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
   helixWrap.appendChild(buildHelixSVG());
   dna.appendChild(helixWrap);
@@ -4692,7 +4675,7 @@ function buildBodyAuroraHero() {
 
   // Pattern card (was "Carrier attenuation" through v1.9.24)
   const blockQuote = (view.primaryBlock || (USER && USER.primaryBlockQuote) || 'Hesitation in finalizing commitments.').trim();
-  const holding = el('div', { class: 'bf-stage-card bf-stage-holding' });
+  const holding = el('div', { class: 'bf-stage-card bf-stage-holding reveal' });
   holding.appendChild(el('span', { class: 'eyebrow', text: 'Pattern' }));
   holding.appendChild(el('div', { class: 'quote', text: '"' + blockQuote.replace(/^"|"$/g, '') + '"' }));
   holding.appendChild(el('div', { class: 'felt', text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.' }));
@@ -7048,6 +7031,25 @@ async function askReflection() {
 }
 
 function bindReveal() {
+  /* v1.9.26: more eager observer + safety net for mobile.
+     - rootMargin extends the observation area 200 px BELOW the viewport
+       so cards fade in just before they enter the screen (no late
+       "pop-in").
+     - Lower threshold to 0.01 so any sliver showing fires.
+     - Backup pass: after a short tick, every .reveal whose top is
+       within the viewport gets .visible — protects against observer
+       miss on browsers where the initial layout hasn't settled.
+     - Hard fallback on 'scroll' / 'resize': scan and mark anything
+       newly in view. Belt-and-suspenders for mobile Safari quirks. */
+  function inViewport(el) {
+    const r = el.getBoundingClientRect();
+    return r.top < window.innerHeight + 200 && r.bottom > -200;
+  }
+  function markIfInView() {
+    document.querySelectorAll('.reveal:not(.visible)').forEach(n => {
+      if (inViewport(n)) n.classList.add('visible');
+    });
+  }
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
@@ -7056,11 +7058,23 @@ function bindReveal() {
           io.unobserve(e.target);
         }
       });
-    }, { threshold: 0.12 });
+    }, { threshold: 0.01, rootMargin: '0px 0px 200px 0px' });
     document.querySelectorAll('.reveal').forEach(n => io.observe(n));
+    // Initial in-view scan after layout settles.
+    setTimeout(markIfInView, 80);
   } else {
     document.querySelectorAll('.reveal').forEach(n => n.classList.add('visible'));
   }
+  // Belt-and-suspenders fallback for mobile Safari / restored sessions.
+  let scrollRaf = null;
+  window.addEventListener('scroll', () => {
+    if (scrollRaf) return;
+    scrollRaf = requestAnimationFrame(() => {
+      scrollRaf = null;
+      markIfInView();
+    });
+  }, { passive: true });
+  window.addEventListener('resize', markIfInView);
 }
 
 /* Apply USER (loaded from users/<slug>.js) to DOM placeholders. Called once
