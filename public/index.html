@@ -963,16 +963,19 @@ main { position: relative; z-index: 2; }
 .bf-chakra-glow-pt[data-chakra="third-eye"] { animation-delay: 800ms,  calc(800ms - 7795ms); }
 .bf-chakra-glow-pt[data-chakra="crown"]     { animation-delay: 920ms,  calc(920ms - 9354ms); }
 
-/* v1.9.2: Featured portrait masthead — sits ABOVE the body-aurora stage.
-   Ramon's face is the protagonist of the page; the body figure is the
-   field beneath the named person. Larger avatar (116px) + serif italic
-   display name + dek + aura-line. */
+/* v1.9.2 → v1.9.21: Featured portrait masthead. Lived inside the
+   body-aurora hero v1.9.2–v1.9.20; v1.9.21 moved it above the section's
+   "THE INPUT" label so the person is introduced before the section
+   narrates. Left-aligned now (matches the section-label/title position),
+   slightly larger top/bottom rhythm. */
+.bf-section-masthead-mount {
+  width: 100%;
+}
 .bf-stage-masthead {
   display: flex; align-items: center;
   gap: 22px;
-  max-width: 720px;
-  margin: 0 auto 22px;
-  padding: 0 4px;
+  margin: 0 0 28px;
+  padding: 0;
 }
 .bf-avatar-tile--masthead {
   width: 116px; height: 116px;
@@ -3100,6 +3103,11 @@ window.__userDataPromise = (function() {
 <div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
 
 <section class="section reveal" id="input">
+  <!-- v1.9.21: portrait + name masthead moved here (was inside the body-
+       aurora hero). Introduces the person to the section before the
+       section-label narrates "The Input". Filled by mountSectionMasthead. -->
+  <div class="bf-section-masthead-mount" id="masthead-mount"></div>
+
   <div class="section-label">The Input</div>
   <h2 class="section-title">Your Biofield reading, <em>held as the starting frame</em>.</h2>
   <p class="section-desc">
@@ -3201,7 +3209,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.20';
+const VERSION = '1.9.21';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4041,25 +4049,14 @@ const CHAKRA_IMAGE_POS = {
    extent in spatial proportion to the body). */
 function buildBodyAuroraHero() {
   const wrap = el('div', { class: 'bf-body-hero' });
-  const portraitName = (USER && USER.displayName) || '';
-  const period = (USER && USER.period) || '';
   const view = getView();
   const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
 
-  /* v1.9.2: Featured portrait masthead — Ramon's face is the protagonist
-     of the page. Sits ABOVE the body-aurora stage with a 116px portrait,
-     italic display name, dek, and aura-line. The body-aurora figure
-     becomes the "field" beneath the named person. */
-  const masthead = el('div', { class: 'bf-stage-masthead' });
-  const mastTile = el('div', { class: 'bf-avatar-tile bf-avatar-tile--masthead' });
-  mastTile.appendChild(buildPortraitImg('bf-avatar-fallback--masthead'));
-  masthead.appendChild(mastTile);
-  const mastMeta = el('div', { class: 'bf-masthead-meta' });
-  mastMeta.appendChild(el('div', { class: 'name', text: portraitName }));
-  mastMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' + (period ? ' · ' + period : '') }));
-  mastMeta.appendChild(el('div', { class: 'aura-line', text: 'field reaches ' + auricMeters.toFixed(1) + ' m' }));
-  masthead.appendChild(mastMeta);
-  wrap.appendChild(masthead);
+  /* v1.9.2 → v1.9.21: portrait+name masthead lived inside the body-aurora
+     hero between v1.9.2 and v1.9.20. v1.9.21 moves it OUT of the hero
+     entirely — see mountSectionMasthead(), which fills the static
+     #masthead-mount node placed above the section's "THE INPUT" label.
+     The dashboard now starts directly with the body stage. */
 
   /* v1.9.4: Stage is now a single wide rectangle. Body image lives in a
      fixed-aspect .bf-body-wrap pinned to the left (chakras + auric
@@ -4418,6 +4415,10 @@ function mountBiofieldDashboard() {
   applyActiveSnapshot();
   while (root.firstChild) root.removeChild(root.firstChild);
 
+  // v1.9.21: section masthead (portrait + name + period + field-reaches)
+  // is now mounted ABOVE "THE INPUT" label, outside the dashboard.
+  mountSectionMasthead();
+
   // Body-aurora hero — always visible, never gated
   root.appendChild(buildBodyAuroraHero());
 
@@ -4430,6 +4431,33 @@ function mountBiofieldDashboard() {
   // surfaced by the Calibration card (Hz) and the Breath card (5.5/min).
   // buildWaveformSVG is still defined in case we want to bring it back
   // somewhere quieter later.
+}
+
+/* v1.9.21: Section-level masthead (portrait, italic display name, dek
+   line, gold field-reaches measurement). Mounts into #masthead-mount
+   which sits in the static HTML directly above the section-label "THE
+   INPUT". Introduces the person to the section before any of the
+   reading narration. Builds from current USER + view.auricMeters so it
+   updates with the snapshot scrubber if the auric extent changes. */
+function mountSectionMasthead() {
+  const mount = document.getElementById('masthead-mount');
+  if (!mount) return;
+  while (mount.firstChild) mount.removeChild(mount.firstChild);
+  const view = getView();
+  const portraitName = (USER && USER.displayName) || '';
+  const period = (USER && USER.period) || '';
+  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
+
+  const masthead = el('div', { class: 'bf-stage-masthead' });
+  const mastTile = el('div', { class: 'bf-avatar-tile bf-avatar-tile--masthead' });
+  mastTile.appendChild(buildPortraitImg('bf-avatar-fallback--masthead'));
+  masthead.appendChild(mastTile);
+  const mastMeta = el('div', { class: 'bf-masthead-meta' });
+  mastMeta.appendChild(el('div', { class: 'name', text: portraitName }));
+  mastMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' + (period ? ' · ' + period : '') }));
+  mastMeta.appendChild(el('div', { class: 'aura-line', text: 'field reaches ' + auricMeters.toFixed(1) + ' m' }));
+  masthead.appendChild(mastMeta);
+  mount.appendChild(masthead);
 }
 
 function pulseChakra(slug) {
