@@ -122,7 +122,7 @@
 
 /* ---------- Loading state ---------- */
 
-.view-loading { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
+.view-loading { min-height: 60vh; align-items: center; justify-content: center; }
 .view-loading[data-active="1"] { display: flex; }
 .loader { text-align: center; color: var(--mid); }
 .loader p {
@@ -145,7 +145,7 @@
 
 /* ---------- Invalid-link gate ---------- */
 
-.view-no-link { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
+.view-no-link { min-height: 60vh; align-items: center; justify-content: center; }
 .view-no-link[data-active="1"] { display: flex; }
 .gate { max-width: 540px; text-align: center; padding: 32px; }
 .gate-eyebrow {
