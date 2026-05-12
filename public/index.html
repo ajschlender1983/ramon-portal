@@ -378,40 +378,56 @@ main { position: relative; z-index: 2; }
 }
 .bf-auric-ring {
   fill: none;
-  /* v1.9.14: stronger halo presence so it reads as "field around body"
-     not "decorative trace". Gold-tinted strokes with brighter outer
-     ring + visible breath pulse. */
-  stroke: rgba(255,215,100,0.22);
-  stroke-width: 0.24;
-  stroke-dasharray: 0.5 0.8;
+  /* v1.9.14/.22: bolder halo presence. Strokes thicker + brighter so the
+     rings read as energy, not decorative trace. Each ring carries its
+     own gold drop-shadow glow now (was user-only). */
+  stroke: rgba(255,215,100,0.55);
+  stroke-width: 0.55;
+  stroke-dasharray: 0.9 0.7;
   vector-effect: non-scaling-stroke;
-  /* v1.9.17: spiral build-in — rings bloom outward in sequence,
-     innermost first (the spiral visual: field rippling out from heart).
-     Chained with the breath. Delay set inline per ring (--ring-i index). */
+  filter: drop-shadow(0 0 1.2px rgba(255,215,100,0.55));
+  /* v1.9.22: TWO chained infinite animations after build-in —
+     - bf-auric-ring-breath: the per-cycle breath (10.91s)
+     - ripple-out: a faster outward-ripple wave that brightens each ring
+       in sequence so the field reads as "energy moving outward to the
+       maximum." 2.6s per ripple, 4 rings × 650ms stagger inside that. */
   animation:
     ring-spiral-in 1000ms cubic-bezier(.2,.8,.2,1) backwards,
-    bf-auric-ring-breath 10910ms ease-in-out infinite;
-  animation-delay: calc(var(--ring-i, 0) * 200ms), calc(var(--ring-i, 0) * 200ms + 1000ms);
+    bf-auric-ring-breath 10910ms ease-in-out infinite,
+    ripple-out 2600ms ease-out infinite;
+  animation-delay:
+    calc(var(--ring-i, 0) * 200ms),
+    calc(var(--ring-i, 0) * 200ms + 1000ms),
+    calc(1400ms + var(--ring-i, 0) * 650ms);
   transform-origin: 36% 29%;
 }
 @keyframes ring-spiral-in {
   0%   { opacity: 0; transform: scale(0.15); }
-  60%  { opacity: 0.85; transform: scale(1.06); }
-  100% { opacity: 0.55; transform: scale(1); }
+  60%  { opacity: 0.95; transform: scale(1.06); }
+  100% { opacity: 0.75; transform: scale(1); }
 }
 .bf-auric-ring--user {
-  /* v1.9.14: brightest outer ring = user's measured extent. Gold glow. */
-  stroke: rgba(255,215,100,0.75);
-  stroke-width: 0.42;
-  stroke-dasharray: 1.4 0.6;
-  filter: drop-shadow(0 0 1.0px rgba(255,215,100,0.65));
-  animation-delay: -5455ms;
+  /* v1.9.22: outermost user ring is the destination of the energy
+     ripple — boldest stroke + brightest glow. */
+  stroke: rgba(255,236,180,0.95);
+  stroke-width: 0.85;
+  stroke-dasharray: 2.4 1.0;
+  filter: drop-shadow(0 0 3px rgba(255,215,100,0.95)) drop-shadow(0 0 1.5px rgba(255,236,180,0.85));
 }
 @keyframes bf-auric-ring-breath {
-  /* v1.9.14: more visible pulse — opacity range widened so the halo
-     reads as "alive" rather than static decoration. */
-  0%, 100% { opacity: 0.45; transform: scale(0.985); }
-  50%      { opacity: 0.95; transform: scale(1.020); }
+  /* v1.9.22: wider amplitude. */
+  0%, 100% { opacity: 0.55; transform: scale(0.97); }
+  50%      { opacity: 1.0;  transform: scale(1.035); }
+}
+/* v1.9.22: outward-rippling brightness wave. Each ring's animation-delay
+   is offset by its --ring-i so the bright pulse appears at ring 0, then
+   ring 1, then ring 2, then user ring — a wave moving OUT to the
+   measured maximum. */
+@keyframes ripple-out {
+  0%   { stroke-opacity: 1.0; }
+  18%  { stroke-opacity: 1.0; }
+  35%  { stroke-opacity: 0.62; }
+  100% { stroke-opacity: 0.62; }
 }
 @media (prefers-reduced-motion: reduce) {
   .bf-auric-ring { animation: none; }
@@ -459,19 +475,22 @@ main { position: relative; z-index: 2; }
   margin-bottom: 6px;
 }
 .bf-auric-readout .value {
-  display: inline-block;
+  display: block;
   font-family: var(--serif);
   font-style: italic;
   font-size: clamp(26px, 4vw, 44px);
-  line-height: 1;
+  /* v1.9.22: tighter line-height + a margin-bottom so the diameter-hint
+     subtitle below doesn't get swallowed by the value's text-shadow
+     glow. Was line-height:1 with margin-top:6px on hint, which left the
+     glow bleeding into the subtitle. */
+  line-height: 1.05;
+  margin: 0 0 8px;
   color: rgba(255,236,180,0.98);
   letter-spacing: 0.01em;
   text-shadow:
     0 0 14px rgba(255,215,100,0.70),
     0 0 32px rgba(255,180,90,0.50),
     0 0 64px rgba(194,47,205,0.35);
-  /* v1.9.14: gentle pulse synced to master breath, drawing the eye
-     while staying calm. */
   animation: bf-auric-readout-breath 10910ms ease-in-out infinite;
 }
 @keyframes bf-auric-readout-breath {
@@ -488,12 +507,20 @@ main { position: relative; z-index: 2; }
 }
 .bf-auric-readout .diameter-hint {
   display: block;
-  margin-top: 6px;
+  /* v1.9.22: bigger gap from the value (clears the text-shadow bleed),
+     brighter color so it doesn't get washed out by the value's glow,
+     slightly smaller font so it reads as a clean caption beneath. */
+  margin: 14px 0 0;
   font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: 9.5px;
+  letter-spacing: 0.20em;
   text-transform: uppercase;
-  color: rgba(255,215,100,0.55);
+  color: rgba(255,215,100,0.78);
+  /* Cap the line — keeps it from sprawling under the value if the
+     viewport gets narrow. */
+  max-width: 220px;
+  margin-left: auto;
+  line-height: 1.4;
 }
 /* v1.9.14: hairline diameter notation — runs from the readout leftward
    into the body's field, anchoring the value to the halo around the
@@ -3209,7 +3236,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.21';
+const VERSION = '1.9.22';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
