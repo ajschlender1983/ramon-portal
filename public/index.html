@@ -3331,6 +3331,107 @@ section#reflect.reflected .section-title em {
   margin-top: 14px;
 }
 
+/* v1.9.27 — Example reflections section */
+.examples-actions {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-top: 18px;
+}
+.examples-status {
+  font-size: 12px; color: var(--mid); letter-spacing: 0.04em;
+  font-style: italic;
+}
+.examples-log {
+  margin-top: 28px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.example-card {
+  background: linear-gradient(180deg, rgba(31,24,36,0.62) 0%, rgba(20,14,28,0.62) 100%);
+  border: 1px solid var(--glass-border);
+  border-left: 2px solid var(--gold);
+  border-radius: 0 14px 14px 0;
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 16px;
+  position: relative;
+}
+.example-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+}
+.example-card-session {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 17px; color: var(--light); line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+.example-card-meta {
+  display: flex; align-items: center; gap: 10px;
+}
+.example-card-week {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim);
+}
+.example-card-wow {
+  font-size: 11px; letter-spacing: 0.1em;
+  padding: 4px 9px; border-radius: 999px;
+  background: rgba(255,215,100,0.08);
+  color: rgba(255,215,100,0.85);
+  border: 1px solid rgba(255,215,100,0.22);
+  font-weight: 500;
+}
+.example-card-wow[data-wow="6"] {
+  background: linear-gradient(135deg, rgba(255,215,100,0.22), rgba(255,180,80,0.16));
+  color: #ffe7a4;
+  border-color: rgba(255,215,100,0.5);
+  box-shadow: 0 0 18px rgba(255,215,100,0.18);
+}
+.example-card-wow[data-wow="1"], .example-card-wow[data-wow="2"] {
+  background: rgba(140,160,180,0.08);
+  color: rgba(200,210,225,0.7);
+  border-color: rgba(140,160,180,0.22);
+}
+.example-card-notes {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+@media (max-width: 640px) {
+  .example-card-notes { grid-template-columns: 1fr; }
+}
+.example-note {
+  display: flex; flex-direction: column; gap: 6px;
+  background: rgba(11,8,15,0.42);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.example-note-label {
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim);
+}
+.example-note--after .example-note-label { color: rgba(143,209,196,0.7); }
+.example-note-text {
+  font-size: 13px; color: var(--light); opacity: 0.88; line-height: 1.55;
+  font-style: italic;
+}
+.example-card-reflection {
+  display: flex; flex-direction: column; gap: 10px;
+  border-top: 1px solid rgba(255,215,100,0.12);
+  padding-top: 16px;
+}
+.example-card-reflection-label {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,215,100,0.75);
+}
+.example-card-reflection-text {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 15px; color: var(--light); opacity: 0.95;
+  line-height: 1.75; white-space: pre-wrap;
+  margin: 0;
+}
+.example-card.fresh { animation: reflection-slide-up 800ms cubic-bezier(.2,.8,.2,1); }
+@media (max-width: 720px) {
+  .example-card { padding: 18px 18px; }
+  .example-card-session { font-size: 15px; }
+  .example-card-reflection-text { font-size: 14px; line-height: 1.65; }
+}
+
 .footer {
   padding: clamp(40px, 6vw, 72px) clamp(20px, 6vw, 96px);
   max-width: 1240px; margin: 0 auto;
@@ -3513,6 +3614,27 @@ window.__userDataPromise = (function() {
 <hr class="gradient-divider">
 <div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
 
+<!-- v1.9.27: Example reflections — preview what a real reflection
+     looks like for this user, before they've written their own notes.
+     The Generate button picks a random session, synthesizes plausible
+     Before / After + a WOW rating from the user's chakra states, calls
+     /reflect, and appends the result to a per-slug history in LS. -->
+<section class="section reveal" id="examples">
+  <div class="section-label">Examples</div>
+  <h2 class="section-title">What a reflection <em>looks like for you</em>.</h2>
+  <p class="section-desc">
+    A preview built from your reading + a session you'd be doing. We synthesize plausible Before/After notes, send them through the same reflection layer, and show you what comes back. <strong>Tap the button to generate more</strong> — each one is saved here so you can come back and re-read.
+  </p>
+  <div class="examples-actions">
+    <button class="btn btn-primary" id="ex-generate" type="button">Generate an example reflection</button>
+    <span class="examples-status" id="ex-status"></span>
+  </div>
+  <div class="examples-log" id="examples-log"></div>
+</section>
+
+<hr class="gradient-divider">
+<div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
+
 <section class="section reveal" id="reflect">
   <div class="section-label">Reflection</div>
   <h2 class="section-title">When you're ready, ask for a <em>reflection</em>.</h2>
@@ -3554,7 +3676,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.26';
+const VERSION = '1.9.27';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3581,6 +3703,7 @@ function makeLS(slug) {
     notes:              slug + '.notes.v1',
     wow:                slug + '.wow.v1',            // v1.9.13: { <slug>: 1..6 } felt-sense rating per session
     chakraHintSeen:     slug + '.chakraHintSeen.v1', // v1.9.17: '1' once user has tapped a chakra (hides tap-hint)
+    examples:           slug + '.examples.v1',       // v1.9.27: array of generated example reflections
     field:              slug + '.field.v1',
     fieldHistory:       slug + '.field.history.v1',
     reflections:        slug + '.reflections.v1',
@@ -7030,6 +7153,309 @@ async function askReflection() {
   }
 }
 
+/* v1.9.27: Example Reflections — preview what a real reflection looks
+   like for THIS user before they've done any sessions. Picks a random
+   session from their plan, synthesizes plausible Before/After notes
+   keyed to that session's intention + the user's chakra state, picks a
+   plausible WOW rating (weighted toward 3-5), POSTs to /reflect, and
+   shows the result. Generated examples accumulate in LS so the user
+   can return and re-read. */
+
+/* Synthesized "Before" / "After" lines templated against the session
+   slug. Each entry has 2-3 plausible note pairs; the generator picks
+   one at random so each example reads differently. */
+const EXAMPLE_NOTE_TEMPLATES = {
+  // Root grounding sessions
+  'stability-root': [
+    { before: "Restless. Heart racing from emails. Wanting to feel my feet on the floor.", after: "About six minutes in, my pelvis got heavy. Like the floor came up to meet me. Quieter behind my eyes than when I started.", wow: 4 },
+    { before: "Came in unsure if I had time for this. Already thinking about the next thing.", after: "Some of the unsureness softened. I'm still here. The 'next thing' can wait one breath longer than I thought.", wow: 3 }
+  ],
+  'root-grounded-presence': [
+    { before: "Mid-day pulled apart. Three browser tabs open in my head.", after: "Seven minutes was enough. The body remembered the floor. Going back to work less braced than I started.", wow: 4 }
+  ],
+  'beloved-earth': [
+    { before: "Stomach has been tight all morning. Worried about a conversation later today.", after: "The low frequencies landed in my belly. Tightness still there but less loud. Like turning down the volume on a radio.", wow: 3 }
+  ],
+  'polarity': [
+    { before: "Feeling split. Part of me wants to push, part of me wants to rest.", after: "Both halves were allowed to sit together. The midline got clearer. Didn't have to choose.", wow: 5 }
+  ],
+  // Heart inflow
+  'heart-boundless-compassion': [
+    { before: "Day full of giving. Heart feels stretched thin from being available to everyone.", after: "Receiving compassion is harder than giving it. Noticed myself wanting to deflect the warmth. Sat with that.", wow: 4 }
+  ],
+  'body-scan': [
+    { before: "Tired from caregiving. Came in needing not-to-do.", after: "My shoulders dropped about eight times. I didn't fall asleep but I didn't keep track of time either. Something between rest and trance.", wow: 5 }
+  ],
+  'soar-into-aliveness': [
+    { before: "Energy out, not in. Tank reads low.", after: "Some aliveness came BACK toward me. Forgot I could be the one being met by my own joy.", wow: 5 }
+  ],
+  'acceptance': [
+    { before: "Arguing with my situation again. Thinking 'this should be different.'", after: "The argument got quieter. Not because I solved it. Because acceptance wasn't agreement, it was just letting it BE here.", wow: 4 }
+  ],
+  // Throat / voice
+  'truth-throat': [
+    { before: "Knot in my throat from a meeting today. I said yes to something I meant to push back on.", after: "About fifteen minutes in, my throat felt like it dropped open. A specific sentence came forward. Didn't need to say it aloud yet.", wow: 5 }
+  ],
+  'liberated-expression': [
+    { before: "Preparing for a hard conversation tomorrow. Already editing in my head.", after: "The listening half of the session surprised me. I heard what I want to say underneath what I think I should say.", wow: 4 }
+  ],
+  'renewal-417': [
+    { before: "Heart says one thing, voice keeps saying another. Out of phase.", after: "417 brought them into the same room. Whatever I say next can come from one place.", wow: 4 }
+  ],
+  'will-solar-plexus': [
+    { before: "I've been giving my power to other people's calendars all week.", after: "Solar plexus felt warmer, more mine. The 'I' came back into clearer focus.", wow: 4 }
+  ],
+  // Integration
+  'cacaosito': [
+    { before: "Wanting to feel my own sweetness instead of providing it for others.", after: "The session was small and warm. The body remembered itself. Sweetness was already here.", wow: 5 }
+  ],
+  'equinox': [
+    { before: "Between two states again. Reason and feeling both pulling.", after: "The balance point isn't a stop, it's a passage. Sat in it. Didn't need to pick yet.", wow: 4 }
+  ],
+  'open-path-741': [
+    { before: "Head is loud. Too many other people's voices in there.", after: "Something passed through and didn't stay. Cleaner channel. Whose voice was that, anyway?", wow: 4 }
+  ],
+  'conscious-to-subconscious': [
+    { before: "What I've been working on is happening underneath. I can feel it but not see it.", after: "The deeper layer showed me a fragment. Not the whole picture. Enough to know it's there.", wow: 5 }
+  ],
+  // Ramon-pool (carryover sessions)
+  'welcome-to-opus': [
+    { before: "First time. Curious. A little nervous about doing this 'right.'", after: "There was no right. The bed met me where I was. I want to come back tomorrow.", wow: 4 }
+  ],
+  'earth-awareness': [
+    { before: "Crown is overactive — too much receiving from above, not enough rooting.", after: "Alpha plus Schumann brought the field DOWN. Less floating. More HERE.", wow: 4 }
+  ],
+  'ease-174': [
+    { before: "Body aches. Tension in the jaw and neck.", after: "Things softened that I didn't realize were clenched. The jaw dropped about a centimeter.", wow: 3 }
+  ],
+  'fearless-396': [
+    { before: "The fear of speaking it is louder than the truth itself.", after: "Some of the fear got named and lost weight. The truth is still there. Quieter pressure.", wow: 4 }
+  ],
+  'fire-cleanse': [
+    { before: "Ready to be done holding something. Don't quite know what yet.", after: "Something burned away that I won't miss. Kept the warmth.", wow: 4 }
+  ],
+  'sending-mark-home': [
+    { before: "Feelings have been at the edges of my chest all week, waiting.", after: "They came in without my arranging them. I let them stay.", wow: 5 }
+  ],
+  'heart-focus': [
+    { before: "Heart is busy taking care of everyone. Want to come back home to it.", after: "Coherent breathing brought the heart back to itself. In-breath got easier.", wow: 4 }
+  ],
+  'coherence-639': [
+    { before: "Out of phase with someone close to me.", after: "Coherence landed in my own system first. Less to defend.", wow: 4 }
+  ],
+  'toning-with-ancestors': [
+    { before: "Voice feels small lately. Want to use it without performing.", after: "Sound came out before words did. Something behind me joined in.", wow: 5 }
+  ],
+  'heart-hara': [
+    { before: "Heart and belly haven't been speaking. Belly's been doing too much.", after: "They got into the same conversation. The belly let the heart in.", wow: 4 }
+  ],
+  'flow-sacral': [
+    { before: "Something wants to be made. Don't know what yet.", after: "Whatever it is started moving. Didn't name it. Won't yet.", wow: 4 }
+  ],
+  'sunmerge-174': [
+    { before: "Closing this month. Wondering what I get to keep.", after: "What dissolved felt like effort. What stayed felt like me.", wow: 4 }
+  ]
+};
+function pickExampleTemplate(slug) {
+  const entries = EXAMPLE_NOTE_TEMPLATES[slug];
+  if (!entries || !entries.length) {
+    return {
+      before: "Came in carrying the day's weight.",
+      after: "Something softened by minute ten. Less of me had to be ready.",
+      wow: 4
+    };
+  }
+  return entries[Math.floor(Math.random() * entries.length)];
+}
+
+function getExamples() {
+  try { return JSON.parse(localStorage.getItem(LS.examples)) || []; }
+  catch { return []; }
+}
+function saveExamples(arr) { localStorage.setItem(LS.examples, JSON.stringify(arr)); }
+
+/* Per-user pre-baked example so the section is never empty on first visit.
+   Looks up the user's slug; falls back to a generic one. The seed is only
+   inserted if the user hasn't already generated their own examples — so
+   we never overwrite real history. */
+const EXAMPLE_SEEDS = {
+  'ramon-r9k2x': {
+    slug: 'liberated-expression',
+    sessionHeading: 'Liberated Expression',
+    weekN: 3,
+    before: "Sat down with a knot in the throat. The thing I needed to say to the team has been waiting since Tuesday.",
+    after: "About twelve minutes in, the throat got warm. Not loose exactly — more like it remembered it had a job. I didn't rehearse the message; I just listened to what was already in there.",
+    wow: 5,
+    reflection: "You came in holding what hasn't been said. The session didn't push it out — it just let the throat warm up enough to remember it has a job. That warmth, the noticing that something was already in there waiting, is the work. You don't have to deliver the message from this card. You're allowed to keep listening to it for a while longer. The fact that it stopped being a knot and started being a presence is the shift. What does it want said first — to yourself, before anyone else hears it?"
+  },
+  'amber-r9k2x': {
+    slug: 'liberated-expression',
+    sessionHeading: 'Liberated Expression',
+    weekN: 3,
+    before: "Knot in my throat from a meeting today. Said yes when I meant something more careful than yes.",
+    after: "About fifteen minutes in, my throat felt like it dropped open. Not loud — just unsealed. I didn't speak. I just let it stay open for the rest of the session and noticed how that felt different from holding.",
+    wow: 5,
+    reflection: "You came in holding the place where 'yes' stood in for what you actually meant. The session met you there. Fifteen minutes in, something unsealed — not because you spoke, but because you let yourself notice what wanted to be spoken. That distinction matters. The throat didn't need to perform; it just needed permission to stop holding. What did the open-but-quiet feel teach you that 'speaking up' wouldn't have? Sometimes the practice is in the unsealing, not the delivery."
+  }
+};
+function defaultSeedExample() {
+  return {
+    slug: 'liberated-expression',
+    sessionHeading: 'Liberated Expression',
+    weekN: 3,
+    before: "Sat down with a knot in the throat. Something has been waiting to be said for days.",
+    after: "About twelve minutes in, the throat got warm. Not loose exactly — more like it remembered it had a job.",
+    wow: 5,
+    reflection: "You came in holding what hasn't been said. The session didn't push it out — it just let the throat warm up enough to remember it has a job. That warmth, the noticing that something was already waiting, is the work. The fact that it stopped being a knot and started being a presence is the shift."
+  };
+}
+function seedExampleIfEmpty() {
+  const existing = getExamples();
+  if (existing.length > 0) return;
+  const slug = (USER && USER.slug) || '';
+  const seed = EXAMPLE_SEEDS[slug] || defaultSeedExample();
+  const entry = Object.assign({ ts: Date.now() - 1000, seeded: true }, seed);
+  saveExamples([entry]);
+}
+
+/* Build a single example-reflection card from a stored entry. */
+function renderExampleCard(entry) {
+  const card = el('article', { class: 'example-card', dataset: { ts: String(entry.ts) } });
+  const head = el('div', { class: 'example-card-head' });
+  head.appendChild(el('span', { class: 'example-card-session', text: entry.sessionHeading }));
+  const meta = el('span', { class: 'example-card-meta' });
+  const wow = (typeof entry.wow === 'number') ? entry.wow : null;
+  if (wow) {
+    const wowChip = el('span', { class: 'example-card-wow', dataset: { wow: String(wow) } });
+    wowChip.textContent = wow === 6 ? '✨ WOW' : (wow + ' / 6');
+    meta.appendChild(wowChip);
+  }
+  if (entry.weekN) meta.appendChild(el('span', { class: 'example-card-week', text: 'Week ' + entry.weekN }));
+  head.appendChild(meta);
+  card.appendChild(head);
+
+  const notes = el('div', { class: 'example-card-notes' });
+  if (entry.before) {
+    const b = el('div', { class: 'example-note example-note--before' });
+    b.appendChild(el('span', { class: 'example-note-label', text: 'Before' }));
+    b.appendChild(el('span', { class: 'example-note-text', text: entry.before }));
+    notes.appendChild(b);
+  }
+  if (entry.after) {
+    const a = el('div', { class: 'example-note example-note--after' });
+    a.appendChild(el('span', { class: 'example-note-label', text: 'After' }));
+    a.appendChild(el('span', { class: 'example-note-text', text: entry.after }));
+    notes.appendChild(a);
+  }
+  card.appendChild(notes);
+
+  const refl = el('div', { class: 'example-card-reflection' });
+  refl.appendChild(el('span', { class: 'example-card-reflection-label', text: 'Reflection' }));
+  refl.appendChild(el('p', { class: 'example-card-reflection-text', text: entry.reflection }));
+  card.appendChild(refl);
+
+  return card;
+}
+
+function renderExamplesLog() {
+  const log = document.getElementById('examples-log');
+  if (!log) return;
+  while (log.firstChild) log.removeChild(log.firstChild);
+  const entries = getExamples();
+  // newest first
+  entries.slice().reverse().forEach(e => log.appendChild(renderExampleCard(e)));
+}
+
+async function generateExampleReflection() {
+  const btn = document.getElementById('ex-generate');
+  const status = document.getElementById('ex-status');
+  if (!btn || !status) return;
+  if (!USER || !Array.isArray(USER.plan) || USER.plan.length === 0) {
+    status.textContent = 'No plan loaded — refresh the page.';
+    return;
+  }
+  // Pick a random session from the user's 4-week plan, biased toward
+  // sessions we haven't already shown an example for.
+  const seenSlugs = new Set(getExamples().map(e => e.slug));
+  const allSlugs = USER.plan.flatMap(p => p.sessions);
+  const unseen = allSlugs.filter(s => !seenSlugs.has(s));
+  const pool = unseen.length ? unseen : allSlugs;
+  const slug = pool[Math.floor(Math.random() * pool.length)];
+  const sess = (USER.sessions && USER.sessions[slug]) || SESSIONS[slug];
+  if (!sess) {
+    status.textContent = 'Couldn’t find that session — try again.';
+    return;
+  }
+  const weekN = (USER.plan.find(p => p.sessions.includes(slug)) || { week: 1 }).week;
+  const tmpl = pickExampleTemplate(slug);
+
+  // Reuse the existing payload-builder shape for /reflect
+  const view = (typeof getView === 'function') ? getView() : USER;
+  const parsed = (typeof parseInput === 'function') ? parseInput(view.raw || '') : { frames: {} };
+  const wowLabel = (WOW_LABELS && WOW_LABELS[tmpl.wow]) ? WOW_LABELS[tmpl.wow].long : null;
+  const payload = {
+    userName: USER.displayName || '',
+    userSlug: USER.slug || '',
+    version: VERSION,
+    slug,
+    biofield: view.raw || (USER.reading || ''),
+    biofieldParsed: parsed,
+    session: {
+      heading: sess.heading,
+      subtitle: sess.subtitle,
+      lede: sess.lede,
+      why: (sess.why || '').replace(/\*([^*]+)\*/g, '$1'),
+      intention: sess.intention,
+      artist: sess.artist,
+      category: sess.category,
+      collection: sess.collection
+    },
+    before: tmpl.before,
+    after: tmpl.after,
+    wow: tmpl.wow,
+    wowLabel,
+    journey: { week: weekN, weeksCompleted: weekN - 1, sessionsWithNoteCount: weekN * 4 }
+  };
+
+  btn.disabled = true;
+  status.textContent = 'Generating…';
+
+  try {
+    const resp = await fetch(RESOLVE_REFLECT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+      let msg = 'HTTP ' + resp.status;
+      try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {}
+      throw new Error(msg);
+    }
+    const data = await resp.json();
+    const reflection = (data && (data.reflection || data.text || data.message)) || '';
+    if (!reflection) throw new Error('Empty reflection.');
+    const entry = {
+      ts: Date.now(),
+      slug,
+      sessionHeading: sess.heading,
+      weekN,
+      before: tmpl.before,
+      after: tmpl.after,
+      wow: tmpl.wow,
+      reflection
+    };
+    const list = getExamples();
+    list.push(entry);
+    saveExamples(list);
+    renderExamplesLog();
+    status.textContent = '';
+  } catch (err) {
+    status.textContent = 'Couldn’t generate: ' + (err.message || err);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function bindReveal() {
   /* v1.9.26: more eager observer + safety net for mobile.
      - rootMargin extends the observation area 200 px BELOW the viewport
@@ -7185,6 +7611,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyExpandedStates();
   loadField();
   renderReflections();
+  seedExampleIfEmpty();
+  renderExamplesLog();
   bindReveal();
   mountConstellation();
   startBreathClock();
@@ -7198,6 +7626,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const askBtn = document.getElementById('ask-reflect');
   if (askBtn) askBtn.addEventListener('click', askReflection);
+
+  const exBtn = document.getElementById('ex-generate');
+  if (exBtn) exBtn.addEventListener('click', generateExampleReflection);
 
   // Quiet-mode when the Input panel has focus
   const fp = document.querySelector('.field-panel');
