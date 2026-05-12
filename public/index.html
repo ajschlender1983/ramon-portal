@@ -367,13 +367,67 @@ main { position: relative; z-index: 2; }
 }
 .bf-stage-pane > *:nth-child(2) { animation-delay: 950ms; }
 @media (max-width: 720px) {
-  /* Mobile: stage shrinks; side pane flows below. */
-  .bf-stage-pane {
-    position: relative;
-    top: auto; right: auto;
-    width: 100%; max-width: none;
-    margin-top: 16px;
+  /* v1.9.25: Mobile re-stack. body-hero becomes a single vertical column.
+     We use display:contents on .bf-body-stage and .bf-stage-pane to make
+     their children direct flex items of the hero — then we set `order:`
+     per card to achieve:
+
+        1. Calibration       (was at top of side pane)
+        2. Body image stage  (the figure)
+        3. DNA helix         (was at bottom of side pane)
+        4. Pattern card      (was "Carrier attenuation")
+        5. Balancing Breath  (interactive meter)
+
+     The body-wrap takes its background + box-shadow (was on the stage)
+     so the figure still looks framed. */
+  .bf-body-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
+  /* The stage and the pane go invisible to layout — their children
+     bubble up to participate directly in .bf-body-hero's flex. */
+  .bf-body-stage,
+  .bf-stage-pane {
+    display: contents;
+  }
+  /* Re-style the body wrap so it owns the "stage" look on mobile. */
+  .bf-body-wrap {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 703 / 1024;
+    border-radius: 18px;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 55% 70% at 70% 50%, rgba(194,47,205,0.38), transparent 65%),
+      radial-gradient(ellipse 70% 90% at 30% 50%, rgba(123,111,168,0.28), transparent 70%),
+      linear-gradient(180deg, rgba(20,15,30,0.96), rgba(31,22,50,0.96));
+    box-shadow: 0 24px 64px -24px rgba(86,76,112,0.55);
+    order: 2;
+  }
+  .bf-stage-hawkins { order: 1; }  /* Calibration above the body */
+  .bf-helix--side   { order: 3; }  /* DNA below the body */
+  .bf-stage-cards {
+    order: 4;
+    margin-top: 0;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    /* .bf-stage-cards is also a flex/grid item of body-hero now */
+  }
+  /* Hide the bottom-right dark gradient on mobile (it covers the body
+     image when the stage layout is flat). */
+  .bf-body-wrap::after { display: none; }
+  /* Move the auric readout out of the absolute bottom-right corner —
+     it should sit BELOW the body image on mobile, not overlapping. */
+  .bf-auric-readout {
+    position: static;
+    text-align: center;
+    margin: 8px auto 0;
+    width: 100%;
+  }
+  .bf-auric-readout .diameter-hint { margin-left: 0; margin-right: auto; }
+  .bf-auric-tick { display: none; }
 }
 
 /* Auric-field rings overlay — concentric circles centered on body's
@@ -1275,26 +1329,146 @@ main { position: relative; z-index: 2; }
   margin-top: 2px;
 }
 
-/* Breath card — dot + caption row + hint. */
-.bf-stage-breath { display: flex; flex-direction: column; gap: 6px; }
-.bf-stage-breath .felt {
-  font-family: var(--serif); font-style: italic;
-  font-size: 12px; line-height: 1.5;
-  color: rgba(255,255,255,0.65);
-  margin-top: 2px;
+/* v1.9.25: Balancing Breath card — interactive resonant-breath meter.
+   Circular pulse with two concentric rings, phase label, cycle count.
+   Inhale = teal cool; exhale = warm gold. Replaces the static breath-
+   dot card from v1.9.2-v1.9.24. */
+.bf-stage-breath {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
 }
-.bf-breath-dot--side {
-  position: relative; left: 0; bottom: 0;
+.bf-stage-breath > .label {
+  align-self: flex-start;
+}
+.bb-meter {
+  --bb-scale: 0;
+  --bb-hue: rgba(106,223,217, 1);
+  --bb-hue-soft: rgba(106,223,217, 0.35);
+  position: relative;
+  width: 132px; height: 132px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bb-meter[data-phase="exhale"] {
+  --bb-hue: rgba(255,215,100, 1);
+  --bb-hue-soft: rgba(255,215,100, 0.35);
+}
+.bb-meter[data-phase="rest"] {
+  --bb-hue: rgba(255,255,255, 0.85);
+  --bb-hue-soft: rgba(255,255,255, 0.20);
+}
+.bb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.bb-ring--outer {
+  /* Outer breath halo — scales from 0.55 to 1.05 with --bb-scale. */
+  border: 1.5px solid var(--bb-hue-soft);
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--bb-hue) calc(20% + 25% * var(--bb-scale)), transparent) 0%,
+    color-mix(in srgb, var(--bb-hue) calc(8% + 15% * var(--bb-scale)), transparent) 55%,
+    transparent 75%);
+  transform: scale(calc(0.55 + 0.50 * var(--bb-scale)));
+  box-shadow:
+    0 0 calc(12px + 24px * var(--bb-scale)) var(--bb-hue-soft),
+    0 0 calc(28px + 48px * var(--bb-scale)) color-mix(in srgb, var(--bb-hue) 18%, transparent);
+  transition: border-color 600ms ease, background 600ms ease, box-shadow 600ms ease;
+}
+.bb-ring--inner {
+  /* Inner core — smaller, brighter, scales more dramatically. */
+  inset: 22px;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--bb-hue) 70%, white 18%) 0%,
+    color-mix(in srgb, var(--bb-hue) 45%, transparent) 45%,
+    transparent 75%);
+  transform: scale(calc(0.50 + 0.55 * var(--bb-scale)));
+  filter: blur(calc(0.5px + 1.5px * var(--bb-scale)));
+  opacity: calc(0.65 + 0.35 * var(--bb-scale));
+}
+.bb-phase {
+  position: relative;
+  z-index: 2;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14.5px;
+  letter-spacing: 0.02em;
+  color: rgba(255,255,255,0.92);
+  text-align: center;
+  padding: 0 18px;
+  transition: color 300ms ease;
+}
+.bb-meter[data-phase="exhale"] .bb-phase {
+  color: rgba(255,236,180,0.96);
+}
+.bb-meter[data-phase="rest"] .bb-phase {
+  color: rgba(255,255,255,0.55);
+}
+.bb-icon {
+  position: absolute;
+  right: -2px; top: -2px;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(11,8,15,0.65);
+  border: 1px solid rgba(255,215,100,0.30);
+  border-radius: 50%;
+  z-index: 3;
+  transition: background 200ms, border-color 200ms;
+}
+.bb-icon::before {
+  /* Play triangle (▶) by default; switches to pause bars when playing. */
+  content: '';
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 5px 0 5px 7px;
+  border-color: transparent transparent transparent rgba(255,215,100,0.85);
+  margin-left: 1px;
+}
+.bb-meter--playing .bb-icon { background: rgba(255,215,100,0.18); border-color: rgba(255,215,100,0.65); }
+.bb-meter--playing .bb-icon::before {
+  border: none;
+  width: 8px; height: 9px;
+  background:
+    linear-gradient(rgba(255,215,100,0.95), rgba(255,215,100,0.95)) 0 0/2px 100% no-repeat,
+    linear-gradient(rgba(255,215,100,0.95), rgba(255,215,100,0.95)) 6px 0/2px 100% no-repeat;
   margin: 0;
 }
-.bf-breath-row {
-  display: inline-flex; align-items: center; gap: 10px;
+.bb-meter:hover .bb-icon { background: rgba(255,215,100,0.10); border-color: rgba(255,215,100,0.55); }
+.bb-meter:focus-visible {
+  outline: 2px solid rgba(106,223,217,0.55);
+  outline-offset: 4px;
+  border-radius: 50%;
 }
-.bf-breath-caption {
-  font-size: 13px;
-  letter-spacing: 0.04em;
+.bb-sub {
+  text-align: center;
+  display: flex; flex-direction: column; gap: 4px;
+  align-items: center;
+}
+.bb-rate {
+  font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: rgba(255,215,100,0.62);
+  font-family: var(--sans);
+}
+.bb-cycle-count {
   font-family: var(--serif); font-style: italic;
-  color: rgba(255,215,100,0.85);
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  min-height: 1.2em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-ring--outer, .bb-ring--inner {
+    transition: none !important;
+  }
 }
 
 /* v1.9.14: STRATEGIC RESOLVE — perf cleanup. The 262-line block here
@@ -3396,7 +3570,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.24';
+const VERSION = '1.9.25';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -4003,6 +4177,109 @@ const SILHOUETTE_PATH =
 /* v1.9.23: stat tile for the DNA helix-count row. Each tile shows a
    big gold italic number on top and a small uppercase descriptor below
    so the numerical values dominate the visual hierarchy. */
+/* v1.9.25: Interactive Balancing Breath meter. Adapted from
+   CenteringBreathwork in opus-guide-dashboard for vanilla JS.
+   - Cycle: 10.91 s resonant breathing (5.5 / min). Symmetric: 5.455 s
+     inhale, 5.455 s exhale, no hold.
+   - Visual: a circular meter that expands during inhale and contracts
+     during exhale. Two concentric rings — outer breath glow + inner
+     core. Phase label centered. Cycle counter at the bottom.
+   - Color: teal during inhale (cool intake), gold during exhale (warm
+     release). Matches the portal's palette.
+   - Controls: tap the meter to play/pause. Closure-private state.
+   - rAF loop: one shared loop for the whole meter; pauses on
+     visibilitychange to save battery. */
+function buildBalancingBreath() {
+  const CYCLE_MS = 10910;            // 5.5 breaths / min = resonant coherence
+  const HALF = CYCLE_MS / 2;
+
+  const card = el('div', { class: 'bf-stage-card bf-stage-breath' });
+  card.appendChild(el('div', { class: 'label', text: 'Balancing Breath' }));
+
+  const meter = el('button', {
+    class: 'bb-meter',
+    type: 'button',
+    'aria-label': 'Play or pause the breath meter',
+    'aria-pressed': 'false'
+  });
+  meter.appendChild(el('span', { class: 'bb-ring bb-ring--outer', 'aria-hidden': 'true' }));
+  meter.appendChild(el('span', { class: 'bb-ring bb-ring--inner', 'aria-hidden': 'true' }));
+  const phaseEl = el('span', { class: 'bb-phase', text: 'Tap to begin' });
+  meter.appendChild(phaseEl);
+  const icon = el('span', { class: 'bb-icon', 'aria-hidden': 'true' });
+  meter.appendChild(icon);
+  card.appendChild(meter);
+
+  const sub = el('div', { class: 'bb-sub' });
+  sub.appendChild(el('span', { class: 'bb-rate', text: '5.5 / min · resonant coherence' }));
+  const cycleCount = el('span', { class: 'bb-cycle-count', text: '' });
+  sub.appendChild(cycleCount);
+  card.appendChild(sub);
+
+  // State
+  let playing = false;
+  let startTs = 0;     // performance.now() at the moment of last play
+  let baseCycle = 0;   // accumulated cycle count before current play
+  let rafId = null;
+
+  function setProgress(progress, phase) {
+    // progress in [0, 1] for the full cycle. inhale: 0 → 0.5, exhale: 0.5 → 1.
+    // We map both halves into a 0→1 scale for CSS (--bb-scale: 0..1).
+    const scale = (phase === 'inhale')
+      ? (progress * 2)               // 0 → 1
+      : (1 - (progress - 0.5) * 2);  // 1 → 0
+    meter.style.setProperty('--bb-scale', scale.toFixed(3));
+    meter.dataset.phase = phase;
+  }
+  function setRest() {
+    meter.style.setProperty('--bb-scale', '0');
+    meter.dataset.phase = 'rest';
+  }
+
+  function tick(now) {
+    if (!playing) return;
+    const elapsed = now - startTs;
+    const totalCycles = baseCycle + Math.floor(elapsed / CYCLE_MS);
+    cycleCount.textContent = totalCycles > 0 ? totalCycles + ' breath' + (totalCycles === 1 ? '' : 's') : '';
+    const t = (elapsed % CYCLE_MS) / CYCLE_MS; // 0..1
+    const phase = t < 0.5 ? 'inhale' : 'exhale';
+    setProgress(t, phase);
+    phaseEl.textContent = phase === 'inhale' ? 'Breathe in' : 'Breathe out';
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function play() {
+    if (playing) return;
+    playing = true;
+    startTs = performance.now();
+    meter.classList.add('bb-meter--playing');
+    meter.setAttribute('aria-pressed', 'true');
+    rafId = requestAnimationFrame(tick);
+  }
+  function pause() {
+    if (!playing) return;
+    // accumulate cycles run so they don't reset on next play
+    const elapsed = performance.now() - startTs;
+    baseCycle += Math.floor(elapsed / CYCLE_MS);
+    playing = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    meter.classList.remove('bb-meter--playing');
+    meter.setAttribute('aria-pressed', 'false');
+    phaseEl.textContent = 'Paused — tap to resume';
+  }
+  function toggle() { playing ? pause() : play(); }
+
+  meter.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && playing) pause();
+  });
+
+  // Initial rest state
+  setRest();
+  return card;
+}
+
 function buildHelixStat(value, label, variant) {
   const stat = el('div', { class: 'helix-stat' + (variant ? ' helix-stat--' + variant : '') });
   stat.appendChild(el('div', { class: 'num', text: String(value) }));
@@ -4405,27 +4682,24 @@ function buildBodyAuroraHero() {
   stage.appendChild(sidePane);
   wrap.appendChild(stage);
 
-  /* v1.9.2/.3/.4: Card row BELOW the stage — Carrier-attenuation quote +
-     Breath. Hawkins + DNA are inside the stage's side pane (v1.9.4). */
+  /* v1.9.2/.3/.4/.25: Card row BELOW the stage. v1.9.25 renames the
+     holding card eyebrow "Carrier attenuation" → "Pattern" and replaces
+     the static Breath rhythm card with an interactive Balancing Breath
+     meter. On mobile, the side-pane Calibration + DNA cards also
+     re-flow into this row via CSS order (see .bf-stage-pane mobile
+     rules) — Calibration above the body, DNA below. */
   const cards = el('div', { class: 'bf-stage-cards' });
 
-  // Holding-quote card
+  // Pattern card (was "Carrier attenuation" through v1.9.24)
   const blockQuote = (view.primaryBlock || (USER && USER.primaryBlockQuote) || 'Hesitation in finalizing commitments.').trim();
   const holding = el('div', { class: 'bf-stage-card bf-stage-holding' });
-  holding.appendChild(el('span', { class: 'eyebrow', text: 'Carrier attenuation' }));
+  holding.appendChild(el('span', { class: 'eyebrow', text: 'Pattern' }));
   holding.appendChild(el('div', { class: 'quote', text: '"' + blockQuote.replace(/^"|"$/g, '') + '"' }));
   holding.appendChild(el('div', { class: 'felt', text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.' }));
   cards.appendChild(holding);
 
-  // Breath card
-  const breathCard = el('div', { class: 'bf-stage-card bf-stage-breath' });
-  breathCard.appendChild(el('div', { class: 'label', text: 'Breath rhythm' }));
-  const breathRow = el('div', { class: 'bf-breath-row' });
-  breathRow.appendChild(el('div', { class: 'bf-breath-dot bf-breath-dot--side', 'aria-label': 'breath rhythm 5.5 per minute' }));
-  breathRow.appendChild(el('span', { class: 'bf-breath-caption', text: '5.5 / min' }));
-  breathCard.appendChild(breathRow);
-  breathCard.appendChild(el('div', { class: 'felt', text: 'match the rhythm for a few breaths.' }));
-  cards.appendChild(breathCard);
+  // Balancing Breath card (interactive meter — v1.9.25)
+  cards.appendChild(buildBalancingBreath());
 
   wrap.appendChild(cards);
   return wrap;
