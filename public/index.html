@@ -1100,7 +1100,9 @@ main { position: relative; z-index: 2; }
 }
 .bf-helix--side .bf-helix-svg-wrap { width: 56px; height: 180px; }
 .bf-helix--side .bf-helix-meta .helix-label { font-size: 8.5px; }
-.bf-helix--side .bf-helix-meta .helix-count { font-size: 14px; line-height: 1.3; }
+/* v1.9.23: side-pane variant — slightly smaller numbers to fit the narrower side area, but still dominant. */
+.bf-helix--side .bf-helix-meta .helix-stat .num { font-size: clamp(20px, 3vw, 26px); }
+.bf-helix--side .bf-helix-meta .helix-stat .lbl { font-size: 8px; letter-spacing: 0.16em; }
 .bf-helix--side .bf-helix-meta .helix-sub { font-size: 10.5px; line-height: 1.45; }
 /* v1.9.2/.5: Hawkins card lives in the side pane overlaying the body
    image's right portion. Compact value typography so it doesn't crowd
@@ -1595,13 +1597,58 @@ main { position: relative; z-index: 2; }
   .bf-helix .rung.notyet { animation: none; }
 }
 .bf-helix-meta {
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex; flex-direction: column; gap: 10px;
   min-width: 0;
 }
 .bf-helix-meta .helix-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
-.bf-helix-meta .helix-count { font-family: var(--serif); font-size: 18px; color: var(--light); line-height: 1.35; }
-.bf-helix-meta .helix-count strong { color: var(--gold); font-weight: 500; font-style: italic; }
-.bf-helix-meta .helix-sub { font-size: 11px; color: var(--mid); line-height: 1.55; font-style: italic; }
+/* v1.9.23: helix-count is now a 3-stat tile row. Numbers dominate; the
+   uppercase labels beneath each number are deliberately small. */
+.bf-helix-meta .helix-count {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  margin: 2px 0 4px;
+  /* Subtle divider rule between stats — done with a per-stat border. */
+}
+.bf-helix-meta .helix-stat {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 6px;
+  text-align: left;
+  border-left: 1px solid rgba(255,215,100,0.10);
+}
+.bf-helix-meta .helix-stat:first-child { border-left: none; padding-left: 0; }
+.bf-helix-meta .helix-stat .num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(24px, 4vw, 32px);
+  line-height: 1;
+  color: var(--gold);
+  letter-spacing: 0.01em;
+}
+.bf-helix-meta .helix-stat .lbl {
+  font-family: var(--sans);
+  font-size: 8.5px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-top: 4px;
+  line-height: 1.35;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+/* The "primary" stat (phase-locked) reads brightest; the "total" stat
+   reads slightly quieter — it's a context number, not the headline. */
+.bf-helix-meta .helix-stat--primary .num {
+  color: rgba(255,236,180,1);
+  text-shadow: 0 0 12px rgba(255,215,100,0.55);
+}
+.bf-helix-meta .helix-stat--total .num {
+  color: rgba(255,215,100,0.72);
+}
+.bf-helix-meta .helix-sub { font-size: 11px; color: var(--mid); line-height: 1.55; font-style: italic; margin-top: 4px; }
 
 /* v1.9.8: archetype as the section's closer — chrome quieted so the
    line itself does the work. Centered, generous breathing room, no
@@ -3236,7 +3283,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.22';
+const VERSION = '1.9.23';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3840,6 +3887,16 @@ const SILHOUETTE_PATH =
 /* v1.9.14: function buildSilhouetteSVG() deleted (orphan — not called anywhere). */
 /* v1.9.14: function buildChakraColumn() deleted (orphan — not called anywhere). */
 
+/* v1.9.23: stat tile for the DNA helix-count row. Each tile shows a
+   big gold italic number on top and a small uppercase descriptor below
+   so the numerical values dominate the visual hierarchy. */
+function buildHelixStat(value, label, variant) {
+  const stat = el('div', { class: 'helix-stat' + (variant ? ' helix-stat--' + variant : '') });
+  stat.appendChild(el('div', { class: 'num', text: String(value) }));
+  stat.appendChild(el('div', { class: 'lbl', text: label }));
+  return stat;
+}
+
 function buildHelixSVG() {
   /* DNA helix driven by USER.dna = { phaseLocked, consolidating, of }.
      - Bottom `phaseLocked` rungs: solid gold, still (no breath-pulse) — the
@@ -4219,9 +4276,14 @@ function buildBodyAuroraHero() {
   dna.appendChild(helixWrap);
   const dnaMeta = el('div', { class: 'bf-helix-meta' });
   dnaMeta.appendChild(el('div', { class: 'helix-label', text: 'DNA Strand Activation' }));
+  // v1.9.23: numbers now dominate the layout. Three stat tiles laid out
+  // as [big gold italic number] / [small uppercase label] for each of
+  // phaseLocked, consolidating, of-total. Replaces the old inline
+  // "9 phase-locked · 3 consolidating · of 12" sentence.
   const cnt = el('div', { class: 'helix-count' });
-  cnt.appendChild(el('strong', { text: dnaInfo.phaseLocked + ' phase-locked' }));
-  cnt.appendChild(document.createTextNode(' · ' + dnaInfo.consolidating + ' consolidating · of ' + dnaInfo.of));
+  cnt.appendChild(buildHelixStat(dnaInfo.phaseLocked, 'phase-locked', 'primary'));
+  cnt.appendChild(buildHelixStat(dnaInfo.consolidating, 'consolidating', ''));
+  cnt.appendChild(buildHelixStat(dnaInfo.of, 'of 12', 'total'));
   dnaMeta.appendChild(cnt);
   dnaMeta.appendChild(el('div', { class: 'helix-sub', text: 'The lower pairs anchor first. The upper pairs are on their way.' }));
   dna.appendChild(dnaMeta);
@@ -5562,8 +5624,12 @@ function morphActiveSnapshot(weekN) {
   if (helixCount) {
     while (helixCount.firstChild) helixCount.removeChild(helixCount.firstChild);
     const dna = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
-    helixCount.appendChild(el('strong', { text: dna.phaseLocked + ' phase-locked' }));
-    helixCount.appendChild(document.createTextNode(' · ' + dna.consolidating + ' consolidating · of ' + dna.of));
+    // v1.9.23: rebuild 3-stat layout (matches buildHelixStat in the
+    // initial render). If the snapshot scrubber moves between readings,
+    // each stat updates its number while keeping the layout stable.
+    helixCount.appendChild(buildHelixStat(dna.phaseLocked, 'phase-locked', 'primary'));
+    helixCount.appendChild(buildHelixStat(dna.consolidating, 'consolidating', ''));
+    helixCount.appendChild(buildHelixStat(dna.of, 'of 12', 'total'));
   }
 
   // 7. Timeline strip — update active dot + caption
