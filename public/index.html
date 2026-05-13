@@ -1224,6 +1224,343 @@ main { position: relative; z-index: 2; }
   border-top: 1px solid rgba(255,215,100,0.18);
   align-self: flex-start;
 }
+/* v1.10.0: pattern-mode masthead aura-line — slightly softer, serif italic.
+   "the pattern: avoidance of disappointment" reads as a felt-sense readout,
+   not a measurement. */
+.bf-masthead-meta .aura-line--pattern {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: rgba(255,215,100,0.80);
+}
+
+/* ============================================================
+   v1.10.0: Pattern-mode dashboard styles
+   ============================================================ */
+
+/* Halo — single soft ring around the silhouette (replaces 9-ring auric system) */
+.bf-pattern-halo {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 110%; height: 88%;
+  transform: translate(-50%, -50%) scale(calc(1 + 0.012 * var(--breath-pulse, 0.5)));
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 70% at 50% 50%,
+      transparent 0%,
+      transparent 56%,
+      rgba(255,215,100,0.06) 64%,
+      rgba(255,215,100,0.12) 70%,
+      transparent 78%);
+  filter: blur(2px);
+  z-index: 0;
+}
+
+/* Somatic dots — 3 quiet markers (chest, throat, back). Reuse the .bf-chakra-spot
+   layout so pulseChakra() works without code changes; .bf-somatic-spot adds
+   pattern-mode coloring. */
+.bf-somatic-spot {
+  position: absolute;
+  left: 50%;
+  width: 14px; height: 14px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(106,223,217,0.92);
+  box-shadow:
+    0 0 0 2px rgba(106,223,217,0.18),
+    0 0 16px rgba(106,223,217,0.55),
+    0 0 36px rgba(106,223,217,0.30);
+  z-index: 3;
+  animation: somatic-breath 10.91s ease-in-out infinite;
+}
+@keyframes somatic-breath {
+  0%, 100% { transform: translate(-50%, -50%) scale(1.0); opacity: 0.78; }
+  50%      { transform: translate(-50%, -50%) scale(1.18); opacity: 1; }
+}
+.bf-somatic-spot[data-region="throat"] { background: rgba(106,223,217,0.95); }
+.bf-somatic-spot[data-region="chest"]  { background: rgba(255,215,100,0.85); box-shadow: 0 0 0 2px rgba(255,215,100,0.16), 0 0 16px rgba(255,215,100,0.45), 0 0 36px rgba(255,215,100,0.22); }
+.bf-somatic-spot[data-region="back"]   { background: rgba(123,111,168,0.90); box-shadow: 0 0 0 2px rgba(123,111,168,0.18), 0 0 16px rgba(123,111,168,0.50), 0 0 36px rgba(123,111,168,0.25); }
+.bf-somatic-spot.pulsing {
+  animation: somatic-pulse 1.8s ease-out;
+}
+@keyframes somatic-pulse {
+  0%   { transform: translate(-50%, -50%) scale(1.0); }
+  20%  { transform: translate(-50%, -50%) scale(1.8); box-shadow: 0 0 0 4px rgba(255,215,100,0.45), 0 0 32px rgba(255,215,100,0.70); }
+  100% { transform: translate(-50%, -50%) scale(1.0); }
+}
+
+.bf-somatic-label {
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 2px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.bf-somatic-label-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255,255,255,0.78);
+  letter-spacing: 0.02em;
+}
+.bf-somatic-label-note {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--mid);
+  text-transform: none;
+}
+@media (max-width: 720px) {
+  .bf-somatic-label { left: 18px; }
+  .bf-somatic-label-name { font-size: 12px; }
+  .bf-somatic-label-note { font-size: 9px; }
+}
+
+/* Pattern side pane — calibration ladder + coach framing card */
+.bf-pattern-pane { gap: 18px; }
+
+.bf-pattern-ladder { border-left: 2px solid var(--gold); }
+.bf-pattern-ladder .label { color: var(--gold); }
+.bf-pattern-ladder-current {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--light);
+  font-weight: 300;
+  letter-spacing: -0.005em;
+  margin: 6px 0 14px;
+  line-height: 1.15;
+}
+.bf-pattern-ladder-pips {
+  display: flex; flex-direction: column; gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--glass-border);
+}
+.bf-pattern-ladder-pip {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 11px; letter-spacing: 0.10em; color: var(--dim);
+  transition: color 360ms ease;
+}
+.bf-pattern-ladder-pip .pip-dot {
+  display: inline-block;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--dimmer);
+  flex: 0 0 9px;
+  transition: background 360ms ease, box-shadow 360ms ease, transform 360ms ease;
+}
+.bf-pattern-ladder-pip[data-lit="1"] .pip-dot {
+  background: var(--gold);
+  box-shadow: 0 0 0 2px rgba(255,215,100,0.18);
+}
+.bf-pattern-ladder-pip[data-active="1"] {
+  color: var(--gold);
+}
+.bf-pattern-ladder-pip[data-active="1"] .pip-dot {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 3px rgba(255,215,100,0.24), 0 0 14px rgba(255,215,100,0.45);
+}
+
+.bf-pattern-ladder .felt {
+  margin-top: 14px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--mid);
+}
+
+.bf-pattern-framing { border-left: 2px solid var(--teal); }
+.bf-pattern-framing .label { color: var(--teal); font-size: 9px; }
+.bf-pattern-framing .quote {
+  margin-top: 8px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--light);
+  line-height: 1.25;
+}
+
+/* Pattern hero quote (the coach's reframe) — sits BELOW the body-stage,
+   full-width, large serif. The single typographic moment of the page. */
+.bf-pattern-hero-quote-wrap {
+  margin-top: 36px;
+  padding: 0 clamp(12px, 4vw, 32px);
+}
+.bf-pattern-hero-quote {
+  max-width: 880px; margin: 0 auto;
+  text-align: center;
+  padding: 22px 16px 18px;
+  border-top: 1px solid rgba(255,215,100,0.14);
+  border-bottom: 1px solid rgba(255,215,100,0.14);
+}
+.bf-pattern-hero-quote .eyebrow {
+  font-size: 10px; letter-spacing: 0.30em; text-transform: uppercase;
+  color: rgba(255,215,100,0.78);
+  margin-bottom: 14px;
+}
+.bf-pattern-hero-quote .quote {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(24px, 3.6vw, 38px);
+  color: var(--light);
+  line-height: 1.32;
+  letter-spacing: -0.005em;
+}
+.bf-pattern-hero-quote .quote em {
+  font-style: italic;
+  color: var(--teal);
+}
+.bf-pattern-hero-quote .attribution {
+  margin-top: 14px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--mid);
+  letter-spacing: 0.04em;
+}
+
+/* Below-hero pattern detail: branches grid + text cards */
+.bf-pattern-detail {
+  margin-top: 30px;
+  display: flex; flex-direction: column; gap: 30px;
+}
+.bf-pattern-section { display: flex; flex-direction: column; gap: 14px; }
+.bf-pattern-section .label {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,215,100,0.78);
+}
+.bf-pattern-section .sub {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--mid);
+  font-size: 15px;
+}
+.bf-pattern-section--cards { gap: 14px; }
+
+.bf-pattern-branches-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media (max-width: 720px) {
+  .bf-pattern-branches-grid { grid-template-columns: 1fr; }
+}
+.bf-pattern-branch-card {
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(31,24,36,0.55) 0%, rgba(20,14,28,0.55) 100%);
+  border: 1px solid var(--glass-border);
+  border-left: 2px solid var(--accent-bright);
+}
+.bf-pattern-branch-card .branch-area {
+  font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: var(--accent-bright);
+  margin-bottom: 8px;
+}
+.bf-pattern-branch-card .branch-note {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.55;
+}
+
+.bf-pattern-text-card {
+  padding: 20px 22px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(31,24,36,0.55) 0%, rgba(20,14,28,0.55) 100%);
+  border: 1px solid var(--glass-border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.bf-pattern-text-card--root { border-left: 2px solid var(--gold); }
+.bf-pattern-text-card--survival { border-left: 2px solid var(--magenta); }
+.bf-pattern-text-card--repair { border-left: 2px solid var(--teal); }
+.bf-pattern-text-card .eyebrow {
+  font-size: 10px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: var(--mid);
+}
+.bf-pattern-text-card .headline {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(22px, 3vw, 30px);
+  color: var(--light);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-top: 4px;
+}
+.bf-pattern-text-card .sub {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--mid);
+  font-size: 14px;
+  margin: 0;
+}
+.bf-pattern-text-card .body {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.7;
+  margin-top: 4px;
+}
+.bf-pattern-repair-line {
+  margin-top: 12px !important;
+  padding-top: 12px;
+  border-top: 1px solid rgba(106,223,217,0.18);
+  font-style: italic;
+  color: rgba(106,223,217,0.92) !important;
+}
+
+/* Transcript reader — pattern-mode replacement for parsed-reading frames */
+.parsed-reading--transcript {
+  background: rgba(20,14,28,0.42);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  margin-top: 14px;
+}
+.parsed-reading--transcript h4 {
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 22px;
+  color: var(--light);
+  margin-bottom: 14px;
+}
+.transcript-wrap {
+  display: flex; flex-direction: column; gap: 22px;
+}
+.transcript-turn {
+  display: flex; flex-direction: column; gap: 8px;
+  padding-left: 14px;
+  border-left: 2px solid var(--glass-border);
+}
+.transcript-turn[data-speaker="ADAM"] { border-left-color: var(--gold); }
+.transcript-turn[data-speaker="COACH"] { border-left-color: var(--teal); }
+.transcript-speaker {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--mid);
+  text-transform: uppercase;
+}
+.transcript-turn[data-speaker="ADAM"] .transcript-speaker { color: rgba(255,215,100,0.80); }
+.transcript-turn[data-speaker="COACH"] .transcript-speaker { color: rgba(106,223,217,0.80); }
+.transcript-para {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.75;
+}
+.transcript-turn[data-speaker="ADAM"] .transcript-para {
+  font-style: italic;
+  color: rgba(255,255,255,0.86);
+}
+.transcript-turn[data-speaker="COACH"] .transcript-para {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: rgba(255,255,255,0.74);
+}
 
 /* v1.9.2: Card row beneath the body-aurora stage. Three cards
    (calibration · holding · breath) flow horizontally on desktop, stack
@@ -3591,7 +3928,7 @@ window.__userDataPromise = (function() {
   <div class="hero-eyebrow reveal">Designed for <span data-user-name>—</span> · <span data-user-period>—</span></div>
   <div class="hero-principle-1 reveal">The Input is the starting frame.<em> Your body is the source of truth.</em></div>
   <h1 class="hero-title reveal"><em data-user-possessive>—</em> First Month Map<br><span class="aurora-text">A SoundBed Experiment</span></h1>
-  <p class="hero-lede reveal" id="hero-lede">
+  <p class="hero-lede reveal" id="hero-lede" data-hero-lede-mount>
     Someone who works with energy gave you a reading. We're holding it as a starting point. From what they offered, we drew a 4-week path through 16 sessions in the OPUS catalog. As you move through it, the notes you take become part of the conversation.
   </p>
 </header>
@@ -3606,8 +3943,8 @@ window.__userDataPromise = (function() {
   <div class="bf-section-masthead-mount" id="masthead-mount"></div>
 
   <div class="section-label">The Input</div>
-  <h2 class="section-title">Your Biofield reading, <em>held as the starting frame</em>.</h2>
-  <p class="section-desc">
+  <h2 class="section-title" data-input-title-mount>Your Biofield reading, <em>held as the starting frame</em>.</h2>
+  <p class="section-desc" data-input-desc-mount>
     This is the reading you were given. We mirror the words back to you and design the next 30 days around them. <strong>The Input itself is what we built the map from.</strong>
   </p>
 
@@ -3639,8 +3976,8 @@ window.__userDataPromise = (function() {
 
 <section class="section reveal" id="map">
   <div class="section-label">The Map · 4 Weeks · 16 Sessions</div>
-  <h2 class="section-title">Designed from your <em>Biofield reading</em>.</h2>
-  <p class="section-desc" data-map-intro>
+  <h2 class="section-title" data-map-title-mount>Designed from your <em>Biofield reading</em>.</h2>
+  <p class="section-desc" data-map-intro data-map-desc-mount>
     Your reading shapes the path. Each week is built from what came up. Every session below is a real entry from the OPUS catalog. After each one, log a short note. We're listening for what changes.
   </p>
 
@@ -3727,7 +4064,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.29';
+const VERSION = '1.10.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -5151,7 +5488,20 @@ function buildBelowHeroDetail() {
   return wrap;
 }
 
-function mountBiofieldDashboard() {
+/* v1.10.0: profileType dispatcher.
+   USER.profileType selects which dashboard renders:
+   - 'biofield' (default if absent): legacy chakras-on-body + auric rings + DNA helix
+   - 'pattern':  somatic dots + 4-stage calibration ladder + hero quote +
+                 behavioral branches grid + transcript reader. For users whose
+                 input is a coaching transcript that surfaced an attachment
+                 pattern (Adam) rather than an energetic reading. */
+function mountDashboard() {
+  const mode = (USER && USER.profileType) || 'biofield';
+  if (mode === 'pattern') return mountPatternDashboard();
+  return mountBiofieldDashboardInternal();
+}
+
+function mountBiofieldDashboardInternal() {
   const root = document.getElementById('biofield-dashboard');
   if (!root) return;
   applyActiveSnapshot();
@@ -5175,6 +5525,10 @@ function mountBiofieldDashboard() {
   // somewhere quieter later.
 }
 
+/* Legacy alias — external code calls mountBiofieldDashboard(). Route through
+   the dispatcher so pattern-mode users get their own render. */
+function mountBiofieldDashboard() { return mountDashboard(); }
+
 /* v1.9.21: Section-level masthead (portrait, italic display name, dek
    line, gold field-reaches measurement). Mounts into #masthead-mount
    which sits in the static HTML directly above the section-label "THE
@@ -5188,7 +5542,7 @@ function mountSectionMasthead() {
   const view = getView();
   const portraitName = (USER && USER.displayName) || '';
   const period = (USER && USER.period) || '';
-  const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
+  const mode = (USER && USER.profileType) || 'biofield';
 
   const masthead = el('div', { class: 'bf-stage-masthead' });
   const mastTile = el('div', { class: 'bf-avatar-tile bf-avatar-tile--masthead' });
@@ -5196,10 +5550,256 @@ function mountSectionMasthead() {
   masthead.appendChild(mastTile);
   const mastMeta = el('div', { class: 'bf-masthead-meta' });
   mastMeta.appendChild(el('div', { class: 'name', text: portraitName }));
-  mastMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' + (period ? ' · ' + period : '') }));
-  mastMeta.appendChild(el('div', { class: 'aura-line', text: 'field reaches ' + auricMeters.toFixed(1) + ' m' }));
+
+  if (mode === 'pattern') {
+    // v1.10.0: pattern mode replaces "their field, mirrored · field reaches Xm"
+    // with "their pattern, mirrored · the pattern: <rootPattern>".
+    mastMeta.appendChild(el('div', { class: 'dek', text: 'their pattern, mirrored' + (period ? ' · ' + period : '') }));
+    const rp = (USER && USER.rootPattern) || '';
+    if (rp) {
+      mastMeta.appendChild(el('div', { class: 'aura-line aura-line--pattern', text: 'the pattern: ' + rp.toLowerCase() }));
+    }
+  } else {
+    const auricMeters = (typeof view.auricMeters === 'number') ? view.auricMeters : 13.4;
+    mastMeta.appendChild(el('div', { class: 'dek', text: 'their field, mirrored' + (period ? ' · ' + period : '') }));
+    mastMeta.appendChild(el('div', { class: 'aura-line', text: 'field reaches ' + auricMeters.toFixed(1) + ' m' }));
+  }
   masthead.appendChild(mastMeta);
   mount.appendChild(masthead);
+}
+
+/* ============================================================
+   v1.10.0: Pattern-mode dashboard
+   For users whose input is a coaching transcript surfacing an attachment
+   pattern (avoidance, over-functioning, perfectionism, etc.) rather than
+   an energetic reading. Same DOM scaffolding (body-stage, side pane,
+   below-hero detail) as biofield mode; different content.
+
+   Layout:
+     [masthead — handled by mountSectionMasthead pattern branch]
+     [silhouette + 3 somatic dots]
+     [side pane: 4-stage calibration ladder + somatic locator caption]
+     [below stage: hero quote card]
+     [below stage: 4-card branches grid]
+     [below stage: pattern + survival + context + repair cards]
+   ============================================================ */
+function mountPatternDashboard() {
+  const root = document.getElementById('biofield-dashboard');
+  if (!root) return;
+  // v1.10.0: skip applyActiveSnapshot() for pattern mode. The snapshot
+  // builder assumes chakraStates on baseline + walks the auric-meters /
+  // hawkins / dna / chakras pipeline, none of which exist on a pattern
+  // user. Pattern mode has no weekly-reading capture either (the input is
+  // a one-time coaching transcript, not a recurring biofield reading), so
+  // there are no snapshots to apply. Set ACTIVE_VIEW = USER directly.
+  ACTIVE_VIEW = USER;
+  while (root.firstChild) root.removeChild(root.firstChild);
+  mountSectionMasthead();
+  root.appendChild(buildPatternHero());
+  root.appendChild(buildPatternBelowHero());
+}
+
+function buildPatternHero() {
+  // Reuses the body-stage shell from buildBodyAuroraHero — silhouette image
+  // pinned aspect-ratio, side pane sibling, no auric rings or DNA helix.
+  const wrap = el('div', { class: 'bf-body-aurora-hero bf-pattern-hero' });
+  const stage = el('div', { class: 'bf-body-stage' });
+  const bodyWrap = el('div', { class: 'bf-body-wrap' });
+
+  // Body silhouette — same asset as biofield dashboard, no chakra glow nuclei.
+  const img = document.createElement('img');
+  img.className = 'bf-body-image';
+  img.alt = '';
+  img.setAttribute('aria-hidden', 'true');
+  img.src = 'assets/body-aurora.webp';
+  img.addEventListener('error', () => { img.style.display = 'none'; bodyWrap.classList.add('bf-body-wrap--no-image'); });
+  bodyWrap.appendChild(img);
+
+  // Quiet halo — single soft ring instead of the 9-ring auric system.
+  const halo = el('div', { class: 'bf-pattern-halo', 'aria-hidden': 'true' });
+  bodyWrap.appendChild(halo);
+
+  // 3 somatic dots (chest, throat, back) — same .bf-chakra-spot markup as
+  // legacy so pulseChakra(slug) works without code changes. Region values
+  // come from USER.somaticLocations.
+  const locs = (USER && Array.isArray(USER.somaticLocations)) ? USER.somaticLocations : [];
+  locs.forEach(loc => {
+    const dot = el('div', {
+      class: 'bf-chakra-spot bf-somatic-spot',
+      dataset: { id: loc.id, region: loc.region || loc.id, state: loc.state || '' },
+      style: 'top:' + (loc.yPct || 30) + '%;'
+    });
+    const label = el('div', { class: 'bf-somatic-label' });
+    label.appendChild(el('span', { class: 'bf-somatic-label-name', text: loc.label }));
+    if (loc.note) label.appendChild(el('span', { class: 'bf-somatic-label-note', text: loc.note }));
+    dot.appendChild(label);
+    bodyWrap.appendChild(dot);
+  });
+
+  stage.appendChild(bodyWrap);
+  stage.appendChild(buildPatternSidePane());
+  wrap.appendChild(stage);
+
+  // Below the stage: hero quote card (the coach's reframe)
+  wrap.appendChild(buildPatternHeroQuote());
+  return wrap;
+}
+
+function buildPatternSidePane() {
+  const pane = el('div', { class: 'bf-stage-pane bf-pattern-pane' });
+
+  // 4-stage calibration ladder (replaces Hawkins / 528 Hz card)
+  const stages = (USER && Array.isArray(USER.calibrationStages)) ? USER.calibrationStages : [];
+  const currentStage = (USER && USER.currentStage) || (stages[0] && stages[0].id);
+  const currentIdx = Math.max(0, stages.findIndex(s => s.id === currentStage));
+
+  const ladder = el('div', { class: 'bf-stage-card bf-pattern-ladder' });
+  ladder.appendChild(el('div', { class: 'label', text: 'Calibration' }));
+  ladder.appendChild(el('div', { class: 'bf-pattern-ladder-current', text: stages[currentIdx] ? stages[currentIdx].label : '' }));
+  const ladderRow = el('div', { class: 'bf-pattern-ladder-pips' });
+  stages.forEach((s, i) => {
+    const pip = el('div', {
+      class: 'bf-pattern-ladder-pip',
+      dataset: { id: s.id, lit: (i <= currentIdx) ? '1' : '0', active: (i === currentIdx) ? '1' : '0' }
+    });
+    pip.appendChild(el('span', { class: 'pip-dot' }));
+    pip.appendChild(el('span', { class: 'pip-label', text: s.label }));
+    ladderRow.appendChild(pip);
+  });
+  ladder.appendChild(ladderRow);
+  ladder.appendChild(el('div', { class: 'felt', text: 'Where you are in the arc. Week ' + (currentIdx + 1) + ' of four.' }));
+  pane.appendChild(ladder);
+
+  // Coach framing card — small italic line that names the orienting frame
+  const cf = (USER && USER.coachFraming) || '';
+  if (cf) {
+    const fram = el('div', { class: 'bf-stage-card bf-pattern-framing' });
+    fram.appendChild(el('div', { class: 'label', text: "Coach's framing" }));
+    fram.appendChild(el('div', { class: 'quote', text: cf }));
+    pane.appendChild(fram);
+  }
+
+  return pane;
+}
+
+function buildPatternHeroQuote() {
+  const wrap = el('div', { class: 'bf-pattern-hero-quote-wrap' });
+  const q = (USER && USER.heroQuote) || '';
+  if (!q) return wrap;
+  const highlight = (USER && USER.heroQuoteHighlight) || '';
+  const card = el('div', { class: 'bf-pattern-hero-quote' });
+  card.appendChild(el('div', { class: 'eyebrow', text: 'The pattern' }));
+  // Split the quote on the highlight word so we can italicize/recolor it.
+  const text = q.replace(/^"|"$/g, '');
+  if (highlight && text.toLowerCase().indexOf(highlight.toLowerCase()) >= 0) {
+    const idx = text.toLowerCase().indexOf(highlight.toLowerCase());
+    const before = text.slice(0, idx);
+    const word = text.slice(idx, idx + highlight.length);
+    const after = text.slice(idx + highlight.length);
+    const quote = el('div', { class: 'quote' });
+    quote.appendChild(document.createTextNode('"' + before));
+    quote.appendChild(el('em', { text: word }));
+    quote.appendChild(document.createTextNode(after + '"'));
+    card.appendChild(quote);
+  } else {
+    card.appendChild(el('div', { class: 'quote', text: '"' + text + '"' }));
+  }
+  const attr = (USER && USER.heroQuoteAttribution) || '';
+  if (attr) card.appendChild(el('div', { class: 'attribution', text: '— ' + attr }));
+  wrap.appendChild(card);
+  return wrap;
+}
+
+function buildPatternBelowHero() {
+  const wrap = el('div', { class: 'bf-detail bf-pattern-detail' });
+
+  // Branches grid
+  const branches = (USER && Array.isArray(USER.behavioralBranches)) ? USER.behavioralBranches : [];
+  if (branches.length) {
+    const sec = el('div', { class: 'bf-pattern-section' });
+    sec.appendChild(el('div', { class: 'label', text: 'Branches today' }));
+    sec.appendChild(el('div', { class: 'sub', text: 'Where the pattern is touching life right now.' }));
+    const grid = el('div', { class: 'bf-pattern-branches-grid' });
+    branches.forEach(b => {
+      const card = el('div', { class: 'bf-pattern-branch-card' });
+      card.appendChild(el('div', { class: 'branch-area', text: b.area || '' }));
+      card.appendChild(el('div', { class: 'branch-note', text: b.note || '' }));
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);
+    wrap.appendChild(sec);
+  }
+
+  // Three text cards: Root pattern + Survival strategy + Current context / Repair intention
+  const root = el('div', { class: 'bf-pattern-section bf-pattern-section--cards' });
+  const rp = (USER && USER.rootPattern) || '';
+  const rpSub = (USER && USER.rootPatternSubtitle) || '';
+  const fm = (USER && USER.formativeMoment) || '';
+  if (rp) {
+    const card = el('div', { class: 'bf-pattern-text-card bf-pattern-text-card--root' });
+    card.appendChild(el('div', { class: 'eyebrow', text: 'Root pattern' }));
+    card.appendChild(el('div', { class: 'headline', text: rp }));
+    if (rpSub) card.appendChild(el('div', { class: 'sub', text: rpSub }));
+    if (fm) card.appendChild(el('div', { class: 'body', text: fm }));
+    root.appendChild(card);
+  }
+  const ss = (USER && USER.survivalStrategy) || '';
+  if (ss) {
+    const card = el('div', { class: 'bf-pattern-text-card bf-pattern-text-card--survival' });
+    card.appendChild(el('div', { class: 'eyebrow', text: 'Survival strategy' }));
+    card.appendChild(el('div', { class: 'body', text: ss }));
+    root.appendChild(card);
+  }
+  const ctx = (USER && USER.currentContext) || '';
+  const ri = (USER && USER.repairIntention) || '';
+  if (ctx || ri) {
+    const card = el('div', { class: 'bf-pattern-text-card bf-pattern-text-card--repair' });
+    card.appendChild(el('div', { class: 'eyebrow', text: 'Where the work is heading' }));
+    if (ctx) card.appendChild(el('div', { class: 'body', text: ctx }));
+    if (ri) card.appendChild(el('div', { class: 'body bf-pattern-repair-line', text: ri }));
+    root.appendChild(card);
+  }
+  wrap.appendChild(root);
+
+  return wrap;
+}
+
+/* v1.10.0: render the verbatim coaching transcript with speaker turns
+   styled. Replaces the biofield-frame parser output in pattern mode. */
+function renderTranscriptReading(text) {
+  const card = el('div', { class: 'parsed-reading parsed-reading--transcript' });
+  card.appendChild(el('div', { class: 'reading-eyebrow', text: 'The conversation' }));
+  card.appendChild(el('h4', { text: 'What surfaced', tabindex: '-1' }));
+  const wrap = el('div', { class: 'transcript-wrap' });
+  // Split on speaker tags (ADAM:, COACH:, or any uppercase NAME:) at line start.
+  const parts = text.split(/(\n\s*[A-Z][A-Z .]{1,30}:\s*\n?)/g).filter(p => p && p.trim());
+  let i = 0;
+  while (i < parts.length) {
+    const p = parts[i];
+    const tagMatch = p.match(/^\s*([A-Z][A-Z .]{1,30}):\s*$/);
+    if (tagMatch) {
+      const speaker = tagMatch[1].trim();
+      const body = (parts[i + 1] || '').trim();
+      const turn = el('div', { class: 'transcript-turn', dataset: { speaker } });
+      turn.appendChild(el('div', { class: 'transcript-speaker', text: speaker }));
+      // split body on blank lines into paragraphs
+      body.split(/\n\s*\n/).forEach(para => {
+        if (para.trim()) turn.appendChild(el('p', { class: 'transcript-para', text: para.trim() }));
+      });
+      wrap.appendChild(turn);
+      i += 2;
+    } else {
+      // orphan paragraph (no speaker tag)
+      const turn = el('div', { class: 'transcript-turn', dataset: { speaker: 'NARRATOR' } });
+      p.split(/\n\s*\n/).forEach(para => {
+        if (para.trim()) turn.appendChild(el('p', { class: 'transcript-para', text: para.trim() }));
+      });
+      wrap.appendChild(turn);
+      i += 1;
+    }
+  }
+  card.appendChild(wrap);
+  return card;
 }
 
 function pulseChakra(slug) {
@@ -5351,6 +5951,18 @@ function renderParsedReading(parsed) {
   const mount = document.getElementById('parsed-reading-mount');
   while (mount.firstChild) mount.removeChild(mount.firstChild);
   if (!parsed) return;
+
+  // v1.10.0: pattern mode renders the verbatim transcript as a styled
+  // speaker-turn reader instead of the biofield frames pipeline. The
+  // 🜂-marker parser returns empty frames for a transcript, so we'd render
+  // a hollow card otherwise.
+  const mode = (USER && USER.profileType) || 'biofield';
+  if (mode === 'pattern') {
+    const text = (USER && USER.reading) || (parsed && parsed.raw) || '';
+    if (!text) return;
+    mount.appendChild(renderTranscriptReading(text));
+    return;
+  }
 
   const card = el('div', { class: 'parsed-reading' });
   card.appendChild(el('div', { class: 'reading-eyebrow', text: 'Reflection · Designed for Your First 30 Days' }));
@@ -6058,8 +6670,10 @@ function buildSnapshot(weekN, text, ts, source) {
     }
   });
 
-  // Build view-shaped chakraStates: keep yPct + label from baseline, override state + note
-  const baseChakras = baseline.chakraStates || CHAKRA_STATES;
+  // Build view-shaped chakraStates: keep yPct + label from baseline, override state + note.
+  // v1.10.0: pattern-mode users have no baseline chakraStates. Guard against
+  // undefined so callers reach a clean falsy snapshot result.
+  const baseChakras = baseline.chakraStates || CHAKRA_STATES || [];
   const chakraStates = baseChakras.map(c => {
     const override = chakras[c.id];
     if (!override) return Object.assign({}, c);
@@ -6990,6 +7604,7 @@ function buildResolvePayload(slug) {
     slug,
     userName: (USER && USER.displayName) || '',
     userSlug: (USER && USER.slug) || '',
+    profileType: (USER && USER.profileType) || 'biofield',
     version: VERSION,
     biofield: currentField,
     biofieldParsed: parseInput(currentField),
@@ -7629,8 +8244,37 @@ function applyUserToDOM() {
   document.querySelectorAll('[data-user-possessive]').forEach(el => { el.textContent = possessive; });
   document.querySelectorAll('[data-user-period]').forEach(el => { el.textContent = period; });
   // Baseline reading label on the Input section's collapse pill (v1.6.2)
-  const baselineLabel = period ? ('Biofield reading 0 · ' + period) : 'Biofield reading 0';
+  const mode = USER.profileType || 'biofield';
+  const copy = (USER.copy && typeof USER.copy === 'object') ? USER.copy : {};
+  const baselineLabel = (mode === 'pattern')
+    ? (copy.inputCollapseLabel || 'The transcript')
+    : (period ? ('Biofield reading 0 · ' + period) : 'Biofield reading 0');
   document.querySelectorAll('[data-baseline-reading-label]').forEach(el => { el.textContent = baselineLabel; });
+
+  // v1.10.0: USER.copy overrides for input + map titles and descriptions.
+  // Pattern-mode portals (Adam's) ship pattern-coded strings here so the
+  // section chrome reads "Your coaching transcript" instead of "Your Biofield
+  // reading." Falls back to the static HTML when overrides are absent.
+  function setIfText(selector, text) {
+    if (!text) return;
+    document.querySelectorAll(selector).forEach(el => { el.textContent = text; });
+  }
+  function setIfNode(selector, text) {
+    if (!text) return;
+    document.querySelectorAll(selector).forEach(el => {
+      while (el.firstChild) el.removeChild(el.firstChild);
+      el.appendChild(document.createTextNode(text));
+    });
+  }
+  setIfNode('[data-input-title-mount]', copy.inputTitle);
+  setIfNode('[data-input-desc-mount]', copy.inputDesc);
+  setIfNode('[data-map-title-mount]', copy.mapTitle);
+  setIfNode('[data-map-desc-mount]', copy.mapDesc);
+  setIfNode('[data-hero-lede-mount]', copy.heroLede);
+  // For pattern mode the section-label "THE INPUT" stays appropriate, but
+  // the hero principle changes. Leave the principle-1 line ("The Input is
+  // the starting frame. Your body is the source of truth.") — true for both
+  // modes.
   const v = document.getElementById('footer-version');
   if (v) v.textContent = 'v' + VERSION;
 
