@@ -36,7 +36,7 @@
       head.appendChild(meta);
       card.appendChild(head);
 
-      card.appendChild(el('div', { class: 'archive-card-text', text: entry.text }));
+      card.appendChild(el('div', { class: 'archive-card-text', text: window.OPUS.humanize(entry.text) }));
       card.style.cursor = 'pointer';
       card.addEventListener('click', () => {
         window.OPUS.setHash('#s/' + slug);

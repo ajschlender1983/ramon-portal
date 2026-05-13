@@ -3727,7 +3727,7 @@ const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.9.28';
+const VERSION = '1.9.29';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -3785,6 +3785,38 @@ const WOW_LABELS = {
   6: { short: '✨ WOW',    long: 'Beyond words. An expansive experience of ineffable emotion. The feeling exceeds language.' }
 };
 let LS = makeLS('__pending__'); // overwritten in init()
+
+/* humanize: client-side mirror of the Worker's same-named function in
+   worker/worker.js. The Worker humanizes every Claude response on the
+   way out, but we belt-and-suspenders the client too. Defensive — runs
+   on every reflection text we store OR display, so:
+   - stale data already in localStorage from older deploys gets cleaned
+     on render
+   - any hand-written static reflection (seeded examples, fallback copy)
+     gets the same treatment as live worker output
+   - any future code path that bypasses the worker still produces clean
+     text on display
+   Logic mirrors worker exactly so the output is identical regardless of
+   which side ran the pass. */
+function humanize(text) {
+  if (!text) return text;
+  let s = String(text);
+  // Em dashes → comma+space. Restructure rather than retain the dash.
+  s = s.replace(/\s*—\s*/g, ', ');
+  // Double-hyphens between letters (---like-this---) → comma.
+  s = s.replace(/(\w)\s*--\s*(\w)/g, '$1, $2');
+  // En dashes: only between words; keep numeric ranges (180–240) untouched.
+  s = s.replace(/(\w)\s*–\s*(\w)/g, function (m, a, b) {
+    return (/\d/.test(a) && /\d/.test(b)) ? a + '-' + b : a + ', ' + b;
+  });
+  // Collapse double commas / commas-before-periods that the swaps create.
+  s = s.replace(/,\s*,/g, ',');
+  s = s.replace(/,\s*\./g, '.');
+  s = s.replace(/\s{2,}/g, ' ');
+  // Drop a leading comma at line start that a swap might have left.
+  s = s.replace(/^\s*[,]+\s*/gm, '');
+  return s.trim();
+}
 
 /* Per-state visual encoding (replaces the old `--amp` scale system).
    Encodes the spatial behavior of the field:
@@ -7011,7 +7043,7 @@ async function resolveSession(slug) {
       throw new Error(msg);
     }
     const data = await resp.json();
-    const text = (data && (data.reflection || data.text || data.message)) || '';
+    const text = humanize((data && (data.reflection || data.text || data.message)) || '');
     if (!text) throw new Error('empty reflection');
     saveSessionReflection(slug, { ts: Date.now(), text, dirty: false, deepText: undefined, passes: undefined });
     card.classList.remove('resolving');
@@ -7031,7 +7063,7 @@ function collapseCardToReflection(card, slug) {
   const stored = getSessionReflections()[slug];
   if (!stored) return;
   const reflEl = card.querySelector('.resolved-reflection .resolved-text');
-  if (reflEl) reflEl.textContent = stored.deepText || stored.text || '';
+  if (reflEl) reflEl.textContent = humanize(stored.deepText || stored.text || '');
   card.classList.toggle('deepened', !!stored.deepText);
   card.classList.add('collapsed-reflected');
   card.classList.remove('dirty');
@@ -7078,7 +7110,7 @@ async function deepenSession(slug) {
       throw new Error(msg);
     }
     const data = await resp.json();
-    const text = (data && (data.deepReflection || data.text)) || '';
+    const text = humanize((data && (data.deepReflection || data.text)) || '');
     if (!text) throw new Error('empty deep reflection');
     saveSessionReflection(slug, { deepText: text, passes: data.passes || null, deepenedAt: Date.now() });
     card.classList.remove('deepening');
@@ -7120,7 +7152,7 @@ function renderReflections(opts) {
   getReflections().forEach(r => {
     const e = el('div', { class: 'reflect-entry' + (r.ts === opts.freshTs ? ' fresh' : '') });
     e.appendChild(el('div', { class: 'reflect-entry-meta', text: new Date(r.ts).toLocaleString() }));
-    e.appendChild(el('div', { class: 'reflect-entry-body', text: r.text }));
+    e.appendChild(el('div', { class: 'reflect-entry-body', text: humanize(r.text) }));
     log.appendChild(e);
   });
 }
@@ -7215,7 +7247,7 @@ async function askReflection() {
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
-    const text = data.reflection || data.text || data.message || '';
+    const text = humanize(data.reflection || data.text || data.message || '');
     if (!text) throw new Error('Empty response');
     saveReflection({ ts: Date.now(), text });
     setState({ reflectionReceived: true });
@@ -7360,18 +7392,18 @@ const EXAMPLE_SEEDS = {
     sessionHeading: 'Liberated Expression',
     weekN: 3,
     before: "Sat down with a knot in the throat. The thing I needed to say to the team has been waiting since Tuesday.",
-    after: "About twelve minutes in, the throat got warm. Not loose exactly — more like it remembered it had a job. I didn't rehearse the message; I just listened to what was already in there.",
+    after: "About twelve minutes in, the throat got warm. Not loose exactly, more like it remembered it had a job. I didn't rehearse the message. I just listened to what was already in there.",
     wow: 5,
-    reflection: "You came in holding what hasn't been said. The session didn't push it out — it just let the throat warm up enough to remember it has a job. That warmth, the noticing that something was already in there waiting, is the work. You don't have to deliver the message from this card. You're allowed to keep listening to it for a while longer. The fact that it stopped being a knot and started being a presence is the shift. What does it want said first — to yourself, before anyone else hears it?"
+    reflection: "You came in holding what hasn't been said. The session didn't push it out. It just let the throat warm up enough to remember it has a job. That warmth, the noticing that something was already in there waiting, is the work. You don't have to deliver the message from this card. You're allowed to keep listening to it for a while longer. The fact that it stopped being a knot and started being a presence is the shift. What does it want said first, to yourself, before anyone else hears it?"
   },
   'amber-r9k2x': {
     slug: 'liberated-expression',
     sessionHeading: 'Liberated Expression',
     weekN: 3,
     before: "Knot in my throat from a meeting today. Said yes when I meant something more careful than yes.",
-    after: "About fifteen minutes in, my throat felt like it dropped open. Not loud — just unsealed. I didn't speak. I just let it stay open for the rest of the session and noticed how that felt different from holding.",
+    after: "About fifteen minutes in, my throat felt like it dropped open. Not loud, just unsealed. I didn't speak. I just let it stay open for the rest of the session and noticed how that felt different from holding.",
     wow: 5,
-    reflection: "You came in holding the place where 'yes' stood in for what you actually meant. The session met you there. Fifteen minutes in, something unsealed — not because you spoke, but because you let yourself notice what wanted to be spoken. That distinction matters. The throat didn't need to perform; it just needed permission to stop holding. What did the open-but-quiet feel teach you that 'speaking up' wouldn't have? Sometimes the practice is in the unsealing, not the delivery."
+    reflection: "You came in holding the place where 'yes' stood in for what you actually meant. The session met you there. Fifteen minutes in, something unsealed, not because you spoke, but because you let yourself notice what wanted to be spoken. That distinction matters. The throat didn't need to perform. It just needed permission to stop holding. What did the open-but-quiet feel teach you that 'speaking up' wouldn't have? Sometimes the practice is in the unsealing, not the delivery."
   }
 };
 function defaultSeedExample() {
@@ -7380,9 +7412,9 @@ function defaultSeedExample() {
     sessionHeading: 'Liberated Expression',
     weekN: 3,
     before: "Sat down with a knot in the throat. Something has been waiting to be said for days.",
-    after: "About twelve minutes in, the throat got warm. Not loose exactly — more like it remembered it had a job.",
+    after: "About twelve minutes in, the throat got warm. Not loose exactly, more like it remembered it had a job.",
     wow: 5,
-    reflection: "You came in holding what hasn't been said. The session didn't push it out — it just let the throat warm up enough to remember it has a job. That warmth, the noticing that something was already waiting, is the work. The fact that it stopped being a knot and started being a presence is the shift."
+    reflection: "You came in holding what hasn't been said. The session didn't push it out. It just let the throat warm up enough to remember it has a job. That warmth, the noticing that something was already waiting, is the work. The fact that it stopped being a knot and started being a presence is the shift."
   };
 }
 function seedExampleIfEmpty() {
@@ -7427,7 +7459,7 @@ function renderExampleCard(entry) {
 
   const refl = el('div', { class: 'example-card-reflection' });
   refl.appendChild(el('span', { class: 'example-card-reflection-label', text: 'Reflection' }));
-  refl.appendChild(el('p', { class: 'example-card-reflection-text', text: entry.reflection }));
+  refl.appendChild(el('p', { class: 'example-card-reflection-text', text: humanize(entry.reflection) }));
   card.appendChild(refl);
 
   return card;
@@ -7508,7 +7540,7 @@ async function generateExampleReflection() {
       throw new Error(msg);
     }
     const data = await resp.json();
-    const reflection = (data && (data.reflection || data.text || data.message)) || '';
+    const reflection = humanize((data && (data.reflection || data.text || data.message)) || '');
     if (!reflection) throw new Error('Empty reflection.');
     const entry = {
       ts: Date.now(),

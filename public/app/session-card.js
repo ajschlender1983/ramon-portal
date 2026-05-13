@@ -178,7 +178,7 @@
     const actions = el('div', { class: 'phase-actions' });
 
     if (existing && existing.text) {
-      textNode.textContent = existing.text;
+      textNode.textContent = window.OPUS.humanize(existing.text);
     } else {
       textNode.textContent = '';
       status.textContent = 'Write your Before + After, pick a felt rating, then ask for the reflection.';
@@ -200,7 +200,7 @@
       status.textContent = 'Reflecting…';
       try {
         const payload = window.OPUS.buildReflectPayload(slug);
-        const text = await window.OPUS.callReflect(payload);
+        const text = window.OPUS.humanize(await window.OPUS.callReflect(payload));
         const refls = window.OPUS.getReflections();
         refls[slug] = { text, ts: Date.now() };
         window.OPUS.setReflections(refls);

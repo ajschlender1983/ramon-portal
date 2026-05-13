@@ -10,7 +10,7 @@
 
 window.OPUS = window.OPUS || {};
 
-const VERSION = '2.0.0-alpha';
+const VERSION = '2.0.0-alpha.2';
 
 const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
 const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
@@ -82,6 +82,32 @@ function reducedMotion() {
   return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 window.OPUS.reducedMotion = reducedMotion;
+
+/* humanize: client-side mirror of the Worker's same-named function in
+   worker/worker.js. The Worker humanizes every Claude response on the
+   way out — this is the belt-and-suspenders pass so:
+   - any stale data in localStorage from older deploys gets cleaned on render
+   - any future bypass path still produces clean text
+   - hand-written copy (seeded reflections, fallback strings) follows the
+     same language rules as live worker output
+   Logic mirrors the worker exactly so output is identical regardless of
+   which side ran the pass. Strips em dashes, normalizes en dashes between
+   words, collapses double commas, drops line-leading commas. */
+function humanize(text) {
+  if (!text) return text;
+  let s = String(text);
+  s = s.replace(/\s*—\s*/g, ', ');
+  s = s.replace(/(\w)\s*--\s*(\w)/g, '$1, $2');
+  s = s.replace(/(\w)\s*–\s*(\w)/g, function (m, a, b) {
+    return (/\d/.test(a) && /\d/.test(b)) ? a + '-' + b : a + ', ' + b;
+  });
+  s = s.replace(/,\s*,/g, ',');
+  s = s.replace(/,\s*\./g, '.');
+  s = s.replace(/\s{2,}/g, ' ');
+  s = s.replace(/^\s*[,]+\s*/gm, '');
+  return s.trim();
+}
+window.OPUS.humanize = humanize;
 
 /* ---------- WOW labels (canonical, mirrored from legacy index.html) ---------- */
 
@@ -321,7 +347,9 @@ window.OPUS.callReflect = async function callReflect(payload) {
     throw new Error(msg);
   }
   const j = await resp.json();
-  return j.reflection || '';
+  // Defensive humanize on the way in. Worker already humanizes its output;
+  // this catches any path that doesn't (older worker version, edge cases).
+  return humanize(j.reflection || '');
 };
 
 window.OPUS.callExpand = async function callExpand(payload) {
