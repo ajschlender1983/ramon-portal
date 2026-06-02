@@ -8,15 +8,31 @@
 
 <!-- Per-user data loader. URL must include ?u=<slug>. Unknown slug → intake. -->
 <script>
+/* v1.11.2: pretty path support. /app/paul → loads paul-x8t3m.js with
+   the address bar staying as /app/paul. Same name → slug map as the
+   legacy portal so a single source of truth lives in _redirects. */
+window.__USER_NAME_MAP = {
+  'paul':  'paul-x8t3m',
+  'ramon': 'ramon-r9k2x',
+  'amber': 'amber-r9k2x',
+  'adam':  'adam-q7n4d'
+};
 window.__userDataPromise = (function () {
   var params = new URLSearchParams(window.location.search);
   var slug = (params.get('u') || '').trim();
+  if (!slug) {
+    // pathname looks like '/app/paul' under pretty-path rewrite
+    var path = (window.location.pathname || '').replace(/^\/+|\/+$/g, '').toLowerCase();
+    var parts = path.split('/');
+    var last = parts[parts.length - 1] || '';
+    if (last && window.__USER_NAME_MAP[last]) slug = window.__USER_NAME_MAP[last];
+  }
   if (!slug) {
     return Promise.resolve({ slug: '', status: 'no-slug' });
   }
   return new Promise(function (resolve) {
     var s = document.createElement('script');
-    s.src = '../users/' + slug + '.js';
+    s.src = '/users/' + slug + '.js';
     s.onload = function () {
       if (window.USER_DATA && window.USER_DATA.slug === slug) {
         resolve({ slug: slug, status: 'ok', source: 'file' });

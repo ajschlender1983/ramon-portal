@@ -1,0 +1,28 @@
+# Cloudflare Pages routing — v1.11.2 pretty paths
+#
+# 200 status = REWRITE (server returns the destination's content; the
+# address bar stays as the source URL). The bootstrap script in
+# index.html and app/index.html then resolves the slug from
+# window.location.pathname via window.__USER_NAME_MAP.
+#
+# Privacy: the obscure suffix (paul-x8t3m, ramon-r9k2x, etc.) is still
+# the actual user-data filename in /users/. The friendly path only
+# works because it's explicitly listed below — a stranger guessing
+# /sally gets a 404.
+
+/paul/       /index.html       200
+/ramon/      /index.html       200
+/amber/      /index.html       200
+/adam/       /index.html       200
+
+/app/paul/   /app/index.html   200
+/app/ramon/  /app/index.html   200
+/app/amber/  /app/index.html   200
+/app/adam/   /app/index.html   200
+
+# Trailing-slash variants are the matchers because Cloudflare Pages
+# auto-adds a trailing slash before our rules fire (308 redirect from
+# /paul to /paul/). The 200 rewrite then catches the trailing-slash
+# form and serves index.html while keeping the URL clean. Users typing
+# /paul see a brief 308 to /paul/ then index.html renders; share URLs
+# stay short either way.

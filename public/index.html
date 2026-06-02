@@ -3878,15 +3878,31 @@ section#reflect.reflected .section-title em {
      Unknown / missing slug -> the main script renders an "invalid link" gate.
      Loads the user file before main init via a Promise the DOMContentLoaded handler awaits. -->
 <script>
+/* v1.11.2: pretty path support. When the URL is /paul (no query), the
+   Cloudflare _redirects rewrite serves index.html for that path AND
+   the bootstrap looks up the slug from a name → slug map. The address
+   bar stays as /paul; the user-data file is still the obscure
+   paul-x8t3m.js. Same suffix preserved for privacy; just hidden from
+   the share link. Falls back to ?u=<slug> if no pretty path matches. */
+window.__USER_NAME_MAP = {
+  'paul':  'paul-x8t3m',
+  'ramon': 'ramon-r9k2x',
+  'amber': 'amber-r9k2x',
+  'adam':  'adam-q7n4d'
+};
 window.__userDataPromise = (function() {
   var params = new URLSearchParams(window.location.search);
   var slug = (params.get('u') || '').trim();
+  if (!slug) {
+    var path = (window.location.pathname || '').replace(/^\/+|\/+$/g, '').toLowerCase();
+    if (path && window.__USER_NAME_MAP[path]) slug = window.__USER_NAME_MAP[path];
+  }
   if (!slug || !/^[a-z0-9-]+$/i.test(slug)) {
     return Promise.resolve(null);
   }
   return new Promise(function(resolve) {
     var s = document.createElement('script');
-    s.src = 'users/' + encodeURIComponent(slug) + '.js';
+    s.src = '/users/' + encodeURIComponent(slug) + '.js';
     s.async = false;
     s.onload = function() { resolve(window.USER_DATA || null); };
     s.onerror = function() { resolve(null); };
@@ -4219,7 +4235,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.11.1';
+const VERSION = '1.11.2';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
