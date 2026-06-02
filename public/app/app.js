@@ -16,6 +16,135 @@ const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
 const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
 const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
 const RESOLVE_EXPAND  = RESOLVE_BASE + '/expand';
+const RESOLVE_STATE   = RESOLVE_BASE + '/state';   // v1.11.0: per-slug state blob
+
+/* ---------- v1.11.0: Cloud storage layer (mirror of legacy index.html) ----------
+   Per-slug state persists across devices via Cloudflare KV. On page load we
+   GET the blob and rehydrate localStorage from it (server wins). Every
+   subsequent setItem on a synced key is debounce-pushed back to the server.
+   Same wire format as the legacy portal so the two surfaces stay in sync. */
+
+const CloudSync = (function () {
+  const SYNC_DEBOUNCE_MS = 1200;
+  const SYNCED_LS_SUFFIXES = [
+    /* shared with legacy portal */
+    '.notes.v1', '.wow.v1', '.field.v1', '.field.history.v1',
+    '.reflections.v1', '.state.v1', '.sessionReflections.v1',
+    '.weekFields.v1', '.sessionFields.v1', '.expanded.v1',
+    '.activeSnapshot.v1', '.snapshots.v1', '.dashOpen.v1', '.examples.v1',
+    /* web-app specific */
+    '.app.userData.v1', '.app.intakeChoice.v1', '.app.mode.v1',
+    '.app.prefs.v1', '.quest.moduleCompletions.v1',
+    '.quest.celebrationSeen.v1', '.quest.streak.v1'
+  ];
+
+  let slug = null;
+  let active = false;
+  let pushTimer = null;
+  let lastPushedJSON = '';
+
+  function isSyncedKey(key) {
+    if (!slug) return false;
+    if (!key.startsWith(slug + '.')) return false;
+    return SYNCED_LS_SUFFIXES.some(suf => key.endsWith(suf));
+  }
+
+  function snapshotStateFromLS() {
+    const state = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (isSyncedKey(k)) state[k] = localStorage.getItem(k);
+    }
+    return state;
+  }
+
+  function applyServerStateToLS(state) {
+    if (!state || typeof state !== 'object') return 0;
+    let n = 0;
+    const toRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (isSyncedKey(k) && !(k in state)) toRemove.push(k);
+    }
+    toRemove.forEach(k => localStorage.removeItem(k));
+    for (const k in state) {
+      if (typeof state[k] === 'string') { localStorage.setItem(k, state[k]); n++; }
+    }
+    return n;
+  }
+
+  async function rehydrate(slugIn) {
+    slug = slugIn;
+    try {
+      const resp = await fetch(RESOLVE_STATE + '?slug=' + encodeURIComponent(slug), { method: 'GET' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      if (data && data.state && Object.keys(data.state).length > 0) {
+        applyServerStateToLS(data.state);
+        lastPushedJSON = JSON.stringify(data.state);
+      } else {
+        const seed = snapshotStateFromLS();
+        if (Object.keys(seed).length > 0) await pushNow(seed);
+      }
+      active = true;
+    } catch (err) { /* local-only fallback */ }
+  }
+
+  async function pushNow(state) {
+    if (!slug) return;
+    const body = JSON.stringify(state || snapshotStateFromLS());
+    if (body === lastPushedJSON) return;
+    try {
+      const resp = await fetch(RESOLVE_STATE, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ slug, state: JSON.parse(body) })
+      });
+      if (resp.ok) lastPushedJSON = body;
+    } catch (err) { /* swallow */ }
+  }
+
+  function schedulePush() {
+    if (!active) return;
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(() => { pushTimer = null; pushNow(); }, SYNC_DEBOUNCE_MS);
+  }
+
+  (function wrap() {
+    const origSet = Storage.prototype.setItem;
+    const origRemove = Storage.prototype.removeItem;
+    Storage.prototype.setItem = function (k, v) {
+      const ret = origSet.call(this, k, v);
+      if (this === localStorage && isSyncedKey(k)) schedulePush();
+      return ret;
+    };
+    Storage.prototype.removeItem = function (k) {
+      const isSynced = (this === localStorage) && isSyncedKey(k);
+      const ret = origRemove.call(this, k);
+      if (isSynced) schedulePush();
+      return ret;
+    };
+  })();
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && pushTimer) {
+      clearTimeout(pushTimer);
+      pushTimer = null;
+      const body = JSON.stringify({ slug, state: snapshotStateFromLS() });
+      try {
+        if (navigator.sendBeacon) {
+          const blob = new Blob([body], { type: 'application/json' });
+          navigator.sendBeacon(RESOLVE_STATE, blob);
+          lastPushedJSON = JSON.stringify(snapshotStateFromLS());
+        }
+      } catch {}
+    }
+  });
+
+  return { rehydrate, pushNow };
+})();
+window.OPUS = window.OPUS || {};
+window.OPUS.CloudSync = CloudSync;
 
 /* ---------- localStorage keys (mirror legacy + add app-specific) ---------- */
 
@@ -516,6 +645,11 @@ async function init() {
   LS = makeLS(slug);
   window.OPUS.LS = LS;
   window.OPUS.slug = slug;
+
+  // v1.11.0: pull cloud state and rehydrate localStorage before any UI
+  // reads it. This is the multi-device-sync hook: notes written on Paul's
+  // phone show up when Paul opens the same link on his laptop.
+  await CloudSync.rehydrate(slug);
 
   const fv = document.getElementById('footer-version');
   if (fv) fv.textContent = 'v' + VERSION;

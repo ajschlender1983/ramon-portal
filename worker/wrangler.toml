@@ -1,6 +1,7 @@
 name = "ramon-resolver"
 main = "worker.js"
 compatibility_date = "2026-04-15"
+account_id = "5810fca40a4f215c0521e2086efc3f1d"
 
 # Set the secret with: wrangler secret put ANTHROPIC_API_KEY
 # Local dev: create a .dev.vars file in this directory containing:
@@ -9,3 +10,11 @@ compatibility_date = "2026-04-15"
 [vars]
 MODEL = "claude-sonnet-4-5"
 ALLOWED_ORIGINS = "https://ramon-portal.pages.dev,https://pulse.feelopus.com,http://localhost:8201,http://127.0.0.1:8201"
+
+# v1.11.0: per-slug state blob storage. One JSON record per user, keyed by slug.
+# Holds notes, WOW ratings, reflections, session captures, week captures,
+# examples, expanded-sessions, intake choices, quest-mode state. Server-wins
+# on read; rehydrates localStorage; pushes back on write (debounced).
+[[kv_namespaces]]
+binding = "STATE_KV"
+id = "ece4aa92d1464561ba09665ba3aba5f2"

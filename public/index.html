@@ -4061,10 +4061,165 @@ window.__userDataPromise = (function() {
 const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
 const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
 const RESOLVE_DEEPEN  = RESOLVE_BASE + '/deepen';
+const RESOLVE_STATE   = RESOLVE_BASE + '/state';   // v1.11.0: per-slug state blob
+
+/* ============================================================
+   v1.11.0: Cloud storage layer (CloudSync)
+
+   Per-slug state persists across devices via Cloudflare KV. The Worker's
+   /state endpoint stores one JSON blob per user. On page load we GET the
+   blob and rehydrate localStorage from it (server wins). Every subsequent
+   localStorage.setItem() is wrapped to also push the full blob back to the
+   server, debounced. If the network is offline the writes still land in
+   localStorage; the next successful page load syncs whichever side is newer.
+
+   Keys we sync (everything namespaced under <slug>.* that holds user input):
+     notes · wow · field · fieldHistory · reflections · state ·
+     sessionReflections · weekFields · sessionFields · expandedSessions ·
+     activeSnapshot · snapshots · dashOpen · examples
+
+   Keys we don't sync: chakraHintSeen (UX hint state), versionSeen (only
+   relevant per-browser anyway).
+   ============================================================ */
+
+const CloudSync = (function () {
+  const SYNC_DEBOUNCE_MS = 1200;
+  const SYNCED_LS_SUFFIXES = [
+    '.notes.v1', '.wow.v1', '.field.v1', '.field.history.v1',
+    '.reflections.v1', '.state.v1', '.sessionReflections.v1',
+    '.weekFields.v1', '.sessionFields.v1', '.expanded.v1',
+    '.activeSnapshot.v1', '.snapshots.v1', '.dashOpen.v1', '.examples.v1'
+  ];
+
+  let slug = null;
+  let active = false;
+  let pushTimer = null;
+  let lastPushedJSON = '';
+
+  function isSyncedKey(key) {
+    if (!slug) return false;
+    if (!key.startsWith(slug + '.')) return false;
+    return SYNCED_LS_SUFFIXES.some(suf => key.endsWith(suf));
+  }
+
+  function snapshotStateFromLS() {
+    const state = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (isSyncedKey(k)) state[k] = localStorage.getItem(k);
+    }
+    return state;
+  }
+
+  function applyServerStateToLS(state) {
+    if (!state || typeof state !== 'object') return 0;
+    let n = 0;
+    // First clear any local keys for this slug we'd otherwise stomp; this is
+    // the "server wins" policy. If the server has no value for a key the
+    // local copy is removed (else stale local writes would leak forever).
+    const toRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (isSyncedKey(k) && !(k in state)) toRemove.push(k);
+    }
+    toRemove.forEach(k => localStorage.removeItem(k));
+    // Then write server values in.
+    for (const k in state) {
+      if (typeof state[k] === 'string') {
+        localStorage.setItem(k, state[k]);
+        n++;
+      }
+    }
+    return n;
+  }
+
+  async function rehydrate(slugIn) {
+    slug = slugIn;
+    try {
+      const resp = await fetch(RESOLVE_STATE + '?slug=' + encodeURIComponent(slug), { method: 'GET' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      if (data && data.state && Object.keys(data.state).length > 0) {
+        applyServerStateToLS(data.state);
+        lastPushedJSON = JSON.stringify(data.state);
+      } else {
+        // Server empty: this is a fresh slug OR a slug with only local data.
+        // Push whatever is in localStorage to seed the server (one-time sync).
+        const seed = snapshotStateFromLS();
+        if (Object.keys(seed).length > 0) {
+          await pushNow(seed);
+        }
+      }
+      active = true;
+    } catch (err) {
+      // Network or worker error: continue with local-only mode. We'll retry
+      // pushes on future writes; rehydration is best-effort.
+      // Avoid console.error to keep prod console quiet for users.
+    }
+  }
+
+  async function pushNow(state) {
+    if (!slug) return;
+    const body = JSON.stringify(state || snapshotStateFromLS());
+    if (body === lastPushedJSON) return; // no-op if unchanged
+    try {
+      const resp = await fetch(RESOLVE_STATE, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ slug, state: JSON.parse(body) })
+      });
+      if (resp.ok) lastPushedJSON = body;
+    } catch (err) {
+      // swallow; retry next change
+    }
+  }
+
+  function schedulePush() {
+    if (!active) return;
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(() => { pushTimer = null; pushNow(); }, SYNC_DEBOUNCE_MS);
+  }
+
+  function wrapLocalStorage() {
+    const origSet = Storage.prototype.setItem;
+    const origRemove = Storage.prototype.removeItem;
+    Storage.prototype.setItem = function (k, v) {
+      const ret = origSet.call(this, k, v);
+      if (this === localStorage && isSyncedKey(k)) schedulePush();
+      return ret;
+    };
+    Storage.prototype.removeItem = function (k) {
+      const isSynced = (this === localStorage) && isSyncedKey(k);
+      const ret = origRemove.call(this, k);
+      if (isSynced) schedulePush();
+      return ret;
+    };
+  }
+  wrapLocalStorage();
+
+  // Flush on tab hide / pagehide so a closing tab doesn't lose the last 1.2s.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && pushTimer) {
+      clearTimeout(pushTimer);
+      pushTimer = null;
+      const body = JSON.stringify({ slug, state: snapshotStateFromLS() });
+      // sendBeacon for fire-and-forget; doesn't block the page hide.
+      try {
+        if (navigator.sendBeacon) {
+          const blob = new Blob([body], { type: 'application/json' });
+          navigator.sendBeacon(RESOLVE_STATE, blob);
+          lastPushedJSON = JSON.stringify(snapshotStateFromLS());
+        }
+      } catch {}
+    }
+  });
+
+  return { rehydrate, pushNow };
+})();
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.10.2';
+const VERSION = '1.11.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8347,6 +8502,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   CHAKRA_STATES = USER.chakraStates;
   SLUG_TO_CHAKRA = USER.slugToChakra;
   LS = makeLS(USER.slug);
+  // v1.11.0: pull this slug's cloud state and rehydrate localStorage BEFORE
+  // any UI loads from LS. Server wins on read; offline / new-slug falls back
+  // to local. This is what gives the user multi-device persistence: the
+  // notes / WOW / reflections / examples they wrote on one device show up
+  // on the next one.
+  await CloudSync.rehydrate(USER.slug);
   ramonState = loadState();
   applyUserToDOM();
 

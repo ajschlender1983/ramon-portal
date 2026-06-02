@@ -26,11 +26,21 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    /* v1.11.0: GET /state?slug=<slug> — read the user's stored blob from KV.
+       Returns {} (HTTP 200) if no record exists yet so the client can treat
+       "never written" identically to "empty state". */
+    if (request.method === 'GET' && url.pathname === '/state') {
+      try {
+        const result = await readState(env, url.searchParams.get('slug') || '');
+        return json(result, 200, cors);
+      } catch (err) {
+        return json({ error: String(err && err.message || err) }, 502, cors);
+      }
+    }
+
     if (request.method !== 'POST') {
       return json({ error: 'method not allowed' }, 405, cors);
-    }
-    if (!env.ANTHROPIC_API_KEY) {
-      return json({ error: 'ANTHROPIC_API_KEY not configured on the worker' }, 500, cors);
     }
 
     let payload;
@@ -38,6 +48,14 @@ export default {
     catch { return json({ error: 'invalid json body' }, 400, cors); }
 
     try {
+      if (url.pathname === '/state') {
+        const result = await writeState(env, payload);
+        return json(result, 200, cors);
+      }
+      // All other endpoints require ANTHROPIC_API_KEY (AI calls).
+      if (!env.ANTHROPIC_API_KEY) {
+        return json({ error: 'ANTHROPIC_API_KEY not configured on the worker' }, 500, cors);
+      }
       if (url.pathname === '/reflect') {
         const text = await reflectOne(env, payload);
         return json({ reflection: text }, 200, cors);
@@ -65,7 +83,7 @@ function corsHeaders(request, env) {
   const allow = allowed.includes(origin) ? origin : allowed[0] || '*';
   return {
     'access-control-allow-origin': allow,
-    'access-control-allow-methods': 'POST, OPTIONS',
+    'access-control-allow-methods': 'GET, POST, OPTIONS',
     'access-control-allow-headers': 'content-type',
     'access-control-max-age': '86400',
     'vary': 'Origin'
@@ -503,4 +521,66 @@ function clampInt(v, lo, hi, d) {
   const n = parseInt(v, 10);
   if (!isFinite(n)) return d;
   return Math.max(lo, Math.min(hi, n));
+}
+
+/* ============================================================ State persistence (KV)
+
+   v1.11.0: per-slug state blob. One JSON record per user, keyed by `state:<slug>`.
+   Stores the contents of every localStorage key the client uses (notes, wow,
+   reflections, sessionFields, examples, expanded, dashOpen, weekFields, plus
+   the web-app's quest.* keys). The client treats the server as the source of
+   truth on page load (server wins) and pushes every write back (debounced).
+
+   Slug validation: only alphanumerics, dashes, underscores. Bounds the key
+   length to prevent abuse. Payload size capped at 256 KB per record (KV's
+   limit is 25 MB but a single user's notes record realistically lives under
+   a few KB; 256 KB is generous and prevents accidental blow-ups). */
+
+const SLUG_RE = /^[A-Za-z0-9_-]{1,80}$/;
+const MAX_STATE_BYTES = 256 * 1024;
+
+function validateSlug(slug) {
+  const s = String(slug || '').trim();
+  if (!s || !SLUG_RE.test(s)) {
+    const err = new Error('invalid slug');
+    err.status = 400;
+    throw err;
+  }
+  return s;
+}
+
+async function readState(env, slugInput) {
+  if (!env.STATE_KV) {
+    const err = new Error('STATE_KV not bound on the worker');
+    err.status = 500;
+    throw err;
+  }
+  const slug = validateSlug(slugInput);
+  const raw = await env.STATE_KV.get('state:' + slug);
+  if (!raw) return { slug, state: {}, ts: null };
+  try {
+    const parsed = JSON.parse(raw);
+    return { slug, state: parsed.state || {}, ts: parsed.ts || null };
+  } catch {
+    return { slug, state: {}, ts: null };
+  }
+}
+
+async function writeState(env, payload) {
+  if (!env.STATE_KV) {
+    const err = new Error('STATE_KV not bound on the worker');
+    err.status = 500;
+    throw err;
+  }
+  const slug = validateSlug(payload && payload.slug);
+  const state = (payload && payload.state && typeof payload.state === 'object') ? payload.state : {};
+  const record = { state, ts: Date.now() };
+  const serialized = JSON.stringify(record);
+  if (serialized.length > MAX_STATE_BYTES) {
+    const err = new Error('state payload too large');
+    err.status = 413;
+    throw err;
+  }
+  await env.STATE_KV.put('state:' + slug, serialized);
+  return { ok: true, slug, ts: record.ts };
 }
