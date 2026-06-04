@@ -3051,56 +3051,147 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .session-card.has-note:not(.expanded) .session-toggle { color: var(--teal); }
 
 /* Per-session reading capture (inside expand) */
-.session-reading-capture { margin: 14px 0; }
-.session-reading-capture details { background: rgba(123,111,168,0.04); border: 1px dashed var(--glass-border); border-radius: 10px; }
+/* v1.11.4: prominent biofield-reading capture treatment.
+   Per-session capture (inside an expanded session card) gets a gold
+   accent + invitation header. Per-week capture (between weeks) gets
+   a larger gold-accented card with rationale copy + breathing border.
+   Both saved states soften back to teal so the prominence cue is
+   reserved for the unsaved, action-pending state. */
+
+/* ---- Per-session capture (inside session cards) ---- */
+.session-reading-capture { margin: 18px 0 6px; }
+.session-reading-capture details {
+  background: linear-gradient(180deg, rgba(255,215,100,0.06) 0%, rgba(255,215,100,0.02) 100%);
+  border: 1px solid rgba(255,215,100,0.28);
+  border-left: 3px solid var(--gold);
+  border-radius: 12px;
+  transition: border-color 600ms, background 600ms;
+}
+.session-reading-capture details[open] {
+  background: rgba(11,8,15,0.40);
+  border-color: rgba(255,215,100,0.42);
+}
+.session-reading-capture details.saved {
+  background: rgba(106,223,217,0.05);
+  border-color: rgba(106,223,217,0.30);
+  border-left-color: var(--teal);
+}
 .session-reading-capture summary {
-  cursor: pointer; padding: 10px 14px;
-  font-size: 11px; letter-spacing: 0.10em; color: var(--mid);
+  cursor: pointer; padding: 14px 18px;
   list-style: none;
+  display: flex; flex-direction: column; gap: 4px;
 }
 .session-reading-capture summary::-webkit-details-marker { display: none; }
-.session-reading-capture summary::before { content: '+ '; color: var(--teal); }
-.session-reading-capture details[open] summary::before { content: '− '; }
-.srcap-inner { padding: 4px 14px 14px; }
+.srcap-eyebrow {
+  font-size: 9.5px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: rgba(255,215,100,0.85); font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+}
+.srcap-eyebrow::before {
+  content: '✦'; font-size: 11px; color: var(--gold);
+  display: inline-block;
+}
+.srcap-title {
+  font-family: var(--serif); font-style: italic; font-size: 16px;
+  color: var(--light); letter-spacing: 0.005em;
+}
+.session-reading-capture details.saved .srcap-eyebrow { color: rgba(106,223,217,0.85); }
+.session-reading-capture details.saved .srcap-eyebrow::before { content: '✓'; color: var(--teal); }
+.session-reading-capture details.saved .srcap-title { font-style: normal; }
+.srcap-inner { padding: 4px 18px 18px; }
+.srcap-rationale {
+  font-family: var(--serif); font-style: italic;
+  font-size: 13px; color: var(--mid); line-height: 1.55;
+  margin: 6px 0 14px;
+}
 .srcap-textarea {
-  width: 100%; min-height: 100px;
-  background: rgba(11,8,15,0.55); border: 1px solid rgba(123,111,168,0.30);
-  border-radius: 8px; padding: 10px 12px;
-  font-family: var(--sans); font-size: 13px; line-height: 1.55; color: var(--light);
+  width: 100%; min-height: 120px;
+  background: rgba(11,8,15,0.60); border: 1px solid rgba(255,215,100,0.22);
+  border-radius: 10px; padding: 12px 14px;
+  font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--light);
   resize: vertical;
 }
-.srcap-textarea:focus { outline: none; border-color: rgba(106,223,217,0.5); }
-.srcap-meta { font-size: 10.5px; color: var(--dim); margin-top: 8px; letter-spacing: 0.04em; }
-.srcap-actions { display: flex; gap: 8px; margin-top: 10px; }
+.srcap-textarea:focus { outline: none; border-color: rgba(255,215,100,0.50); }
+.srcap-meta { font-size: 10.5px; color: var(--dim); margin-top: 10px; letter-spacing: 0.04em; }
+.srcap-actions { display: flex; gap: 10px; margin-top: 12px; }
 
-/* Per-week reading capture (lives at bottom of each phase panel) */
+/* ---- Per-week capture (between weeks) — larger, breathing accent ---- */
 .week-reading-capture {
-  margin: 32px 0 8px;
-  background: rgba(106,223,217,0.04);
-  border: 1px solid rgba(106,223,217,0.18);
-  border-radius: 14px;
+  position: relative;
+  margin: 40px 0 16px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,215,100,0.08) 0%, rgba(255,215,100,0.03) 100%);
+  border: 1px solid rgba(255,215,100,0.32);
+  border-left: 3px solid var(--gold);
+  box-shadow: 0 0 0 1px rgba(255,215,100,calc(0.04 + 0.10 * var(--breath-pulse, 0.5))),
+              0 12px 36px -16px rgba(255,215,100,calc(0.08 + 0.10 * var(--breath-pulse, 0.5)));
+  transition: box-shadow 200ms linear, background 600ms, border-color 600ms;
 }
-.week-reading-capture details { padding: 0; }
+.week-reading-capture.saved {
+  background: rgba(106,223,217,0.06);
+  border-color: rgba(106,223,217,0.30);
+  border-left-color: var(--teal);
+  box-shadow: none;
+}
+.week-reading-capture details { padding: 0; background: transparent; border: none; }
 .wrcap-summary {
-  cursor: pointer; padding: 16px 20px;
-  font-family: var(--serif); font-style: italic; font-size: 15px;
-  color: var(--light);
+  cursor: pointer; padding: 22px 26px;
   list-style: none;
+  display: flex; flex-direction: column; gap: 6px;
 }
 .wrcap-summary::-webkit-details-marker { display: none; }
-.wrcap-summary::before { content: '+ '; color: var(--teal); font-style: normal; }
-.week-reading-capture details[open] .wrcap-summary::before { content: '− '; }
-.wrcap-inner { padding: 6px 20px 20px; }
+.wrcap-eyebrow {
+  font-size: 10.5px; letter-spacing: 0.26em; text-transform: uppercase;
+  color: rgba(255,215,100,0.92); font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+}
+.wrcap-eyebrow::before {
+  content: '✦'; font-size: 12px; color: var(--gold);
+}
+.wrcap-title {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(20px, 2.4vw, 26px); color: var(--light);
+  line-height: 1.2; letter-spacing: -0.005em;
+}
+.wrcap-title em { color: var(--gold); font-style: italic; }
+.wrcap-rationale {
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: rgba(255,255,255,0.74); line-height: 1.6;
+  margin-top: 6px;
+}
+.wrcap-cta {
+  margin-top: 12px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--sans); font-size: 12px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: rgba(255,215,100,0.95); font-weight: 500;
+}
+.wrcap-cta::after {
+  content: '→'; font-size: 14px;
+  transition: transform 200ms ease;
+}
+.week-reading-capture details[open] .wrcap-cta::after { transform: rotate(90deg); }
+
+/* Saved state — softer */
+.week-reading-capture.saved .wrcap-eyebrow { color: rgba(106,223,217,0.85); }
+.week-reading-capture.saved .wrcap-eyebrow::before { content: '✓'; color: var(--teal); }
+.week-reading-capture.saved .wrcap-title em { color: var(--teal); }
+.week-reading-capture.saved .wrcap-cta { color: rgba(106,223,217,0.85); }
+
+.wrcap-inner { padding: 4px 26px 26px; }
 .wrcap-textarea {
-  width: 100%; min-height: 160px;
-  background: rgba(11,8,15,0.55); border: 1px solid rgba(123,111,168,0.30);
-  border-radius: 10px; padding: 12px 14px;
-  font-family: var(--sans); font-size: 13px; line-height: 1.6; color: var(--light);
+  width: 100%; min-height: 200px;
+  background: rgba(11,8,15,0.60); border: 1px solid rgba(255,215,100,0.22);
+  border-radius: 12px; padding: 14px 16px;
+  font-family: var(--sans); font-size: 14px; line-height: 1.65; color: var(--light);
   resize: vertical;
 }
-.wrcap-textarea:focus { outline: none; border-color: rgba(106,223,217,0.55); }
-.wrcap-meta { font-size: 10.5px; color: var(--dim); margin-top: 10px; letter-spacing: 0.04em; }
-.wrcap-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.wrcap-textarea:focus { outline: none; border-color: rgba(255,215,100,0.55); }
+.wrcap-meta { font-size: 11px; color: var(--dim); margin-top: 12px; letter-spacing: 0.04em; }
+.wrcap-actions { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; align-items: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .week-reading-capture { box-shadow: 0 0 0 1px rgba(255,215,100,0.10); }
+}
 
 .session-card.collapsed-reflected .session-art,
 .session-card.collapsed-reflected .session-lede,
@@ -4236,7 +4327,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.11.3';
+const VERSION = '1.11.4';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7443,10 +7534,20 @@ function applyExpandedStates() {
    expandable area of each card. Optional. */
 function buildSessionReadingCapture(slug) {
   const wrap = el('div', { class: 'session-reading-capture' });
-  const label = el('summary', { class: 'srcap-summary', text: 'Capture a fresh Biofield reading after this session (optional)' });
+  // v1.11.4: prominent gold-accent invitation with eyebrow + title +
+  // rationale, rather than a single faded "optional" line.
   const det = el('details');
+  const label = el('summary', { class: 'srcap-summary' });
+  const eyebrow = el('div', { class: 'srcap-eyebrow', text: 'Optional · refresh your reading' });
+  const title = el('div', { class: 'srcap-title', text: 'Got a fresh scan after this session?' });
+  label.appendChild(eyebrow);
+  label.appendChild(title);
   det.appendChild(label);
   const inner = el('div', { class: 'srcap-inner' });
+  inner.appendChild(el('div', {
+    class: 'srcap-rationale',
+    text: 'Adding a reading here updates how the map sees you going forward. Worth doing whenever you have a new scan in hand.'
+  }));
   const ta = el('textarea', {
     class: 'srcap-textarea',
     rows: '6',
@@ -7471,16 +7572,17 @@ function buildSessionReadingCapture(slug) {
       ta.value = stored.text;
       meta.textContent = 'Saved · ' + new Date(stored.ts).toLocaleString();
       clearBtn.hidden = false;
-      // Saved state: summary shows the session + capture date so the user
-      // can identify this reading at a glance later.
+      det.classList.add('saved');
       const heading = (SESSIONS[slug] && SESSIONS[slug].heading) || slug;
-      label.textContent = 'Biofield reading · after ' + heading + ' · ' + new Date(stored.ts).toLocaleDateString();
+      eyebrow.textContent = 'Captured · ' + new Date(stored.ts).toLocaleDateString();
+      title.textContent = 'Reading after ' + heading;
     } else {
       ta.value = '';
       meta.textContent = '';
       clearBtn.hidden = true;
-      // Unsaved state: stay generic — no capture date is known yet.
-      label.textContent = 'Capture a fresh Biofield reading after this session (optional)';
+      det.classList.remove('saved');
+      eyebrow.textContent = 'Optional · refresh your reading';
+      title.textContent = 'Got a fresh scan after this session?';
     }
   }
   saveBtn.addEventListener('click', () => {
@@ -7502,7 +7604,28 @@ function buildSessionReadingCapture(slug) {
 function buildWeekReadingCapture(week) {
   const wrap = el('div', { class: 'week-reading-capture' });
   const det = el('details');
-  det.appendChild(el('summary', { class: 'wrcap-summary', text: 'Add Biofield reading ' + week }));
+  // v1.11.4: prominent structured summary with eyebrow + serif title +
+  // rationale + CTA chevron. Replaces the single faded "Add Biofield
+  // reading N" line so users notice the invitation. Saved state
+  // softens to teal so the gold prominence cue is reserved for
+  // action-pending.
+  const summary = el('summary', { class: 'wrcap-summary' });
+  const eyebrow = el('div', { class: 'wrcap-eyebrow', text: 'Optional · Week ' + week + ' reading' });
+  const title = el('div', { class: 'wrcap-title' });
+  title.appendChild(document.createTextNode('Update your '));
+  title.appendChild(el('em', { text: 'reading' }));
+  title.appendChild(document.createTextNode('.'));
+  const rationale = el('div', {
+    class: 'wrcap-rationale',
+    text: 'A fresh biofield scan after this week refines what the map sees. Every new reading reshapes the recommendations from this point forward.'
+  });
+  const cta = el('div', { class: 'wrcap-cta', text: 'Add Week ' + week + ' reading' });
+  summary.appendChild(eyebrow);
+  summary.appendChild(title);
+  summary.appendChild(rationale);
+  summary.appendChild(cta);
+  det.appendChild(summary);
+
   const inner = el('div', { class: 'wrcap-inner' });
   const ta = el('textarea', {
     class: 'wrcap-textarea',
@@ -7524,17 +7647,28 @@ function buildWeekReadingCapture(week) {
 
   function refresh() {
     const stored = getWeekFields()[String(week)];
-    const summary = wrap.querySelector('.wrcap-summary');
     if (stored && stored.text) {
       ta.value = stored.text;
       meta.textContent = 'Saved · ' + new Date(stored.ts).toLocaleString();
       clearBtn.hidden = false;
-      summary.textContent = 'Biofield reading ' + week + ' · ' + new Date(stored.ts).toLocaleDateString();
+      wrap.classList.add('saved');
+      eyebrow.textContent = 'Captured · ' + new Date(stored.ts).toLocaleDateString();
+      while (title.firstChild) title.removeChild(title.firstChild);
+      title.appendChild(document.createTextNode('Week ' + week + ' reading saved.'));
+      rationale.textContent = 'The map is now routing reflections through this reading.';
+      cta.textContent = 'Edit or replace';
     } else {
       ta.value = '';
       meta.textContent = '';
       clearBtn.hidden = true;
-      summary.textContent = 'Add Biofield reading ' + week;
+      wrap.classList.remove('saved');
+      eyebrow.textContent = 'Optional · Week ' + week + ' reading';
+      while (title.firstChild) title.removeChild(title.firstChild);
+      title.appendChild(document.createTextNode('Update your '));
+      title.appendChild(el('em', { text: 'reading' }));
+      title.appendChild(document.createTextNode('.'));
+      rationale.textContent = 'A fresh biofield scan after this week refines what the map sees. Every new reading reshapes the recommendations from this point forward.';
+      cta.textContent = 'Add Week ' + week + ' reading';
     }
   }
   saveBtn.addEventListener('click', () => {
