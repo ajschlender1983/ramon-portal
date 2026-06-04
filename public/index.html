@@ -3885,10 +3885,11 @@ section#reflect.reflected .section-title em {
    paul-x8t3m.js. Same suffix preserved for privacy; just hidden from
    the share link. Falls back to ?u=<slug> if no pretty path matches. */
 window.__USER_NAME_MAP = {
-  'paul':  'paul-x8t3m',
-  'ramon': 'ramon-r9k2x',
-  'amber': 'amber-r9k2x',
-  'adam':  'adam-q7n4d'
+  'paul':   'paul-x8t3m',
+  'ramon':  'ramon-r9k2x',
+  'amber':  'amber-r9k2x',
+  'adam':   'adam-q7n4d',
+  'sierra': 'sierra-m2k7w'
 };
 window.__userDataPromise = (function() {
   var params = new URLSearchParams(window.location.search);
@@ -4235,7 +4236,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.11.2';
+const VERSION = '1.11.3';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -6790,19 +6791,29 @@ function buildSnapshot(weekN, text, ts, source) {
   const parsed = parseInput(text || '') || {};
   const frames = parsed.frames || {};
 
-  // Aura meters: e.g. "Your auric field extends 13.4 meters" or "13.4 m"
-  let auricMeters = baseline.auricMeters || 13.4;
-  const oric = (frames.oric && frames.oric.body) || '';
-  const am = (oric + ' ' + (frames.archetype && frames.archetype.body || '')).match(/\b(\d+(?:\.\d+)?)\s*m(?:eters?)?\b/i);
-  if (am) auricMeters = parseFloat(am[1]);
+  // Aura meters: prefer the structured USER_DATA field when present
+  // (v1.11.3: structured fields are authoritative; the regex parser
+  // misreads ranges like "9-12 meters" — it grabs the second number).
+  let auricMeters;
+  if (typeof baseline.auricMeters === 'number') {
+    auricMeters = baseline.auricMeters;
+  } else {
+    auricMeters = 13.4;
+    const oric = (frames.oric && frames.oric.body) || '';
+    const am = (oric + ' ' + (frames.archetype && frames.archetype.body || '')).match(/\b(\d+(?:\.\d+)?)\s*m(?:eters?)?\b/i);
+    if (am) auricMeters = parseFloat(am[1]);
+  }
 
   // Hawkins level: existing parseInput already extracts `level`
   const hawkins = parsed.level ? parseInt(parsed.level, 10) : (baseline.hawkinsLevel || 525);
   const hawkinsTarget = baseline.hawkinsTarget || 528;
 
-  // Primary block + archetype text frames (best-effort)
-  const primaryBlock = (frames.block && frames.block.body) || baseline.primaryBlockQuote || '';
-  const archetype = (frames.archetype && frames.archetype.body) || baseline.archetype || '';
+  // Primary block + archetype: structured fields are authoritative
+  // (v1.11.3: previously the parser won, which mis-extracted when the
+  // reading used a non-standard section name like 'ONE BLOCK TO HIGHEST
+  // AUTHENTICITY' instead of 'PRIMARY BLOCK').
+  const primaryBlock = baseline.primaryBlockQuote || (frames.block && frames.block.body) || '';
+  const archetype = baseline.archetype || (frames.archetype && frames.archetype.body) || '';
 
   // DNA counts
   let dna = Object.assign({ phaseLocked: 9, consolidating: 3, of: 12 }, baseline.dna || {});
