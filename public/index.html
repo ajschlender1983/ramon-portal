@@ -3962,6 +3962,317 @@ section#reflect.reflected .section-title em {
   }
   .field-panel { transform: none !important; }
 }
+
+/* ============================================================
+   v1.12.0: THE ARC
+   ============================================================ */
+.arc-dashboard {
+  max-width: 1100px;
+  margin: 0 auto 32px;
+  padding: 28px 24px 24px;
+  border: 1px solid rgba(255,215,100,0.14);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(31,22,50,0.55), rgba(22,15,37,0.7));
+  position: relative;
+}
+.arc-dashboard:empty { display: none; }
+.arc-title {
+  text-align: center;
+  margin-bottom: 22px;
+}
+.arc-eyebrow {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.arc-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--mid);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* ---- System Journey ---- */
+.arc-system {
+  margin-bottom: 28px;
+}
+.arc-system-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  padding: 8px 0 14px;
+}
+.arc-snap-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 78px;
+  position: relative;
+}
+.arc-snap-col.is-ghost { opacity: 0.42; }
+.arc-snap-stage {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--mid);
+  text-transform: lowercase;
+  margin-bottom: 2px;
+}
+.arc-snap-col.is-current .arc-snap-stage { color: var(--gold); }
+.arc-mini {
+  width: 56px;
+  height: 96px;
+  display: block;
+}
+.arc-snap-col.is-current .arc-mini-body {
+  stroke: rgba(255,215,100,0.55);
+}
+.arc-snap-cap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+}
+.arc-snap-auric {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--light);
+  letter-spacing: 0.02em;
+}
+.arc-snap-tier {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--mid);
+  text-transform: lowercase;
+}
+.arc-snap-dim { color: var(--dim); }
+.arc-snap-label {
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.arc-breath-dot {
+  width: 7px; height: 7px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 14px rgba(255,215,100,0.65);
+  opacity: calc(0.55 + 0.45 * var(--breath-pulse, 0.5));
+  transform: scale(calc(0.85 + 0.3 * var(--breath-pulse, 0.5)));
+  transition: opacity 0.2s linear, transform 0.2s linear;
+}
+.arc-connector {
+  flex: 0 1 36px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,215,100,0.5), rgba(255,215,100,0.18));
+  align-self: center;
+  margin-bottom: 30px;
+}
+.arc-connector.is-dashed {
+  background: none;
+  border-top: 1px dashed rgba(255,215,100,0.22);
+}
+.arc-system-headline {
+  text-align: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--light);
+  letter-spacing: 0.02em;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ---- Per-Center Strips ---- */
+.arc-strips {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+}
+.arc-strip {
+  padding: 12px 14px;
+  border-left: 2px solid var(--arc-state-tint, var(--accent));
+  background: rgba(255,255,255,0.025);
+  border-radius: 4px;
+}
+.arc-strip-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.arc-strip-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--light);
+  font-weight: 500;
+}
+.arc-strip-state {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--arc-state-tint, var(--mid));
+  letter-spacing: 0.02em;
+}
+.arc-strip-week {
+  margin-left: auto;
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--dim);
+  text-transform: lowercase;
+}
+.arc-strip-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 8px 0 10px;
+  height: 14px;
+}
+.arc-pip {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.arc-pip.is-lit {
+  box-shadow: 0 0 6px rgba(255,215,100,0.18);
+}
+.arc-pip.is-open {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.22);
+}
+.arc-pip-line {
+  flex: 1 1 auto;
+  height: 1px;
+  background: rgba(255,215,100,0.35);
+  margin: 0 4px;
+}
+.arc-pip-line.is-dashed {
+  background: none;
+  border-top: 1px dashed rgba(255,255,255,0.16);
+}
+.arc-strip-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.arc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.02);
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--mid);
+  letter-spacing: 0.02em;
+}
+.arc-pill.is-done {
+  color: var(--light);
+  border-color: rgba(255,215,100,0.22);
+}
+.arc-pill.is-peak {
+  color: var(--gold);
+  border-color: rgba(255,215,100,0.5);
+  background: rgba(255,215,100,0.04);
+}
+.arc-pill-name {
+  font-weight: 400;
+}
+.arc-pill-meta {
+  display: inline-flex;
+  gap: 4px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+.arc-pill-mark {
+  color: var(--gold);
+}
+.arc-pill-mark--soft {
+  color: var(--accent-bright);
+  opacity: 0.7;
+}
+.arc-pill.is-peak .arc-pill-meta {
+  color: var(--gold);
+}
+.arc-strip-empty {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--dim);
+  margin-bottom: 4px;
+}
+.arc-strip-quote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--light);
+  line-height: 1.5;
+  margin-bottom: 4px;
+  letter-spacing: 0.01em;
+}
+.arc-q-text { color: var(--light); }
+.arc-q-attr { color: var(--dim); font-size: 11px; }
+.arc-strip-summary {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--mid);
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+}
+.arc-coda {
+  text-align: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 14px;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 720px) {
+  .arc-dashboard { padding: 22px 14px 18px; margin: 0 -8px 24px; border-radius: 12px; }
+  .arc-system-row {
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+  .arc-snap-col { min-width: 64px; }
+  .arc-mini { width: 44px; height: 76px; }
+  .arc-connector { flex: 0 0 18px; margin-bottom: 24px; }
+  .arc-snap-auric { font-size: 12px; }
+  .arc-system-headline { font-size: 14px; }
+  .arc-strip-head { gap: 8px; }
+  .arc-strip-week { margin-left: 0; width: 100%; }
+  .arc-strip-label { font-size: 10px; }
+  .arc-strip-state { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arc-breath-dot { animation: none !important; opacity: 0.8; transform: none; transition: none; }
+}
 </style>
 </head>
 <body>
@@ -4045,6 +4356,12 @@ window.__userDataPromise = (function() {
 <div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
 
 <section class="section reveal" id="input">
+  <!-- v1.12.0: The Arc — 30-day journey dashboard. Mounts above the
+       section masthead. Two registers: system journey (mini silhouettes
+       across baseline → week 4) + per-center strips (one row per chakra
+       or somatic location). Filled by mountArc(). -->
+  <div class="arc-dashboard" id="arc-mount"></div>
+
   <!-- v1.9.21: portrait + name masthead moved here (was inside the body-
        aurora hero). Introduces the person to the section before the
        section-label narrates "The Input". Filled by mountSectionMasthead. -->
@@ -4355,7 +4672,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.11.7';
+const VERSION = '1.12.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -5802,6 +6119,11 @@ function mountBiofieldDashboardInternal() {
   // is now mounted ABOVE "THE INPUT" label, outside the dashboard.
   mountSectionMasthead();
 
+  // v1.12.0: The Arc — energy-centers journey dashboard, mounted above
+  // the section masthead. Re-renders on every dashboard refresh so
+  // snapshot scrubbing, note saves, and WOW changes propagate.
+  mountArc();
+
   // Body-aurora hero — always visible, never gated
   root.appendChild(buildBodyAuroraHero());
 
@@ -5886,6 +6208,7 @@ function mountPatternDashboard() {
   ACTIVE_VIEW = USER;
   while (root.firstChild) root.removeChild(root.firstChild);
   mountSectionMasthead();
+  mountArc();
   root.appendChild(buildPatternHero());
   root.appendChild(buildPatternBelowHero());
 }
@@ -6102,6 +6425,443 @@ function pulseChakra(slug) {
   void spot.getBoundingClientRect();
   spot.classList.add('pulsing');
   setTimeout(() => spot.classList.remove('pulsing'), 1900);
+}
+
+/* ============================================================
+   v1.12.0: THE ARC — top-of-page energy-centers journey dashboard.
+   Two stacked registers:
+     System Journey — 5 (biofield) or 4 (pattern) tiny silhouettes
+     across baseline → week 4, each colored by that snapshot's
+     chakra/somatic states. Auric/Hawkins captions in biofield mode;
+     stage labels in pattern mode. One breath dot under the current
+     captured snapshot.
+     Per-Center Strips — one row per chakra (7) or somatic location
+     (3), with state word, 5-pip time track, session pills for
+     sessions in slugToChakra targeting this center, one user quote
+     pulled from notes.v1, and a composed summary line.
+   Voice rules: name never grade, absence is presence, personalization
+   is quotation. Motion budget: 2 simultaneous animations max, both on
+   the master --breath-pulse 10.91s clock.
+   ============================================================ */
+
+const ARC_STATE_TINT = {
+  'radiant':          '#FFD764',
+  'clear':            '#6ADFD9',
+  'consolidating':    '#C22FCD',
+  'carrying-a-lot':   '#F0935E',
+  'holding':          '#7B6FA8',
+  'stabilizing':      '#9A90A3',
+  'undercharged':     '#564C70',
+  'silenced':         '#7B6FA8',
+  'braced':           '#F0935E',
+  'loaded':           '#564C70',
+  'compressed':       '#C22FCD',
+  'coherent but guarded': '#7B6FA8'
+};
+
+const ARC_STAGE_KEYS = ['ground','unload','voice','present'];
+const ARC_STAGE_LABELS = {
+  ground:  'learning new ground',
+  unload:  'letting weight down',
+  voice:   'finding the voice',
+  present: 'staying present'
+};
+
+function arcStateTint(state) {
+  return ARC_STATE_TINT[state] || '#564C70';
+}
+
+/* summarize(USER, LS) — paradigm-agnostic structured object the renderer
+   reads. Builds from snapshots + notes + WOW + slugToChakra. Total: even
+   with zero LS data, returns a day-1 shape. */
+function arcSummarize() {
+  const mode = (USER && USER.profileType) || 'biofield';
+  const notes = getNotes();
+  const wow = getWow();
+  const snapshots = (mode === 'pattern') ? {} : getSnapshots();
+  const currentStageIdx = (mode === 'pattern')
+    ? Math.max(0, ARC_STAGE_KEYS.indexOf((USER && USER.currentStage) || 'ground'))
+    : 0;
+
+  // ---- axis -----------------------------------------------------
+  const axis = { kind: mode === 'pattern' ? 'stages' : 'weeks', points: [] };
+  if (mode === 'pattern') {
+    ARC_STAGE_KEYS.forEach((key, i) => {
+      axis.points.push({
+        key, label: ARC_STAGE_LABELS[key],
+        shortLabel: key,
+        captured: i <= currentStageIdx,
+        current: i === currentStageIdx,
+        caption: null
+      });
+    });
+  } else {
+    const latestCaptured = Object.keys(snapshots).map(Number).sort((a,b) => b-a)[0] ?? 0;
+    for (let w = 0; w <= 4; w++) {
+      const snap = snapshots[String(w)];
+      axis.points.push({
+        key: String(w),
+        label: w === 0 ? 'baseline' : 'week ' + w,
+        shortLabel: w === 0 ? 'baseline' : 'wk ' + w,
+        captured: !!snap,
+        current: w === latestCaptured,
+        caption: snap ? {
+          auric: snap.auricMeters,
+          hawkins: snap.hawkinsLevel,
+          hawkinsTier: snap.hawkinsTier
+        } : null
+      });
+    }
+  }
+
+  // ---- system journey snapshots --------------------------------
+  const system = { snapshots: [], headline: '' };
+  if (mode === 'pattern') {
+    const locs = (USER && USER.somaticLocations) || [];
+    ARC_STAGE_KEYS.forEach((key, i) => {
+      system.snapshots.push({
+        key, ghost: i > currentStageIdx,
+        somaticStates: locs.map(l => ({ id: l.id, state: l.state, yPct: l.yPct })),
+        chakraStates: null
+      });
+    });
+  } else {
+    for (let w = 0; w <= 4; w++) {
+      const snap = snapshots[String(w)];
+      system.snapshots.push({
+        key: String(w),
+        ghost: !snap,
+        chakraStates: snap ? snap.chakraStates : null,
+        auricMeters: snap ? snap.auricMeters : null,
+        hawkinsLevel: snap ? snap.hawkinsLevel : null,
+        hawkinsTier: snap ? snap.hawkinsTier : null,
+        somaticStates: null
+      });
+    }
+  }
+  system.headline = composeSystemHeadline(mode, axis, system);
+
+  // ---- per-center strips ---------------------------------------
+  const centers = [];
+  const slugToChakra = (USER && USER.slugToChakra) || {};
+  const sessionsMap = (USER && USER.sessions) || {};
+  const planArr = (USER && USER.plan) || [];
+
+  // sessions per center
+  const sessionsByCenter = {};
+  Object.keys(slugToChakra).forEach(slug => {
+    const cid = slugToChakra[slug];
+    if (!sessionsByCenter[cid]) sessionsByCenter[cid] = [];
+    // find which week this session lives in
+    let week = null;
+    planArr.forEach(p => { if ((p.sessions || []).includes(slug)) week = p.week; });
+    sessionsByCenter[cid].push({ slug, week });
+  });
+
+  const centersList = (mode === 'pattern')
+    ? ((USER && USER.somaticLocations) || []).map(l => ({ id: l.id, label: l.label, baselineState: l.state, baselineNote: l.note }))
+    : ((USER && USER.chakraStates) || []).map(c => ({ id: c.id, label: c.label, baselineState: c.state, baselineNote: c.note }));
+
+  centersList.forEach(c => {
+    // latest state (from latest captured snapshot in biofield; from currentStage in pattern)
+    let latestState = c.baselineState;
+    if (mode !== 'pattern') {
+      const captured = axis.points.filter(p => p.captured).map(p => p.key);
+      const latestKey = captured[captured.length - 1];
+      const sn = snapshots[latestKey];
+      if (sn && Array.isArray(sn.chakraStates)) {
+        const match = sn.chakraStates.find(x => x.id === c.id);
+        if (match) latestState = match.state;
+      }
+    }
+
+    // pips across the time axis
+    const pips = axis.points.map(p => {
+      if (mode === 'pattern') {
+        return { lit: p.captured, state: c.baselineState };
+      }
+      const sn = snapshots[p.key];
+      if (!sn) return { lit: false, state: null };
+      const ch = (sn.chakraStates || []).find(x => x.id === c.id);
+      return { lit: true, state: ch ? ch.state : c.baselineState };
+    });
+
+    // sessions targeting this center
+    const sessionsHere = (sessionsByCenter[c.id] || []).map(({ slug, week }) => {
+      const s = sessionsMap[slug] || {};
+      const after = (notes[slug + '__after'] || '').trim();
+      const before = (notes[slug + '__before'] || '').trim();
+      const w = wow[slug];
+      const done = after.length >= 12 || (Number.isInteger(w) && w >= 1);
+      const peak = Number.isInteger(w) && w >= 5;
+      return {
+        slug, heading: s.heading || slug, week,
+        done, wow: w || null, peak,
+        afterText: after, beforeText: before
+      };
+    });
+
+    // quote: pull from highest-WOW done session's after-text
+    let quote = null;
+    const candidates = sessionsHere
+      .filter(x => x.afterText && x.afterText.length > 12)
+      .sort((a,b) => (b.wow||0) - (a.wow||0));
+    if (candidates.length) {
+      const top = candidates[0];
+      const trimmed = top.afterText.replace(/\s+/g, ' ').trim();
+      // first 80 chars at a word boundary
+      let snippet = trimmed.length <= 80 ? trimmed : trimmed.slice(0, 80).replace(/\s\S*$/, '') + '…';
+      quote = { text: snippet, sessionHeading: top.heading };
+    }
+
+    // first plan week that targets this center
+    let weekBadge = null;
+    for (let i = 0; i < planArr.length; i++) {
+      if ((planArr[i].sessions || []).some(slug => slugToChakra[slug] === c.id)) {
+        weekBadge = planArr[i].week; break;
+      }
+    }
+
+    centers.push({
+      id: c.id, label: c.label,
+      state: latestState,
+      pips,
+      sessions: sessionsHere,
+      quote,
+      summary: composeCenterSummary(c, latestState, sessionsHere, mode),
+      weekBadge
+    });
+  });
+
+  return {
+    mode,
+    user: {
+      slug: (USER && USER.slug) || '',
+      displayName: (USER && USER.displayName) || '',
+      period: (USER && USER.period) || ''
+    },
+    axis, system, centers
+  };
+}
+
+function composeSystemHeadline(mode, axis, system) {
+  const captured = axis.points.filter(p => p.captured).length;
+  if (mode === 'pattern') {
+    if (captured <= 1) return 'the ground · the body learning that this room is not the kitchen · still becoming.';
+    if (captured >= 4) return 'the ground · letting down · finding the voice · staying present.';
+    const stagesSoFar = axis.points.filter(p => p.captured).map(p => p.shortLabel);
+    return stagesSoFar.join(' · ') + ' · still becoming.';
+  }
+  if (captured <= 1) {
+    const base = system.snapshots[0];
+    if (!base || base.ghost) return 'the arc begins. nothing is asked of you here.';
+    const auric = (typeof base.auricMeters === 'number') ? base.auricMeters.toFixed(1) + 'm' : null;
+    const tier = base.hawkinsTier || null;
+    const bits = ['from the baseline'];
+    if (auric) bits.push(auric);
+    if (tier) bits.push(tier);
+    return bits.join(' · ') + ' · still becoming.';
+  }
+  if (captured >= 5) return 'the arc · baseline to here.';
+  return 'from the baseline · to here · still becoming.';
+}
+
+function composeCenterSummary(center, latestState, sessions, mode) {
+  const done = sessions.filter(s => s.done).length;
+  const peaks = sessions.filter(s => s.peak).length;
+  const total = sessions.length;
+  const label = center.label.toLowerCase();
+  const state = latestState || center.baselineState;
+
+  if (mode === 'pattern') {
+    if (state === 'silenced')  return 'the ' + label + ' has been speaking only when the room was quiet.';
+    if (state === 'braced')    return 'the ' + label + ' is learning to receive what it has been giving.';
+    if (state === 'loaded')    return 'the ' + label + ' is still learning what put-down feels like.';
+    return 'the ' + label + ' has been with you across the arc.';
+  }
+
+  // biofield day-1 (no completions yet)
+  if (done === 0) {
+    if (state === 'radiant')         return 'the ' + label + ' starts radiant. it begins where it is.';
+    if (state === 'clear')           return 'the ' + label + ' starts clear. it begins where it is.';
+    if (state === 'consolidating')   return 'the ' + label + ' is consolidating at the start of the arc.';
+    if (state === 'carrying-a-lot')  return 'the ' + label + ' is carrying a lot at the start of the arc.';
+    if (state === 'holding')         return 'the ' + label + ' begins holding. the arc will meet it here.';
+    if (state === 'stabilizing')     return 'the ' + label + ' is stabilizing at the start of the arc.';
+    if (state === 'undercharged')    return 'the ' + label + ' begins quiet. the arc starts here.';
+    if (total === 0)                 return 'the ' + label + ' has been resting between visits.';
+    return 'the ' + label + ' begins where it is. it gets ' + (sessions[0] && sessions[0].week ? 'week ' + sessions[0].week : 'its own time') + '.';
+  }
+
+  // some sessions completed
+  if (peaks >= 1) return 'the ' + label + ' has been the loudest part of you this month.';
+  if (done >= total - 1 && total > 0) return 'the ' + label + ' has been gathered, session by session.';
+  if (done >= 1) return 'the ' + label + ' is gathering. ' + done + ' of ' + total + ' sessions met.';
+  return 'the ' + label + ' is still being met.';
+}
+
+function mountArc() {
+  const root = document.getElementById('arc-mount');
+  if (!root) return;
+  while (root.firstChild) root.removeChild(root.firstChild);
+  const s = arcSummarize();
+  root.appendChild(buildArcTitle(s));
+  root.appendChild(buildArcSystem(s));
+  root.appendChild(buildArcStrips(s));
+}
+
+function buildArcTitle(s) {
+  const wrap = el('div', { class: 'arc-title' });
+  wrap.appendChild(el('div', { class: 'arc-eyebrow', text: 'THE ARC' }));
+  const subBits = s.mode === 'pattern' ? '30 days · the body learning' : '30 days · walking';
+  wrap.appendChild(el('div', { class: 'arc-sub', text: subBits }));
+  return wrap;
+}
+
+function buildArcSystem(s) {
+  const wrap = el('div', { class: 'arc-system' });
+  const row = el('div', { class: 'arc-system-row' });
+  s.axis.points.forEach((p, i) => {
+    const col = el('div', { class: 'arc-snap-col' + (p.current ? ' is-current' : '') + (p.captured ? '' : ' is-ghost') });
+    if (s.mode === 'pattern') {
+      col.appendChild(el('div', { class: 'arc-snap-stage', text: p.shortLabel }));
+    }
+    col.appendChild(buildArcMiniSilhouette(s.system.snapshots[i], s.mode));
+    if (s.mode === 'pattern') {
+      // no auric/hawkins
+    } else {
+      const cap = el('div', { class: 'arc-snap-cap' });
+      const snap = s.system.snapshots[i];
+      if (snap && !snap.ghost) {
+        if (typeof snap.auricMeters === 'number') {
+          cap.appendChild(el('div', { class: 'arc-snap-auric', text: snap.auricMeters.toFixed(1) + ' m' }));
+        }
+        if (snap.hawkinsTier) {
+          cap.appendChild(el('div', { class: 'arc-snap-tier', text: snap.hawkinsTier }));
+        } else if (typeof snap.hawkinsLevel === 'number') {
+          cap.appendChild(el('div', { class: 'arc-snap-tier', text: String(snap.hawkinsLevel) }));
+        }
+      } else {
+        cap.appendChild(el('div', { class: 'arc-snap-auric arc-snap-dim', text: '—' }));
+      }
+      col.appendChild(cap);
+      col.appendChild(el('div', { class: 'arc-snap-label', text: p.label }));
+    }
+    if (p.current) col.appendChild(el('div', { class: 'arc-breath-dot' }));
+    row.appendChild(col);
+    if (i < s.axis.points.length - 1) {
+      const dashed = !s.system.snapshots[i+1] || s.system.snapshots[i+1].ghost || s.system.snapshots[i].ghost;
+      row.appendChild(el('div', { class: 'arc-connector' + (dashed ? ' is-dashed' : '') }));
+    }
+  });
+  wrap.appendChild(row);
+  wrap.appendChild(el('div', { class: 'arc-system-headline', text: s.system.headline }));
+  return wrap;
+}
+
+function buildArcMiniSilhouette(snap, mode) {
+  // Minimal body outline + colored dots at each center's yPct.
+  const SVG = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(SVG, 'svg');
+  svg.setAttribute('class', 'arc-mini');
+  svg.setAttribute('viewBox', '0 0 40 80');
+  // Body silhouette: head circle + tapered torso + legs hint.
+  const body = document.createElementNS(SVG, 'path');
+  body.setAttribute('class', 'arc-mini-body');
+  body.setAttribute('d', 'M20 4 a5 5 0 1 1 0.01 0 M15 14 L25 14 L29 32 L26 52 L23 75 L17 75 L14 52 L11 32 Z');
+  body.setAttribute('fill', 'rgba(255,255,255,0.04)');
+  body.setAttribute('stroke', 'rgba(255,255,255,0.28)');
+  body.setAttribute('stroke-width', '0.6');
+  svg.appendChild(body);
+  if (snap && !snap.ghost) {
+    const states = mode === 'pattern' ? (snap.somaticStates || []) : (snap.chakraStates || []);
+    states.forEach(st => {
+      const yPct = (typeof st.yPct === 'number') ? st.yPct : 50;
+      const cy = 6 + (yPct / 100) * 70;
+      const dot = document.createElementNS(SVG, 'circle');
+      dot.setAttribute('cx', '20');
+      dot.setAttribute('cy', String(cy));
+      dot.setAttribute('r', '1.8');
+      dot.setAttribute('fill', arcStateTint(st.state));
+      dot.setAttribute('opacity', '0.92');
+      svg.appendChild(dot);
+    });
+  }
+  return svg;
+}
+
+function buildArcStrips(s) {
+  const wrap = el('div', { class: 'arc-strips' });
+  s.centers.forEach((c, i) => {
+    wrap.appendChild(buildArcStrip(c, s.axis, s.mode, i));
+  });
+  wrap.appendChild(el('div', { class: 'arc-coda', text: 'we reflect, we never conclude.' }));
+  return wrap;
+}
+
+function buildArcStrip(center, axis, mode, idx) {
+  const strip = el('div', { class: 'arc-strip arc-strip--' + center.id });
+  strip.style.setProperty('--arc-state-tint', arcStateTint(center.state));
+
+  // Header row: state word + label + week badge
+  const head = el('div', { class: 'arc-strip-head' });
+  head.appendChild(el('div', { class: 'arc-strip-label', text: center.label.toUpperCase() }));
+  head.appendChild(el('div', { class: 'arc-strip-state', text: center.state || '' }));
+  if (center.weekBadge) {
+    head.appendChild(el('div', { class: 'arc-strip-week', text: 'week ' + center.weekBadge + ' of the plan' }));
+  }
+  strip.appendChild(head);
+
+  // Pip track
+  const track = el('div', { class: 'arc-strip-track' });
+  axis.points.forEach((p, i) => {
+    const pip = center.pips[i] || { lit: false };
+    const pipEl = el('div', { class: 'arc-pip' + (pip.lit ? ' is-lit' : ' is-open') });
+    if (pip.lit && pip.state) pipEl.style.background = arcStateTint(pip.state);
+    track.appendChild(pipEl);
+    if (i < axis.points.length - 1) {
+      const isDashed = !pip.lit || !center.pips[i+1] || !center.pips[i+1].lit;
+      track.appendChild(el('div', { class: 'arc-pip-line' + (isDashed ? ' is-dashed' : '') }));
+    }
+  });
+  strip.appendChild(track);
+
+  // Session pills
+  if (center.sessions.length) {
+    const pills = el('div', { class: 'arc-strip-pills' });
+    center.sessions.forEach(sx => {
+      const pill = el('div', {
+        class: 'arc-pill' +
+          (sx.done ? ' is-done' : '') +
+          (sx.peak ? ' is-peak' : '')
+      });
+      const name = el('div', { class: 'arc-pill-name', text: sx.heading });
+      pill.appendChild(name);
+      const meta = el('div', { class: 'arc-pill-meta' });
+      if (sx.peak) meta.appendChild(el('span', { class: 'arc-pill-mark', text: '✦ ' + sx.wow }));
+      else if (sx.done) meta.appendChild(el('span', { class: 'arc-pill-mark arc-pill-mark--soft', text: '✦' }));
+      if (sx.week) meta.appendChild(el('span', { class: 'arc-pill-week', text: 'wk ' + sx.week }));
+      if (meta.firstChild) pill.appendChild(meta);
+      strip.appendChild(pill);
+      pills.appendChild(pill);
+    });
+    strip.appendChild(pills);
+  } else {
+    strip.appendChild(el('div', { class: 'arc-strip-empty', text: '(no sessions targeted this center)' }));
+  }
+
+  // Quote
+  if (center.quote) {
+    const q = el('div', { class: 'arc-strip-quote' });
+    q.appendChild(el('span', { class: 'arc-q-text', text: '"' + center.quote.text + '"' }));
+    q.appendChild(el('span', { class: 'arc-q-attr', text: ' — your note, ' + center.quote.sessionHeading.toLowerCase() }));
+    strip.appendChild(q);
+  }
+
+  // Summary line
+  strip.appendChild(el('div', { class: 'arc-strip-summary', text: center.summary }));
+
+  return strip;
 }
 
 function mountConstellation() {
