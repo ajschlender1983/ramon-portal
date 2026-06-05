@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#160F25">
+<title>OPUS — choose a dashboard voice</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #1F1632;
+  --void-deep: #160F25;
+  --surface: #2A2042;
+  --accent: #564C70;
+  --accent-bright: #7B6FA8;
+  --light: #E4E1E6;
+  --mid: #9A90A3;
+  --dim: #635C6E;
+  --dimmer: #3D384A;
+  --teal: #6ADFD9;
+  --magenta: #C22FCD;
+  --gold: #FFD764;
+  --glass: rgba(255,255,255,0.04);
+  --glass-strong: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-border-strong: rgba(255,255,255,0.14);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; scroll-behavior: smooth; }
+body {
+  background: linear-gradient(180deg, var(--void) 0%, var(--void-deep) 100%);
+  color: var(--light);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    radial-gradient(ellipse 90% 60% at 18% 12%, rgba(123,111,168,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 82% 88%, rgba(194,47,205,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(106,223,217,0.06) 0%, transparent 60%);
+}
+::selection { background: rgba(106,223,217,0.25); color: var(--light); }
+.wrap {
+  max-width: 880px; margin: 0 auto;
+  padding: clamp(28px, 5vw, 60px) clamp(16px, 4vw, 32px) 120px;
+  position: relative; z-index: 2;
+}
+.topbrand {
+  font-family: var(--serif); font-style: italic;
+  letter-spacing: 0.20em; text-transform: uppercase;
+  font-size: 12px; color: var(--mid);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 48px;
+}
+.topbrand .mark { color: var(--light); font-weight: 500; font-style: normal; }
+.topbrand .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); opacity: 0.6; }
+
+/* Hero */
+.hero { margin-bottom: 56px; }
+.hero-eyebrow {
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(255,215,100,0.85); margin-bottom: 16px;
+}
+.hero-title {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(34px, 5.5vw, 54px);
+  line-height: 1.05; letter-spacing: -0.01em;
+  color: var(--light); margin-bottom: 22px;
+}
+.hero-title em { color: var(--teal); font-style: italic; }
+.hero-lede {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(15px, 1.6vw, 18px);
+  color: rgba(255,255,255,0.78); line-height: 1.7;
+  max-width: 620px;
+}
+.hero-lede strong { color: var(--light); font-weight: 500; font-style: normal; }
+
+/* Principles strip */
+.principles {
+  margin: 40px 0 56px;
+  padding: 20px 24px;
+  background: rgba(11,8,15,0.40);
+  border: 1px solid var(--glass-border);
+  border-left: 2px solid var(--magenta);
+  border-radius: 12px;
+}
+.principles-eyebrow {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(194,47,205,0.85); margin-bottom: 12px;
+}
+.principles ul { list-style: none; }
+.principles li {
+  font-family: var(--serif); font-style: italic; font-size: 15px;
+  color: var(--mid); line-height: 1.7;
+}
+.principles li + li { margin-top: 4px; }
+
+/* Paradigm cards */
+.paradigms { display: flex; flex-direction: column; gap: 32px; margin: 56px 0; }
+.paradigm {
+  padding: 28px 32px;
+  background: linear-gradient(180deg, rgba(31,24,36,0.62) 0%, rgba(20,14,28,0.62) 100%);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--accent-bright);
+  border-radius: 18px;
+  transition: border-color 240ms, transform 240ms, box-shadow 240ms;
+}
+.paradigm:hover { border-left-color: var(--gold); transform: translateY(-1px); box-shadow: 0 16px 40px -20px rgba(255,215,100,0.18); }
+.paradigm-head {
+  display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.paradigm-letter {
+  font-family: var(--serif); font-style: italic;
+  font-size: 32px; color: var(--gold); line-height: 1;
+}
+.paradigm-name {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(22px, 2.8vw, 30px); color: var(--light);
+  letter-spacing: -0.005em;
+}
+.paradigm-summary {
+  font-family: var(--serif); font-style: italic;
+  font-size: 16px; color: rgba(255,255,255,0.78);
+  margin-bottom: 22px; line-height: 1.6;
+}
+.paradigm-mockup {
+  background: rgba(11,8,15,0.55);
+  border: 1px solid rgba(255,215,100,0.20);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  font-family: var(--serif);
+  color: rgba(255,255,255,0.86);
+}
+.paradigm-mockup-eyebrow {
+  font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 12px; font-family: var(--sans);
+}
+.paradigm-meta {
+  display: flex; gap: 26px; flex-wrap: wrap; align-items: center;
+  margin-top: 12px;
+}
+.paradigm-meta-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 0.10em; color: var(--mid);
+  text-transform: uppercase;
+}
+.stars { letter-spacing: 0.04em; }
+.stars .lit { color: var(--gold); }
+.stars .dim { color: var(--dimmer); }
+
+/* Paradigm-specific mockup styles */
+.mockup-letter {
+  font-style: italic; font-size: 17px; line-height: 1.7;
+  padding: 24px 28px;
+}
+.mockup-letter .sig { display: block; margin-top: 12px; color: rgba(255,215,100,0.78); }
+.mockup-witness p {
+  font-family: var(--serif); font-style: italic;
+  font-size: 17px; line-height: 1.8;
+  color: var(--light);
+}
+.mockup-witness .quote {
+  margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--glass-border);
+  font-size: 13px; color: var(--mid); font-style: italic;
+}
+.mockup-drift {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px; align-items: center;
+  padding: 24px 18px;
+}
+.mockup-drift-col { text-align: center; }
+.mockup-drift-label {
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 10px; font-family: var(--sans);
+}
+.mockup-drift-body {
+  display: flex; flex-direction: column; gap: 6px; align-items: center;
+}
+.mockup-drift-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(106,223,247,0.7);
+}
+.mockup-drift-dot.dim { background: rgba(123,111,168,0.32); }
+.mockup-drift-dot.gold { background: rgba(255,215,100,0.85); }
+.mockup-drift-dot.future { background: transparent; border: 1px dashed rgba(255,255,255,0.12); }
+.mockup-drift-cap {
+  margin-top: 12px;
+  font-size: 11px; color: var(--mid); font-family: var(--sans);
+  letter-spacing: 0.02em;
+}
+.mockup-drift-cap.future { color: var(--dimmer); }
+.mockup-drift-foot {
+  grid-column: 1 / -1;
+  margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid var(--glass-border);
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: rgba(255,255,255,0.74); line-height: 1.6;
+  text-align: center;
+}
+.mockup-constellation {
+  padding: 26px 18px; text-align: center;
+}
+.const-row {
+  display: flex; justify-content: center; gap: 18px;
+  margin: 4px 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: rgba(255,255,255,0.66);
+}
+.const-row .wk { width: 36px; color: var(--dim); font-size: 11px; letter-spacing: 0.16em; }
+.const-star { display: inline-block; width: 14px; text-align: center; }
+.const-star.lit { color: var(--teal); }
+.const-star.wow { color: var(--gold); }
+.const-star.dim { color: rgba(123,111,168,0.45); }
+.const-foot {
+  margin-top: 18px;
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: rgba(255,255,255,0.74);
+}
+.mockup-nocard {
+  padding: 22px 26px;
+  display: flex; gap: 18px; align-items: flex-start;
+  font-family: var(--serif);
+}
+.mockup-nocard-portrait {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,215,100,0.35) 0%, rgba(123,111,168,0.18) 70%);
+  border: 1px solid rgba(255,215,100,0.4);
+  flex: 0 0 56px;
+}
+.mockup-nocard-body { flex: 1; }
+.mockup-nocard-name {
+  font-style: italic; font-size: 22px; color: var(--light); line-height: 1.1;
+}
+.mockup-nocard-meta {
+  font-size: 12px; color: var(--mid);
+  letter-spacing: 0.02em; margin-top: 4px;
+}
+.mockup-nocard-aura {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,215,100,0.8); margin-top: 6px;
+  padding-top: 6px; border-top: 1px solid rgba(255,215,100,0.18);
+  display: inline-block; font-family: var(--sans);
+}
+.mockup-nocard-note {
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px dashed var(--glass-border);
+  font-family: var(--serif); font-style: italic;
+  font-size: 15px; color: rgba(255,255,255,0.84); line-height: 1.65;
+}
+.mockup-nocard-note .eyebrow {
+  display: block;
+  font-style: normal; font-family: var(--sans);
+  font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: rgba(255,215,100,0.78);
+  margin-bottom: 8px;
+}
+
+/* Choice form */
+.choice-section {
+  margin-top: 56px;
+  padding: 36px 38px;
+  background: linear-gradient(180deg, rgba(255,215,100,0.05) 0%, rgba(255,215,100,0.02) 100%);
+  border: 1px solid rgba(255,215,100,0.32);
+  border-left: 3px solid var(--gold);
+  border-radius: 18px;
+}
+.choice-eyebrow {
+  font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: rgba(255,215,100,0.92); margin-bottom: 14px;
+}
+.choice-title {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(24px, 3.2vw, 32px); color: var(--light);
+  line-height: 1.15; margin-bottom: 6px;
+}
+.choice-title em { color: var(--gold); font-style: italic; }
+.choice-help {
+  font-family: var(--serif); font-style: italic; color: var(--mid);
+  font-size: 14px; line-height: 1.6; margin-bottom: 26px;
+}
+.choice-row { margin-bottom: 22px; }
+.choice-label {
+  display: block; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--mid); margin-bottom: 10px;
+}
+.choice-label .req { color: rgba(255,215,100,0.85); margin-left: 6px; font-style: italic; text-transform: none; letter-spacing: 0; }
+.pip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.pip {
+  flex: 1; min-width: 96px;
+  padding: 14px 16px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 200ms;
+  color: var(--mid);
+}
+.pip:hover { color: var(--light); border-color: var(--glass-border-strong); }
+.pip-letter {
+  font-family: var(--serif); font-style: italic; font-size: 22px;
+  color: var(--light); margin-bottom: 4px;
+}
+.pip-name {
+  font-size: 11px; letter-spacing: 0.04em; line-height: 1.3;
+}
+input[type="radio"]:checked + .pip {
+  background: rgba(255,215,100,0.14);
+  border-color: rgba(255,215,100,0.55);
+  color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(255,215,100,0.18);
+}
+input[type="radio"]:checked + .pip .pip-letter { color: var(--gold); }
+input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.pip-label-wrap { position: relative; flex: 1; min-width: 96px; display: flex; }
+.pip-label-wrap > .pip { width: 100%; }
+
+textarea, input[type="text"], input[type="email"] {
+  width: 100%; padding: 14px 16px;
+  background: rgba(11,8,15,0.45);
+  border: 1px solid rgba(255,215,100,0.22);
+  border-radius: 12px;
+  color: var(--light); font-family: var(--sans);
+  font-size: 14px; line-height: 1.6;
+  resize: vertical;
+}
+textarea { min-height: 90px; }
+textarea:focus, input[type="text"]:focus, input[type="email"]:focus {
+  outline: none; border-color: rgba(255,215,100,0.55);
+}
+
+.submit-row {
+  margin-top: 28px;
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+}
+.btn-submit {
+  padding: 13px 26px;
+  border-radius: 999px; border: 1px solid rgba(255,215,100,0.5);
+  background: linear-gradient(135deg, rgba(255,215,100,0.22), rgba(255,180,80,0.12));
+  color: var(--gold);
+  font-family: var(--sans); font-size: 13px; letter-spacing: 0.14em;
+  text-transform: uppercase; cursor: pointer;
+  transition: all 200ms;
+}
+.btn-submit:hover { transform: translateY(-1px); background: rgba(255,215,100,0.18); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.status {
+  font-family: var(--serif); font-style: italic; font-size: 14px;
+  color: var(--mid);
+}
+.status.err { color: rgba(220,90,90,0.9); }
+.status.ok { color: rgba(106,223,217,0.92); }
+
+/* Thank-you screen */
+.thanks {
+  text-align: center; padding: 80px 30px;
+}
+.thanks-eyebrow {
+  font-size: 11px; letter-spacing: 0.30em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 22px;
+}
+.thanks-title {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(32px, 5vw, 48px); color: var(--light);
+  line-height: 1.1; margin-bottom: 20px;
+}
+.thanks-title em { color: var(--teal); font-style: italic; }
+.thanks-body {
+  font-family: var(--serif); font-style: italic;
+  color: rgba(255,255,255,0.74); font-size: 17px; line-height: 1.7;
+  max-width: 540px; margin: 0 auto;
+}
+.thanks-yourpick {
+  margin-top: 36px;
+  font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255,215,100,0.78);
+}
+
+.footer {
+  margin-top: 80px;
+  padding-top: 24px;
+  border-top: 1px solid var(--glass-border);
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.footer em { text-transform: none; font-size: 12px; color: var(--mid); font-style: italic; letter-spacing: 0; }
+
+#hidden-on-thanks { display: block; }
+#thanks-mount { display: none; }
+body.submitted #hidden-on-thanks { display: none; }
+body.submitted #thanks-mount { display: block; }
+
+@media (max-width: 600px) {
+  .paradigm { padding: 22px 22px; }
+  .paradigm-head { gap: 10px; }
+  .choice-section { padding: 26px 22px; }
+  .mockup-drift { grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 16px 6px; }
+  .mockup-drift-label { font-size: 8px; letter-spacing: 0.12em; }
+  .mockup-drift-cap { font-size: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+
+<div class="topbrand">
+  <span class="mark">OPUS</span>
+  <span class="dot" aria-hidden="true"></span>
+  <span>beta · dashboard voice</span>
+</div>
+
+<div id="hidden-on-thanks">
+
+<section class="hero" id="hero">
+  <div class="hero-eyebrow">A question, from Adam</div>
+  <h1 class="hero-title">Which voice should the portal use when it <em>looks back at you</em>?</h1>
+  <p class="hero-lede">
+    The portal is adding a new surface at the top of each user's page — a small summary of sessions, notes, and how their reading has changed over time.
+    Before I build it, I want to make sure it lands the way the portal lands. <strong>Five voices below. Read each. Tell me which one your body recognizes.</strong>
+    Takes about 5 minutes.
+  </p>
+</section>
+
+<aside class="principles">
+  <div class="principles-eyebrow">What this surface will never do</div>
+  <ul>
+    <li>It will name. It will never grade.</li>
+    <li>Absence is presence. Never a deficit.</li>
+    <li>Specificity comes from quoting you. Not from inferring about you.</li>
+    <li>It opens. It never concludes.</li>
+  </ul>
+</aside>
+
+<section class="paradigms">
+
+  <!-- A. The Practitioner's Letter -->
+  <article class="paradigm" id="paradigm-A">
+    <header class="paradigm-head">
+      <span class="paradigm-letter">A</span>
+      <span class="paradigm-name">The Practitioner's Letter</span>
+    </header>
+    <p class="paradigm-summary">A single short paragraph in serif italic, addressed to you by name, signed. Reads as if the practitioner left a note before stepping out.</p>
+    <div class="paradigm-mockup mockup-letter">
+      <div class="paradigm-mockup-eyebrow">how it would look</div>
+      Dear Sierra,<br><br>
+      This week I noticed you arrived three times before the body had finished arriving with you. The throat spoke once, briefly. The kidneys are still resting.<br><br>
+      Until next week.
+      <span class="sig">— R.</span>
+    </div>
+    <div class="paradigm-meta">
+      <div class="paradigm-meta-item">felt-sense · <span class="stars"><span class="lit">★★★★★</span></span></div>
+      <div class="paradigm-meta-item">info richness · <span class="stars"><span class="lit">★★</span><span class="dim">★★★</span></span></div>
+    </div>
+  </article>
+
+  <!-- B. The Witness Panel -->
+  <article class="paradigm" id="paradigm-B">
+    <header class="paradigm-head">
+      <span class="paradigm-letter">B</span>
+      <span class="paradigm-name">The Witness Panel</span>
+    </header>
+    <p class="paradigm-summary">Three short sentences that name what was gathered. Sparse, contained. Refuses to grade. Pulls one of your actual phrases back to you, if there is one.</p>
+    <div class="paradigm-mockup mockup-witness">
+      <div class="paradigm-mockup-eyebrow">how it would look</div>
+      <p>You have been here.<br>Something is being gathered.<br>The pattern is still becoming.</p>
+      <div class="quote">from your last writing: "warmth in the sternum"</div>
+    </div>
+    <div class="paradigm-meta">
+      <div class="paradigm-meta-item">felt-sense · <span class="stars"><span class="lit">★★★★★</span></span></div>
+      <div class="paradigm-meta-item">info richness · <span class="stars"><span class="lit">★★★</span><span class="dim">★★</span></span></div>
+    </div>
+  </article>
+
+  <!-- C. The Biofield Drift -->
+  <article class="paradigm" id="paradigm-C">
+    <header class="paradigm-head">
+      <span class="paradigm-letter">C</span>
+      <span class="paradigm-name">The Biofield Drift</span>
+    </header>
+    <p class="paradigm-summary">Five tiny silhouettes side-by-side — baseline through Week 4 — letting you feel your reading drift over time. Motion shown. Never named as progress.</p>
+    <div class="paradigm-mockup mockup-drift">
+      <div class="paradigm-mockup-eyebrow" style="grid-column: 1 / -1;">how it would look</div>
+      <div class="mockup-drift-col">
+        <div class="mockup-drift-label">baseline</div>
+        <div class="mockup-drift-body">
+          <span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot dim"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot dim"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span>
+        </div>
+        <div class="mockup-drift-cap">10.5 m · Reason</div>
+      </div>
+      <div class="mockup-drift-col">
+        <div class="mockup-drift-label">week 1</div>
+        <div class="mockup-drift-body">
+          <span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot dim"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span>
+        </div>
+        <div class="mockup-drift-cap">11.2 m · Reason</div>
+      </div>
+      <div class="mockup-drift-col">
+        <div class="mockup-drift-label">week 2</div>
+        <div class="mockup-drift-body">
+          <span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span>
+        </div>
+        <div class="mockup-drift-cap">11.4 m · Love</div>
+      </div>
+      <div class="mockup-drift-col">
+        <div class="mockup-drift-label">week 3</div>
+        <div class="mockup-drift-body">
+          <span class="mockup-drift-dot gold"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span><span class="mockup-drift-dot"></span>
+        </div>
+        <div class="mockup-drift-cap">12.0 m · Love</div>
+      </div>
+      <div class="mockup-drift-col">
+        <div class="mockup-drift-label">week 4</div>
+        <div class="mockup-drift-body">
+          <span class="mockup-drift-dot future"></span><span class="mockup-drift-dot future"></span><span class="mockup-drift-dot future"></span><span class="mockup-drift-dot future"></span><span class="mockup-drift-dot future"></span><span class="mockup-drift-dot future"></span><span class="mockup-drift-dot future"></span>
+        </div>
+        <div class="mockup-drift-cap future">— · —</div>
+      </div>
+      <div class="mockup-drift-foot">
+        This is your body, across these weeks. The throat has been speaking more clearly. The sternum, less certain. Neither is a destination.
+      </div>
+    </div>
+    <div class="paradigm-meta">
+      <div class="paradigm-meta-item">felt-sense · <span class="stars"><span class="lit">★★★★</span><span class="dim">★</span></span></div>
+      <div class="paradigm-meta-item">info richness · <span class="stars"><span class="lit">★★★★★</span></span></div>
+    </div>
+  </article>
+
+  <!-- D. The Constellation Walked -->
+  <article class="paradigm" id="paradigm-D">
+    <header class="paradigm-head">
+      <span class="paradigm-letter">D</span>
+      <span class="paradigm-name">The Constellation Walked</span>
+    </header>
+    <p class="paradigm-summary">Your 30-day map rendered as completed/uncompleted stars. Lit nights are honored. Unlit nights are velvet — the sky holds them — never grey, never missing.</p>
+    <div class="paradigm-mockup mockup-constellation">
+      <div class="paradigm-mockup-eyebrow">how it would look</div>
+      <div class="const-row"><span class="wk">wk1</span><span class="const-star lit">✦</span><span class="const-star lit">✦</span><span class="const-star wow">★</span><span class="const-star lit">✦</span></div>
+      <div class="const-row"><span class="wk">wk2</span><span class="const-star dim">○</span><span class="const-star lit">✦</span><span class="const-star wow">★</span><span class="const-star wow">★</span></div>
+      <div class="const-row"><span class="wk">wk3</span><span class="const-star dim">○</span><span class="const-star dim">○</span><span class="const-star dim">○</span><span class="const-star dim">○</span></div>
+      <div class="const-row"><span class="wk">wk4</span><span class="const-star dim">○</span><span class="const-star dim">○</span><span class="const-star dim">○</span><span class="const-star dim">○</span></div>
+      <div class="const-foot">Seven nights lit. The sky holds the rest.</div>
+    </div>
+    <div class="paradigm-meta">
+      <div class="paradigm-meta-item">felt-sense · <span class="stars"><span class="lit">★★★★</span><span class="dim">★</span></span></div>
+      <div class="paradigm-meta-item">info richness · <span class="stars"><span class="lit">★★★★</span><span class="dim">★</span></span></div>
+    </div>
+  </article>
+
+  <!-- E. No new card -->
+  <article class="paradigm" id="paradigm-E">
+    <header class="paradigm-head">
+      <span class="paradigm-letter">E</span>
+      <span class="paradigm-name">No new card. Add a sentence to the existing masthead.</span>
+    </header>
+    <p class="paradigm-summary">Don't add anything new above the fold. Add a single accruing sentence beneath the existing portrait — written in witness voice — that updates with each visit. The portal stays one breath wide.</p>
+    <div class="paradigm-mockup mockup-nocard">
+      <div class="paradigm-mockup-eyebrow" style="position: absolute;">how it would look</div>
+      <div class="mockup-nocard-portrait" aria-hidden="true"></div>
+      <div class="mockup-nocard-body">
+        <div class="mockup-nocard-name">Sierra</div>
+        <div class="mockup-nocard-meta">their pattern, mirrored · June 2026</div>
+        <div class="mockup-nocard-aura">field reaches 10.5 m</div>
+        <div class="mockup-nocard-note">
+          <span class="eyebrow">this visit</span>
+          You arrived for the third time. The kidneys are still resting. Something in the throat is starting to land.
+        </div>
+      </div>
+    </div>
+    <div class="paradigm-meta">
+      <div class="paradigm-meta-item">felt-sense · <span class="stars"><span class="lit">★★★★★</span></span></div>
+      <div class="paradigm-meta-item">info richness · <span class="stars"><span class="lit">★★</span><span class="dim">★★★</span></span></div>
+    </div>
+  </article>
+
+</section>
+
+<section class="choice-section" id="choice">
+  <div class="choice-eyebrow">Your turn</div>
+  <h2 class="choice-title">Which one does your body <em>recognize</em>?</h2>
+  <p class="choice-help">Pick the one you'd want to land on if you opened the portal a few weeks into your own practice. There's no wrong answer — I'm trying to feel where the room of people lands.</p>
+
+  <form id="survey-form" autocomplete="off">
+    <div class="choice-row">
+      <label class="choice-label">Primary pick<span class="req">required</span></label>
+      <div class="pip-row" role="radiogroup" aria-label="Primary pick">
+        <label class="pip-label-wrap">
+          <input type="radio" name="primaryPick" value="A" required>
+          <div class="pip"><div class="pip-letter">A</div><div class="pip-name">Letter</div></div>
+        </label>
+        <label class="pip-label-wrap">
+          <input type="radio" name="primaryPick" value="B" required>
+          <div class="pip"><div class="pip-letter">B</div><div class="pip-name">Witness</div></div>
+        </label>
+        <label class="pip-label-wrap">
+          <input type="radio" name="primaryPick" value="C" required>
+          <div class="pip"><div class="pip-letter">C</div><div class="pip-name">Drift</div></div>
+        </label>
+        <label class="pip-label-wrap">
+          <input type="radio" name="primaryPick" value="D" required>
+          <div class="pip"><div class="pip-letter">D</div><div class="pip-name">Constellation</div></div>
+        </label>
+        <label class="pip-label-wrap">
+          <input type="radio" name="primaryPick" value="E" required>
+          <div class="pip"><div class="pip-letter">E</div><div class="pip-name">No new card</div></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="choice-row">
+      <label class="choice-label" for="why">Why this one?<span class="req">a sentence or two</span></label>
+      <textarea name="why" id="why" placeholder="What does your body do when it reads this version?" maxlength="2000"></textarea>
+    </div>
+
+    <div class="choice-row">
+      <label class="choice-label">Secondary pick<span class="req">optional</span></label>
+      <div class="pip-row" role="radiogroup" aria-label="Secondary pick">
+        <label class="pip-label-wrap">
+          <input type="radio" name="secondaryPick" value="A">
+          <div class="pip"><div class="pip-letter">A</div><div class="pip-name">Letter</div></div>
+        </label>
+        <label class="pip-label-wrap">
+          <input type="radio" name="secondaryPick" value="B">
+          <div class="pip"><div class="pip-letter">B</div><div class="pip-name">Witness</div></div>
+        </label>
+        <label class="pip-label-wrap">
+          <input type="radio" name="secondaryPick" value="C">
+          <div class="pip"><div class="pip-letter">C</div><div class="pip-name">Drift</div></div>
+        </label>
+        <label class="pip-label-wrap">
+          <input type="radio" name="secondaryPick" value="D">
+          <div class="pip"><div class="pip-letter">D</div><div class="pip-name">Constellation</div></div>
+        </label>
+        <label class="pip-label-wrap">
+          <input type="radio" name="secondaryPick" value="E">
+          <div class="pip"><div class="pip-letter">E</div><div class="pip-name">No new card</div></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="choice-row">
+      <label class="choice-label" for="missing">What would make your primary pick even more right?<span class="req">optional</span></label>
+      <textarea name="missing" id="missing" placeholder="If you'd change one thing about it…" maxlength="2000"></textarea>
+    </div>
+
+    <div class="choice-row">
+      <label class="choice-label" for="anything">Anything else?<span class="req">optional</span></label>
+      <textarea name="anything" id="anything" placeholder="Any other voice or shape that would land better for you…" maxlength="2000"></textarea>
+    </div>
+
+    <div class="choice-row">
+      <label class="choice-label" for="name">Your name<span class="req">so Adam knows whose body recognized this</span></label>
+      <input type="text" name="name" id="name" placeholder="First name is fine" maxlength="200">
+    </div>
+
+    <div class="choice-row">
+      <label class="choice-label" for="email">Email<span class="req">optional, only if you want a follow-up</span></label>
+      <input type="email" name="email" id="email" placeholder="you@somewhere.com" maxlength="200">
+    </div>
+
+    <div class="submit-row">
+      <button type="submit" class="btn-submit" id="submit-btn">Send my pick</button>
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+  </form>
+</section>
+
+</div>
+
+<!-- Hidden until submit; populated via DOM (no innerHTML) -->
+<div id="thanks-mount" aria-live="polite">
+  <div class="thanks">
+    <div class="thanks-eyebrow">received</div>
+    <h1 class="thanks-title">Thank you. Your voice <em>is in the room</em>.</h1>
+    <p class="thanks-body">Adam will read what you wrote. The final shape of this surface will be informed by the whole room of you, not by any one pick.</p>
+    <div class="thanks-yourpick" id="thanks-yourpick">your pick · </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>OPUS · SoundBed · beta survey</span>
+  <em>We reflect. We never conclude.</em>
+</div>
+
+</div>
+
+<script>
+const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
+const PICK_NAMES = {
+  A: 'The Practitioner’s Letter',
+  B: 'The Witness Panel',
+  C: 'The Biofield Drift',
+  D: 'The Constellation Walked',
+  E: 'No new card. A sentence in the masthead.'
+};
+const form = document.getElementById('survey-form');
+const statusEl = document.getElementById('status');
+const submitBtn = document.getElementById('submit-btn');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  statusEl.className = 'status';
+  statusEl.textContent = 'Sending…';
+  submitBtn.disabled = true;
+
+  const data = new FormData(form);
+  const payload = {
+    primaryPick:   data.get('primaryPick') || '',
+    secondaryPick: data.get('secondaryPick') || '',
+    why:           data.get('why') || '',
+    missing:       data.get('missing') || '',
+    anything:      data.get('anything') || '',
+    name:          data.get('name') || '',
+    email:         data.get('email') || ''
+  };
+
+  try {
+    const resp = await fetch(RESOLVE_BASE + '/survey', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+      const j = await resp.json().catch(() => ({}));
+      throw new Error(j.error || ('HTTP ' + resp.status));
+    }
+    await resp.json();
+    const pickName = PICK_NAMES[payload.primaryPick] || payload.primaryPick;
+    document.getElementById('thanks-yourpick').textContent = 'your pick · ' + pickName;
+    document.body.classList.add('submitted');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  } catch (err) {
+    statusEl.className = 'status err';
+    statusEl.textContent = 'Could not send: ' + (err.message || err);
+    submitBtn.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>

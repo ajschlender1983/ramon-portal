@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#160F25">
+<meta name="robots" content="noindex,nofollow">
+<title>OPUS — survey admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #1F1632; --void-deep: #160F25; --surface: #2A2042;
+  --light: #E4E1E6; --mid: #9A90A3; --dim: #635C6E; --dimmer: #3D384A;
+  --teal: #6ADFD9; --gold: #FFD764; --magenta: #C22FCD; --accent-bright: #7B6FA8;
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  background: linear-gradient(180deg, var(--void) 0%, var(--void-deep) 100%);
+  color: var(--light); font-family: var(--sans);
+  font-size: 14px; line-height: 1.6;
+  min-height: 100vh; padding: 32px clamp(16px, 4vw, 40px) 120px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; }
+.brand {
+  font-family: var(--serif); font-style: italic;
+  letter-spacing: 0.20em; text-transform: uppercase;
+  font-size: 12px; color: var(--mid);
+  margin-bottom: 28px;
+  display: flex; align-items: center; gap: 10px;
+}
+.brand .mark { color: var(--light); font-weight: 500; font-style: normal; }
+.brand .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); opacity: 0.6; }
+
+h1 {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(28px, 4vw, 38px);
+  color: var(--light); line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin-bottom: 28px;
+}
+h1 em { color: var(--teal); font-style: italic; }
+
+.tally-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 14px; margin-bottom: 36px;
+}
+@media (max-width: 720px) { .tally-grid { grid-template-columns: repeat(2, 1fr); } }
+.tally-card {
+  padding: 18px 18px 16px;
+  background: linear-gradient(180deg, rgba(31,24,36,0.62) 0%, rgba(20,14,28,0.62) 100%);
+  border: 1px solid var(--glass-border);
+  border-left: 2px solid var(--accent-bright);
+  border-radius: 12px;
+}
+.tally-letter {
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: var(--gold);
+  letter-spacing: 0.08em;
+}
+.tally-name {
+  font-family: var(--serif); font-size: 15px;
+  color: rgba(255,255,255,0.84); margin-bottom: 14px;
+  line-height: 1.25;
+}
+.tally-count { display: flex; align-items: baseline; gap: 8px; }
+.tally-primary {
+  font-family: var(--serif); font-style: italic;
+  font-size: 38px; color: var(--gold); line-height: 1;
+}
+.tally-secondary {
+  font-size: 11px; letter-spacing: 0.10em;
+  color: var(--mid); text-transform: uppercase;
+}
+.tally-bar {
+  margin-top: 12px; height: 4px;
+  background: rgba(255,215,100,0.10); border-radius: 999px; overflow: hidden;
+}
+.tally-bar-fill {
+  height: 100%; background: var(--gold);
+  border-radius: 999px; transition: width 600ms ease;
+}
+
+.actions {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  margin: 32px 0 20px;
+}
+.btn {
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass); color: var(--mid);
+  font-size: 11px; letter-spacing: 0.10em;
+  text-transform: uppercase; cursor: pointer;
+  transition: all 200ms;
+}
+.btn:hover { color: var(--light); border-color: rgba(255,255,255,0.18); }
+.btn.gold { color: var(--gold); border-color: rgba(255,215,100,0.45); background: rgba(255,215,100,0.10); }
+.btn.gold:hover { background: rgba(255,215,100,0.18); }
+.summary-count {
+  font-family: var(--serif); font-style: italic; font-size: 14px;
+  color: var(--mid);
+}
+.summary-count strong { color: var(--gold); font-weight: 500; font-style: normal; }
+
+.responses { display: flex; flex-direction: column; gap: 14px; }
+.response {
+  padding: 22px 24px;
+  background: linear-gradient(180deg, rgba(31,24,36,0.50) 0%, rgba(20,14,28,0.50) 100%);
+  border: 1px solid var(--glass-border);
+  border-left: 2px solid var(--teal);
+  border-radius: 14px;
+}
+.response-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 14px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.response-name {
+  font-family: var(--serif); font-size: 18px; color: var(--light);
+}
+.response-name .anon { color: var(--mid); font-style: italic; }
+.response-meta {
+  display: flex; gap: 14px;
+  font-size: 11px; letter-spacing: 0.06em; color: var(--mid);
+}
+.response-meta .pick-pri {
+  color: var(--gold); font-weight: 500;
+  letter-spacing: 0.10em; text-transform: uppercase;
+}
+.response-meta .pick-sec { color: rgba(106,223,217,0.85); }
+.response-row {
+  display: grid; grid-template-columns: 100px 1fr;
+  gap: 10px 18px; margin-bottom: 8px;
+  align-items: baseline;
+}
+.response-label {
+  font-size: 9.5px; letter-spacing: 0.20em; text-transform: uppercase;
+  color: var(--dim);
+}
+.response-text {
+  font-family: var(--serif); font-size: 15px;
+  color: rgba(255,255,255,0.84); line-height: 1.65;
+  white-space: pre-wrap;
+}
+.response-text.italic { font-style: italic; color: rgba(255,255,255,0.78); }
+.response-email {
+  font-family: var(--sans); font-size: 12px;
+  color: var(--teal); letter-spacing: 0;
+}
+
+.gate {
+  max-width: 480px; margin: 80px auto 0;
+  padding: 36px 32px; text-align: center;
+  background: rgba(11,8,15,0.50);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+.gate h2 {
+  font-family: var(--serif); font-weight: 300; font-size: 26px;
+  color: var(--light); margin-bottom: 16px;
+}
+.gate p { color: var(--mid); font-size: 14px; line-height: 1.65; }
+.gate input {
+  width: 100%; margin-top: 18px; padding: 12px 14px;
+  background: rgba(11,8,15,0.6);
+  border: 1px solid rgba(255,215,100,0.30);
+  border-radius: 8px;
+  color: var(--light); font-family: var(--sans); font-size: 14px;
+}
+.gate input:focus { outline: none; border-color: rgba(255,215,100,0.6); }
+.gate button {
+  margin-top: 12px; width: 100%;
+  padding: 11px;
+  border-radius: 999px; border: 1px solid rgba(255,215,100,0.50);
+  background: rgba(255,215,100,0.14); color: var(--gold);
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  cursor: pointer;
+}
+.empty {
+  padding: 60px 30px; text-align: center;
+  font-family: var(--serif); font-style: italic; font-size: 17px;
+  color: var(--mid);
+}
+.error-banner {
+  padding: 14px 18px; margin-bottom: 24px;
+  background: rgba(220,21,69,0.10); border: 1px solid rgba(220,21,69,0.35);
+  border-radius: 10px; color: rgba(255,200,200,0.92);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand">
+    <span class="mark">OPUS</span>
+    <span class="dot" aria-hidden="true"></span>
+    <span>admin · dashboard voice survey</span>
+  </div>
+
+  <div id="gate" class="gate" style="display:none">
+    <h2>Admin key required</h2>
+    <p>Paste your admin key, or open this page with <code>?key=...</code> in the URL.</p>
+    <input type="password" id="key-input" placeholder="paste admin key">
+    <button id="key-go" type="button">Open</button>
+  </div>
+
+  <div id="main" style="display:none">
+    <h1><em>Dashboard voice</em> · survey results</h1>
+
+    <div id="error-banner" class="error-banner" style="display:none"></div>
+
+    <div class="tally-grid" id="tally-grid"></div>
+
+    <div class="actions">
+      <span class="summary-count" id="summary-count">Loading…</span>
+      <button class="btn" id="btn-refresh" type="button">Refresh</button>
+      <button class="btn gold" id="btn-csv" type="button">Export CSV</button>
+    </div>
+
+    <div class="responses" id="responses"></div>
+  </div>
+</div>
+
+<script>
+const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
+const PICK_LETTERS = ['A', 'B', 'C', 'D', 'E'];
+const PICK_NAMES = {
+  A: 'The Practitioner’s Letter',
+  B: 'The Witness Panel',
+  C: 'The Biofield Drift',
+  D: 'The Constellation Walked',
+  E: 'No new card'
+};
+
+function getKeyFromURL() {
+  const p = new URLSearchParams(location.search);
+  return (p.get('key') || '').trim();
+}
+function getKey() {
+  return getKeyFromURL() || sessionStorage.getItem('opus-survey-admin-key') || '';
+}
+function saveKey(k) {
+  try { sessionStorage.setItem('opus-survey-admin-key', k); } catch {}
+}
+
+function showGate() {
+  document.getElementById('gate').style.display = 'block';
+  document.getElementById('main').style.display = 'none';
+}
+function showMain() {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+}
+
+function clearChildren(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+function el(tag, attrs, kids) {
+  const n = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'class') n.className = attrs[k];
+    else if (k === 'text') n.textContent = attrs[k];
+    else if (k === 'style') n.setAttribute('style', attrs[k]);
+    else n.setAttribute(k, attrs[k]);
+  }
+  if (kids) (Array.isArray(kids) ? kids : [kids]).forEach(c => {
+    if (c == null) return;
+    n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return n;
+}
+
+function fmtDate(ts) {
+  try { return new Date(ts).toLocaleString(); } catch { return ''; }
+}
+
+function csvEscape(v) {
+  if (v == null) return '';
+  const s = String(v);
+  if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+async function loadResponses() {
+  const key = getKey();
+  if (!key) { showGate(); return; }
+  saveKey(key);
+  showMain();
+
+  const errBanner = document.getElementById('error-banner');
+  errBanner.style.display = 'none';
+  errBanner.textContent = '';
+  document.getElementById('summary-count').textContent = 'Loading…';
+
+  let responses = [];
+  try {
+    const resp = await fetch(RESOLVE_BASE + '/survey?key=' + encodeURIComponent(key), {
+      headers: { 'x-admin-token': key }
+    });
+    if (resp.status === 401) {
+      errBanner.style.display = 'block';
+      errBanner.textContent = 'That key isn’t recognized. Check the URL or paste a fresh one.';
+      sessionStorage.removeItem('opus-survey-admin-key');
+      showGate();
+      return;
+    }
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const j = await resp.json();
+    responses = j.responses || [];
+  } catch (err) {
+    errBanner.style.display = 'block';
+    errBanner.textContent = 'Could not load responses: ' + (err.message || err);
+    return;
+  }
+
+  const tallies = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+  const seconds = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+  responses.forEach(r => {
+    if (tallies[r.primaryPick] !== undefined) tallies[r.primaryPick]++;
+    if (seconds[r.secondaryPick] !== undefined) seconds[r.secondaryPick]++;
+  });
+  const total = responses.length;
+  const max = Math.max(1, ...PICK_LETTERS.map(l => tallies[l]));
+
+  const grid = document.getElementById('tally-grid');
+  clearChildren(grid);
+  PICK_LETTERS.forEach(L => {
+    const card = el('div', { class: 'tally-card' });
+    card.appendChild(el('div', { class: 'tally-letter', text: L }));
+    card.appendChild(el('div', { class: 'tally-name', text: PICK_NAMES[L] }));
+    const count = el('div', { class: 'tally-count' });
+    count.appendChild(el('span', { class: 'tally-primary', text: String(tallies[L]) }));
+    count.appendChild(el('span', { class: 'tally-secondary', text: tallies[L] === 1 ? 'vote' : 'votes' }));
+    card.appendChild(count);
+    if (seconds[L]) {
+      card.appendChild(el('div', {
+        class: 'tally-secondary',
+        style: 'margin-top:8px;color:rgba(106,223,217,0.78)',
+        text: '+' + seconds[L] + ' second-pick'
+      }));
+    }
+    const bar = el('div', { class: 'tally-bar' });
+    const fill = el('div', { class: 'tally-bar-fill', style: 'width:' + (tallies[L] / max * 100).toFixed(0) + '%' });
+    bar.appendChild(fill);
+    card.appendChild(bar);
+    grid.appendChild(card);
+  });
+
+  const sc = document.getElementById('summary-count');
+  clearChildren(sc);
+  sc.appendChild(document.createTextNode(String(total) + ' ' + (total === 1 ? 'response' : 'responses')));
+
+  const respList = document.getElementById('responses');
+  clearChildren(respList);
+  if (total === 0) {
+    respList.appendChild(el('div', { class: 'empty', text: 'No responses yet. The room is quiet.' }));
+    return;
+  }
+  responses.forEach(r => {
+    const card = el('div', { class: 'response' });
+    const head = el('div', { class: 'response-head' });
+    const nameEl = el('div', { class: 'response-name' });
+    if (r.name) nameEl.appendChild(el('span', { text: r.name }));
+    else nameEl.appendChild(el('span', { class: 'anon', text: 'anonymous' }));
+    if (r.email) {
+      nameEl.appendChild(document.createTextNode(' · '));
+      nameEl.appendChild(el('span', { class: 'response-email', text: r.email }));
+    }
+    head.appendChild(nameEl);
+    const meta = el('div', { class: 'response-meta' });
+    meta.appendChild(el('span', { class: 'pick-pri', text: r.primaryPick + ' · ' + (PICK_NAMES[r.primaryPick] || '') }));
+    if (r.secondaryPick) meta.appendChild(el('span', { class: 'pick-sec', text: '2nd: ' + r.secondaryPick }));
+    meta.appendChild(el('span', { text: fmtDate(r.ts) }));
+    head.appendChild(meta);
+    card.appendChild(head);
+    if (r.why) {
+      const row = el('div', { class: 'response-row' });
+      row.appendChild(el('div', { class: 'response-label', text: 'Why' }));
+      row.appendChild(el('div', { class: 'response-text', text: r.why }));
+      card.appendChild(row);
+    }
+    if (r.missing) {
+      const row = el('div', { class: 'response-row' });
+      row.appendChild(el('div', { class: 'response-label', text: 'Improve' }));
+      row.appendChild(el('div', { class: 'response-text italic', text: r.missing }));
+      card.appendChild(row);
+    }
+    if (r.anything) {
+      const row = el('div', { class: 'response-row' });
+      row.appendChild(el('div', { class: 'response-label', text: 'Other' }));
+      row.appendChild(el('div', { class: 'response-text italic', text: r.anything }));
+      card.appendChild(row);
+    }
+    respList.appendChild(card);
+  });
+
+  document.getElementById('btn-csv').onclick = () => {
+    const cols = ['ts', 'date', 'name', 'email', 'primaryPick', 'secondaryPick', 'why', 'missing', 'anything', 'id'];
+    const rows = [cols.join(',')];
+    responses.forEach(r => {
+      rows.push([
+        r.ts,
+        new Date(r.ts).toISOString(),
+        r.name,
+        r.email,
+        r.primaryPick,
+        r.secondaryPick,
+        r.why,
+        r.missing,
+        r.anything,
+        r.id
+      ].map(csvEscape).join(','));
+    });
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dashboard-survey-' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+}
+
+document.getElementById('btn-refresh').addEventListener('click', loadResponses);
+document.getElementById('key-go').addEventListener('click', () => {
+  const v = document.getElementById('key-input').value.trim();
+  if (v) {
+    saveKey(v);
+    loadResponses();
+  }
+});
+document.getElementById('key-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('key-go').click();
+});
+
+loadResponses();
+</script>
+
+</body>
+</html>

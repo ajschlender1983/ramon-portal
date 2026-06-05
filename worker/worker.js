@@ -39,6 +39,22 @@ export default {
       }
     }
 
+    /* v1.12: GET /survey — admin-guarded read of all dashboard-survey
+       responses. Caller must present x-admin-token header matching
+       env.ADMIN_TOKEN. */
+    if (request.method === 'GET' && url.pathname === '/survey') {
+      const tok = request.headers.get('x-admin-token') || url.searchParams.get('key') || '';
+      if (!env.ADMIN_TOKEN || tok !== env.ADMIN_TOKEN) {
+        return json({ error: 'unauthorized' }, 401, cors);
+      }
+      try {
+        const responses = await readAllSurveyResponses(env);
+        return json({ responses, count: responses.length }, 200, cors);
+      } catch (err) {
+        return json({ error: String(err && err.message || err) }, 502, cors);
+      }
+    }
+
     if (request.method !== 'POST') {
       return json({ error: 'method not allowed' }, 405, cors);
     }
@@ -50,6 +66,12 @@ export default {
     try {
       if (url.pathname === '/state') {
         const result = await writeState(env, payload);
+        return json(result, 200, cors);
+      }
+      /* v1.12: POST /survey — public write of a dashboard-survey response.
+         No auth needed; rate-limited by the worker invocation envelope. */
+      if (url.pathname === '/survey') {
+        const result = await writeSurveyResponse(env, payload, request);
         return json(result, 200, cors);
       }
       // All other endpoints require ANTHROPIC_API_KEY (AI calls).
@@ -583,4 +605,80 @@ async function writeState(env, payload) {
   }
   await env.STATE_KV.put('state:' + slug, serialized);
   return { ok: true, slug, ts: record.ts };
+}
+
+/* ============================================================ v1.12: Dashboard-style beta survey
+   Stores one response per submission at survey:dashboard-style:<id>. Admin GET lists all.
+
+   Response shape (validated server-side, sized + sanitized):
+     { id, ts, name, email, primaryPick, secondaryPick, why, missing, anything, ua }
+*/
+
+const MAX_SURVEY_BYTES = 8 * 1024;
+const VALID_PICKS = ['A', 'B', 'C', 'D', 'E'];
+
+function takeStr(v, max) {
+  if (typeof v !== 'string') return '';
+  return v.slice(0, max);
+}
+
+async function writeSurveyResponse(env, payload, request) {
+  if (!env.STATE_KV) {
+    const err = new Error('STATE_KV not bound on the worker');
+    err.status = 500;
+    throw err;
+  }
+  const primary = (payload && payload.primaryPick || '').toUpperCase();
+  if (!VALID_PICKS.includes(primary)) {
+    const err = new Error('primaryPick must be one of A,B,C,D,E');
+    err.status = 400;
+    throw err;
+  }
+  const secondary = (payload && payload.secondaryPick || '').toUpperCase();
+  const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('s_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10));
+  const record = {
+    id,
+    ts: Date.now(),
+    name:          takeStr(payload && payload.name, 200),
+    email:         takeStr(payload && payload.email, 200),
+    primaryPick:   primary,
+    secondaryPick: VALID_PICKS.includes(secondary) ? secondary : '',
+    why:           takeStr(payload && payload.why, 2000),
+    missing:       takeStr(payload && payload.missing, 2000),
+    anything:      takeStr(payload && payload.anything, 2000),
+    ua:            takeStr(request.headers.get('user-agent') || '', 300)
+  };
+  const serialized = JSON.stringify(record);
+  if (serialized.length > MAX_SURVEY_BYTES) {
+    const err = new Error('survey payload too large');
+    err.status = 413;
+    throw err;
+  }
+  await env.STATE_KV.put('survey:dashboard-style:' + id, serialized);
+  return { ok: true, id, ts: record.ts };
+}
+
+async function readAllSurveyResponses(env) {
+  if (!env.STATE_KV) {
+    const err = new Error('STATE_KV not bound on the worker');
+    err.status = 500;
+    throw err;
+  }
+  // Page through every survey:dashboard-style:<id> key. KV list returns up
+  // to 1000 keys per page; we paginate until cursor is exhausted.
+  const out = [];
+  let cursor = undefined;
+  // Safety bound: 10 pages = up to 10,000 responses. Plenty.
+  for (let i = 0; i < 10; i++) {
+    const list = await env.STATE_KV.list({ prefix: 'survey:dashboard-style:', cursor });
+    for (const k of list.keys) {
+      const v = await env.STATE_KV.get(k.name);
+      if (!v) continue;
+      try { out.push(JSON.parse(v)); } catch {}
+    }
+    if (list.list_complete) break;
+    cursor = list.cursor;
+  }
+  out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  return out;
 }
