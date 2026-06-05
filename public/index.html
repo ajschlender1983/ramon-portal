@@ -4306,29 +4306,47 @@ const CloudSync = (function () {
   }
   wrapLocalStorage();
 
-  // Flush on tab hide / pagehide so a closing tab doesn't lose the last 1.2s.
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && pushTimer) {
+  // v1.11.6: Flush on tab hide / pagehide so a closing tab doesn't lose
+  // the last write. Beacon ALWAYS when snapshot differs from the last
+  // successful push, not only when pushTimer is pending. The previous
+  // guard (`if (document.hidden && pushTimer)`) missed the case where
+  // the 1.2s debounce had already fired, pushNow() started a fetch, and
+  // the tab hid before that fetch completed — mobile Safari aborts
+  // in-flight fetches on tab hide; sendBeacon survives. Result: notes
+  // saved locally but never reaching KV.
+  function flushOnHide() {
+    if (!active || !slug) return;
+    if (pushTimer) {
       clearTimeout(pushTimer);
       pushTimer = null;
-      const body = JSON.stringify({ slug, state: snapshotStateFromLS() });
-      // sendBeacon for fire-and-forget; doesn't block the page hide.
-      try {
-        if (navigator.sendBeacon) {
-          const blob = new Blob([body], { type: 'application/json' });
-          navigator.sendBeacon(RESOLVE_STATE, blob);
-          lastPushedJSON = JSON.stringify(snapshotStateFromLS());
-        }
-      } catch {}
     }
+    const snap = snapshotStateFromLS();
+    const snapJSON = JSON.stringify(snap);
+    if (snapJSON === lastPushedJSON) return;
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob(
+          [JSON.stringify({ slug, state: snap })],
+          { type: 'application/json' }
+        );
+        const ok = navigator.sendBeacon(RESOLVE_STATE, blob);
+        if (ok) lastPushedJSON = snapJSON;
+      }
+    } catch {}
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) flushOnHide();
   });
+  // Mobile Safari may fire pagehide without visibilitychange in some
+  // flows (bfcache restore, swipe-to-close). Belt-and-suspenders.
+  window.addEventListener('pagehide', flushOnHide);
 
   return { rehydrate, pushNow };
 })();
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.11.5';
+const VERSION = '1.11.6';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the

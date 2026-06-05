@@ -10,7 +10,7 @@
 
 window.OPUS = window.OPUS || {};
 
-const VERSION = '2.0.0-alpha.2';
+const VERSION = '2.0.0-alpha.3';
 
 const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
 const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
@@ -123,20 +123,34 @@ const CloudSync = (function () {
     };
   })();
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && pushTimer) {
+  // v1.11.6: see public/index.html for the matching fix and rationale.
+  // Beacon-flush whenever snapshot ≠ lastPushedJSON, not only when
+  // pushTimer is pending — handles in-flight-fetch + tab-hide race
+  // (mobile Safari aborts; sendBeacon survives).
+  function flushOnHide() {
+    if (!active || !slug) return;
+    if (pushTimer) {
       clearTimeout(pushTimer);
       pushTimer = null;
-      const body = JSON.stringify({ slug, state: snapshotStateFromLS() });
-      try {
-        if (navigator.sendBeacon) {
-          const blob = new Blob([body], { type: 'application/json' });
-          navigator.sendBeacon(RESOLVE_STATE, blob);
-          lastPushedJSON = JSON.stringify(snapshotStateFromLS());
-        }
-      } catch {}
     }
+    const snap = snapshotStateFromLS();
+    const snapJSON = JSON.stringify(snap);
+    if (snapJSON === lastPushedJSON) return;
+    try {
+      if (navigator.sendBeacon) {
+        const blob = new Blob(
+          [JSON.stringify({ slug, state: snap })],
+          { type: 'application/json' }
+        );
+        const ok = navigator.sendBeacon(RESOLVE_STATE, blob);
+        if (ok) lastPushedJSON = snapJSON;
+      }
+    } catch {}
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) flushOnHide();
   });
+  window.addEventListener('pagehide', flushOnHide);
 
   return { rehydrate, pushNow };
 })();
