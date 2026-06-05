@@ -23,9 +23,12 @@
 /app/sierra/ /app/index.html   200
 
 # v1.12 — Dashboard-voice beta survey + admin
-/survey/                /dashboard-survey/index.html  200
-/survey/admin/          /dashboard-survey/admin.html  200
-/dashboard-survey/admin/ /dashboard-survey/admin.html  200
+# Targets are the canonical clean-URL paths (Cloudflare 308s away from
+# /…/index.html). 200 = server-side rewrite; address bar stays /survey/.
+/survey                 /dashboard-survey/  200
+/survey/                /dashboard-survey/  200
+/survey/admin           /dashboard-survey/admin  200
+/survey/admin/          /dashboard-survey/admin  200
 
 # Trailing-slash variants are the matchers because Cloudflare Pages
 # auto-adds a trailing slash before our rules fire (308 redirect from
