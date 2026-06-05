@@ -10,7 +10,7 @@
 
 window.OPUS = window.OPUS || {};
 
-const VERSION = '2.0.0-alpha.3';
+const VERSION = '2.0.0-alpha.4';
 
 const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
 const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
@@ -80,10 +80,17 @@ const CloudSync = (function () {
         applyServerStateToLS(data.state);
         lastPushedJSON = JSON.stringify(data.state);
       } else {
-        const seed = snapshotStateFromLS();
-        if (Object.keys(seed).length > 0) await pushNow(seed);
+        lastPushedJSON = '';
       }
       active = true;
+      // v1.11.7 (alpha.4): see public/index.html. After additive merge,
+      // immediately push the full merged snapshot so local-only keys
+      // (writes that never reached KV) land on the next page open.
+      const merged = snapshotStateFromLS();
+      if (Object.keys(merged).length > 0) {
+        const mergedJSON = JSON.stringify(merged);
+        if (mergedJSON !== lastPushedJSON) await pushNow(merged);
+      }
     } catch (err) { /* local-only fallback */ }
   }
 

@@ -4252,14 +4252,23 @@ const CloudSync = (function () {
         applyServerStateToLS(data.state);
         lastPushedJSON = JSON.stringify(data.state);
       } else {
-        // Server empty: this is a fresh slug OR a slug with only local data.
-        // Push whatever is in localStorage to seed the server (one-time sync).
-        const seed = snapshotStateFromLS();
-        if (Object.keys(seed).length > 0) {
-          await pushNow(seed);
-        }
+        // Server empty: fresh slug OR a slug with only local data.
+        lastPushedJSON = '';
       }
       active = true;
+      // v1.11.7: after additive merge, immediately push the FULL merged
+      // snapshot. If the user has local-only keys (notes/wow/reflections
+      // written on a previous visit that never reached KV because the
+      // tab-hide race ate them — see v1.11.6 root cause), this push
+      // uploads them on the very next page open, with no user action
+      // required. No-op when local matches server exactly.
+      const merged = snapshotStateFromLS();
+      if (Object.keys(merged).length > 0) {
+        const mergedJSON = JSON.stringify(merged);
+        if (mergedJSON !== lastPushedJSON) {
+          await pushNow(merged);
+        }
+      }
     } catch (err) {
       // Network or worker error: continue with local-only mode. We'll retry
       // pushes on future writes; rehydration is best-effort.
@@ -4346,7 +4355,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.11.6';
+const VERSION = '1.11.7';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8189,13 +8198,21 @@ async function askReflection() {
   status.textContent = 'Asking…';
   setState({ reflectionRequested: true });
 
+  // v1.11.7: was pointed at '/api/reflect' (a path that does not exist
+  // on Cloudflare Pages — there is no functions/ directory). The endpoint
+  // lives on the Worker at RESOLVE_REFLECT. Same shape the per-session
+  // resolveSession() already uses successfully.
   try {
-    const resp = await fetch('/api/reflect', {
+    const resp = await fetch(RESOLVE_REFLECT, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    if (!resp.ok) {
+      let msg = 'HTTP ' + resp.status;
+      try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {}
+      throw new Error(msg);
+    }
     const data = await resp.json();
     const text = humanize(data.reflection || data.text || data.message || '');
     if (!text) throw new Error('Empty response');
@@ -8204,8 +8221,8 @@ async function askReflection() {
     runCelebration('reflection-received');
     status.textContent = 'Reflection added below.';
   } catch (err) {
-    status.classList.add('warn');
-    status.textContent = 'Reflection endpoint not yet wired (' + err.message + '). Payload below shows what would be sent.';
+    status.classList.add('error');
+    status.textContent = 'Could not reach the reflection endpoint (' + err.message + '). Try again in a moment.';
     preview.hidden = false;
     previewBody.textContent = JSON.stringify(payload, null, 2);
   }
