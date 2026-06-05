@@ -61,12 +61,9 @@ const CloudSync = (function () {
   function applyServerStateToLS(state) {
     if (!state || typeof state !== 'object') return 0;
     let n = 0;
-    const toRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (isSyncedKey(k) && !(k in state)) toRemove.push(k);
-    }
-    toRemove.forEach(k => localStorage.removeItem(k));
+    // v1.11.5: ADDITIVE merge — DO NOT remove local keys missing from
+    // server. Was nuking unpushed local notes when sendBeacon failed on
+    // tab close. Local-only keys now survive and push on next debounce.
     for (const k in state) {
       if (typeof state[k] === 'string') { localStorage.setItem(k, state[k]); n++; }
     }

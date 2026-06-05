@@ -4222,16 +4222,17 @@ const CloudSync = (function () {
   function applyServerStateToLS(state) {
     if (!state || typeof state !== 'object') return 0;
     let n = 0;
-    // First clear any local keys for this slug we'd otherwise stomp; this is
-    // the "server wins" policy. If the server has no value for a key the
-    // local copy is removed (else stale local writes would leak forever).
-    const toRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (isSyncedKey(k) && !(k in state)) toRemove.push(k);
-    }
-    toRemove.forEach(k => localStorage.removeItem(k));
-    // Then write server values in.
+    // v1.11.5: ADDITIVE merge — DO NOT remove local keys missing from
+    // server. The previous "server wins / delete missing" policy caused
+    // data loss when a user typed a note, the 1.2s debounce + sendBeacon
+    // push didn't complete before tab close (mobile Safari + some
+    // network conditions), and the next page load wiped the unpushed
+    // note because cloud didn't know about it. Now: server values
+    // overwrite local for the same key (server wins for known keys),
+    // but local-only keys survive and push on the next debounce cycle.
+    // Trade-off: a key deleted on device A may persist on device B
+    // until device B writes the same key. Acceptable for personal
+    // note-taking; data preservation is the priority.
     for (const k in state) {
       if (typeof state[k] === 'string') {
         localStorage.setItem(k, state[k]);
@@ -4327,7 +4328,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.11.4';
+const VERSION = '1.11.5';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
