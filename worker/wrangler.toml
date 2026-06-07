@@ -18,3 +18,11 @@ ALLOWED_ORIGINS = "https://ramon-portal.pages.dev,https://pulse.feelopus.com,htt
 [[kv_namespaces]]
 binding = "STATE_KV"
 id = "ece4aa92d1464561ba09665ba3aba5f2"
+
+# v1.13.0: Tier 2 backup. Cron triggers mirrorAllToGitHub() every hour,
+# pushing each changed user state to a private GitHub repo at
+# users-data/<slug>.json. Requires GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO
+# secrets (set via wrangler secret put). GITHUB_BRANCH optional (defaults
+# to main). Without those secrets the cron is a silent no-op.
+[triggers]
+crons = ["0 * * * *"]

@@ -30,6 +30,12 @@
 /survey/admin           /dashboard-survey/admin  200
 /survey/admin/          /dashboard-survey/admin  200
 
+# v1.13 — Users admin (live KV read of every user's state)
+/users-admin            /users-admin/  200
+/users-admin/           /users-admin/  200
+/users                  /users-admin/  200
+/users/                 /users-admin/  200
+
 # Trailing-slash variants are the matchers because Cloudflare Pages
 # auto-adds a trailing slash before our rules fire (308 redirect from
 # /paul to /paul/). The 200 rewrite then catches the trailing-slash

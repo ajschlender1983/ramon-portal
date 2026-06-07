@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#160F25">
+<meta name="robots" content="noindex,nofollow">
+<title>OPUS — users admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #1F1632; --void-deep: #160F25; --surface: #2A2042;
+  --light: #E4E1E6; --mid: #9A90A3; --dim: #635C6E; --dimmer: #3D384A;
+  --teal: #6ADFD9; --gold: #FFD764; --magenta: #C22FCD; --accent-bright: #7B6FA8;
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body {
+  background: linear-gradient(180deg, var(--void) 0%, var(--void-deep) 100%);
+  color: var(--light); font-family: var(--sans);
+  font-size: 14px; line-height: 1.55;
+  min-height: 100vh; padding: 28px clamp(16px, 4vw, 40px) 120px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+.brand {
+  font-family: var(--serif); font-style: italic;
+  letter-spacing: 0.20em; text-transform: uppercase;
+  font-size: 12px; color: var(--mid);
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.brand .mark { color: var(--light); font-weight: 500; font-style: normal; }
+.brand .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); opacity: 0.6; }
+
+h1 {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(26px, 3.4vw, 34px);
+  color: var(--light); line-height: 1.1;
+  margin-bottom: 10px;
+}
+h1 em { color: var(--teal); font-style: italic; }
+.subtle { color: var(--mid); font-size: 13px; margin-bottom: 24px; }
+
+.gate {
+  max-width: 480px; margin: 80px auto;
+  padding: 36px 32px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  text-align: center;
+}
+.gate h2 {
+  font-family: var(--serif); font-weight: 300;
+  font-size: 22px; color: var(--light);
+  margin-bottom: 14px;
+}
+.gate p { color: var(--mid); font-size: 13px; margin-bottom: 22px; }
+.gate input {
+  width: 100%; padding: 12px 14px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--light); font-family: monospace;
+  font-size: 13px; letter-spacing: 0.04em;
+  margin-bottom: 14px;
+}
+.gate input:focus { outline: none; border-color: var(--teal); }
+.gate button {
+  width: 100%; padding: 11px 16px;
+  background: var(--gold); color: #1A132A;
+  border: none; border-radius: 8px;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 13px; letter-spacing: 0.08em;
+  text-transform: uppercase; cursor: pointer;
+}
+.gate button:hover { filter: brightness(1.05); }
+.gate.error { border-color: rgba(222,21,69,0.45); }
+.gate.error .err {
+  color: #DE1545; font-size: 12px;
+  margin-bottom: 14px;
+  font-family: monospace;
+}
+
+.summary {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 26px;
+  padding: 14px 18px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+}
+.summary-stat {
+  display: flex; flex-direction: column; gap: 2px;
+  padding-right: 18px;
+  border-right: 1px solid var(--glass-border);
+}
+.summary-stat:last-child { border-right: none; }
+.summary-value {
+  font-family: var(--serif); font-style: italic;
+  font-size: 22px; color: var(--gold);
+  line-height: 1;
+}
+.summary-label {
+  font-size: 10px; letter-spacing: 0.14em;
+  color: var(--mid); text-transform: uppercase;
+}
+.summary-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.summary-actions button {
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--mid); font-family: var(--sans);
+  font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; cursor: pointer;
+}
+.summary-actions button:hover {
+  color: var(--light); border-color: var(--accent-bright);
+}
+
+.users { display: flex; flex-direction: column; gap: 22px; }
+.user-card {
+  background: linear-gradient(180deg, rgba(31,24,36,0.62), rgba(20,14,28,0.62));
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--accent-bright);
+  border-radius: 12px;
+  padding: 22px 24px;
+}
+.user-head {
+  display: flex; align-items: baseline; gap: 14px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.user-name {
+  font-family: var(--serif); font-style: italic;
+  font-size: 22px; color: var(--light);
+}
+.user-slug {
+  font-family: monospace; font-size: 11px;
+  color: var(--dim); letter-spacing: 0.04em;
+}
+.user-visit {
+  margin-left: auto;
+  font-size: 11px; color: var(--mid);
+  letter-spacing: 0.08em;
+}
+.user-stats {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.user-stat {
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  font-size: 11px; color: var(--mid);
+  letter-spacing: 0.04em;
+}
+.user-stat.lit { color: var(--gold); border-color: rgba(255,215,100,0.32); }
+.user-stat.empty { color: var(--dim); }
+
+.section { margin-top: 16px; }
+.section-title {
+  font-size: 11px; letter-spacing: 0.18em;
+  color: var(--mid); text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.empty-line {
+  font-family: var(--serif); font-style: italic;
+  font-size: 13px; color: var(--dim);
+  padding: 6px 0;
+}
+.note-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 60px;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.05);
+  align-items: start;
+}
+.note-row:last-child { border-bottom: none; }
+@media (max-width: 720px) {
+  .note-row { grid-template-columns: 1fr; }
+}
+.note-session {
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: var(--light);
+}
+.note-body { display: flex; flex-direction: column; gap: 8px; }
+.note-when {
+  font-size: 10px; letter-spacing: 0.14em;
+  color: var(--teal); text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.note-text {
+  font-size: 13px; color: var(--light);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.note-text.empty { color: var(--dim); font-style: italic; }
+.note-wow {
+  text-align: center;
+  font-family: var(--serif); font-style: italic;
+  font-size: 20px; color: var(--gold);
+  line-height: 1;
+  align-self: start;
+  padding-top: 4px;
+}
+.note-wow.empty { color: var(--dim); font-size: 13px; }
+
+.refl-row {
+  padding: 14px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.05);
+}
+.refl-row:last-child { border-bottom: none; }
+.refl-head {
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: var(--gold);
+  margin-bottom: 8px;
+}
+.refl-text {
+  font-family: var(--serif);
+  font-size: 14px; color: var(--light);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+details.raw {
+  margin-top: 18px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+}
+details.raw summary {
+  cursor: pointer;
+  font-size: 10px; letter-spacing: 0.18em;
+  color: var(--dim); text-transform: uppercase;
+}
+details.raw pre {
+  margin-top: 12px;
+  padding: 10px;
+  background: #0a0710;
+  border-radius: 6px;
+  font-size: 11px; line-height: 1.5;
+  color: var(--mid);
+  max-height: 360px; overflow: auto;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+.loading {
+  text-align: center; color: var(--mid);
+  font-style: italic; padding: 60px 0;
+}
+.no-users {
+  text-align: center; color: var(--mid);
+  font-style: italic; padding: 40px 0;
+}
+</style>
+</head>
+<body>
+
+<div id="gate-mount"></div>
+<div id="app-mount" class="wrap" hidden></div>
+
+<script>
+(function () {
+  const WORKER = 'https://ramon-resolver.ajschlender.workers.dev';
+  const STATE_ALL = WORKER + '/state/all';
+  const SS_KEY = 'usersAdmin.token.v1';
+
+  const DISPLAY_NAMES = {
+    'paul-x8t3m': 'Paul',
+    'ramon-r9k2x': 'Ramon',
+    'amber-r9k2x': 'Amber',
+    'sierra-m2k7w': 'Sierra',
+    'adam-q7n4d': 'Adam'
+  };
+
+  function el(tag, attrs, kids) {
+    const n = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === 'class') n.className = attrs[k];
+      else if (k === 'text') n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    if (kids) (Array.isArray(kids) ? kids : [kids]).forEach(c => {
+      if (c == null) return;
+      n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    });
+    return n;
+  }
+  function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+
+  function getTokenFromUrl() {
+    const m = location.search.match(/[?&]key=([^&]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function getStoredToken() {
+    try { return sessionStorage.getItem(SS_KEY); } catch { return null; }
+  }
+  function storeToken(t) {
+    try { sessionStorage.setItem(SS_KEY, t); } catch {}
+  }
+
+  function renderGate(errorMsg) {
+    const mount = document.getElementById('gate-mount');
+    clear(mount);
+    const app = document.getElementById('app-mount');
+    if (app) app.hidden = true;
+    const wrap = el('div', { class: 'wrap' });
+    wrap.appendChild(el('div', { class: 'brand' }, [
+      el('span', { class: 'mark', text: 'OPUS' }),
+      el('span', { class: 'dot' }),
+      el('span', { text: 'users admin' })
+    ]));
+    const gate = el('div', { class: 'gate' + (errorMsg ? ' error' : '') });
+    gate.appendChild(el('h2', { text: 'Admin access' }));
+    gate.appendChild(el('p', { text: 'Paste the admin token to view all users.' }));
+    if (errorMsg) gate.appendChild(el('div', { class: 'err', text: errorMsg }));
+    const input = el('input', { type: 'password', placeholder: 'admin token', autocomplete: 'off' });
+    gate.appendChild(input);
+    const btn = el('button', { text: 'Enter' });
+    btn.addEventListener('click', () => {
+      const t = input.value.trim();
+      if (!t) return;
+      storeToken(t);
+      const url = new URL(location.href);
+      url.searchParams.set('key', t);
+      location.href = url.toString();
+    });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
+    gate.appendChild(btn);
+    wrap.appendChild(gate);
+    mount.appendChild(wrap);
+  }
+
+  function fmtTs(ts) {
+    if (!ts) return '—';
+    try {
+      const d = new Date(Number(ts));
+      const now = Date.now();
+      const ago = Math.floor((now - d.getTime()) / 1000);
+      if (ago < 60) return ago + 's ago';
+      if (ago < 3600) return Math.floor(ago/60) + 'm ago';
+      if (ago < 86400) return Math.floor(ago/3600) + 'h ago';
+      return d.toLocaleString();
+    } catch { return String(ts); }
+  }
+
+  function parseLS(state, suffix) {
+    const k = Object.keys(state).find(k => k.endsWith(suffix));
+    if (!k) return null;
+    try { return JSON.parse(state[k]); } catch { return null; }
+  }
+  function displayNameFor(slug) {
+    if (DISPLAY_NAMES[slug]) return DISPLAY_NAMES[slug];
+    const head = slug.split('-')[0];
+    return head.charAt(0).toUpperCase() + head.slice(1);
+  }
+  function slugFromNoteKey(k) {
+    const ix = k.indexOf('__');
+    return ix > -1 ? { slug: k.slice(0, ix), when: k.slice(ix+2) } : null;
+  }
+
+  function buildUserCard(user) {
+    const state = user.state || {};
+    const notes = parseLS(state, '.notes.v1') || {};
+    const wow = parseLS(state, '.wow.v1') || {};
+    const reflections = parseLS(state, '.reflections.v1') || {};
+    const sessionReflections = parseLS(state, '.sessionReflections.v1') || {};
+    const snapshots = parseLS(state, '.snapshots.v1') || {};
+    const sessionFields = parseLS(state, '.sessionFields.v1') || {};
+    const weekFields = parseLS(state, '.weekFields.v1') || {};
+    const examples = parseLS(state, '.examples.v1') || [];
+
+    const sessionSlugSet = new Set();
+    Object.keys(notes).forEach(k => {
+      const m = slugFromNoteKey(k);
+      if (m) sessionSlugSet.add(m.slug);
+    });
+    Object.keys(wow).forEach(k => sessionSlugSet.add(k));
+    Object.keys(sessionReflections).forEach(k => sessionSlugSet.add(k));
+    Object.keys(sessionFields).forEach(k => sessionSlugSet.add(k));
+
+    const wowCount = Object.values(wow).filter(v => Number.isInteger(v) && v >= 1).length;
+    const reflCount = Object.keys(sessionReflections).filter(k => sessionReflections[k] && sessionReflections[k].text).length;
+    const snapCount = Object.keys(snapshots).length;
+    const noteCount = Object.values(notes).filter(v => typeof v === 'string' && v.trim().length).length;
+
+    const card = el('div', { class: 'user-card' });
+
+    card.appendChild(el('div', { class: 'user-head' }, [
+      el('div', { class: 'user-name', text: displayNameFor(user.slug) }),
+      el('div', { class: 'user-slug', text: user.slug }),
+      el('div', { class: 'user-visit', text: 'last write ' + fmtTs(user.ts) })
+    ]));
+
+    const stats = el('div', { class: 'user-stats' });
+    function stat(label, n) {
+      stats.appendChild(el('div', { class: 'user-stat ' + (n ? 'lit' : 'empty'), text: n + ' ' + label }));
+    }
+    stat('sessions touched', sessionSlugSet.size);
+    stat('notes', noteCount);
+    stat('WOW set', wowCount);
+    stat('reflections', reflCount);
+    stat('snapshots', snapCount);
+    if (Object.keys(weekFields).length) stat('week captures', Object.keys(weekFields).length);
+    if (Object.keys(sessionFields).length) stat('session captures', Object.keys(sessionFields).length);
+    if (Array.isArray(examples) && examples.length) stat('examples', examples.length);
+    card.appendChild(stats);
+
+    const notesSec = el('div', { class: 'section' });
+    notesSec.appendChild(el('div', { class: 'section-title', text: 'Notes & WOW per session' }));
+    if (!sessionSlugSet.size) {
+      notesSec.appendChild(el('div', { class: 'empty-line', text: 'No session notes yet.' }));
+    } else {
+      Array.from(sessionSlugSet).sort().forEach(slug => {
+        const before = (notes[slug + '__before'] || '').trim();
+        const after = (notes[slug + '__after'] || '').trim();
+        const w = wow[slug];
+        if (!before && !after && !Number.isInteger(w)) return;
+        const row = el('div', { class: 'note-row' });
+        row.appendChild(el('div', { class: 'note-session', text: slug }));
+        const body = el('div', { class: 'note-body' });
+        if (before) body.appendChild(el('div', null, [
+          el('div', { class: 'note-when', text: 'Before' }),
+          el('div', { class: 'note-text', text: before })
+        ]));
+        if (after) body.appendChild(el('div', null, [
+          el('div', { class: 'note-when', text: 'After' }),
+          el('div', { class: 'note-text', text: after })
+        ]));
+        if (!before && !after) {
+          body.appendChild(el('div', { class: 'note-text empty', text: '(no text written)' }));
+        }
+        row.appendChild(body);
+        row.appendChild(
+          (Number.isInteger(w) && w >= 1)
+            ? el('div', { class: 'note-wow', text: (w === 6 ? '✦' : String(w)) })
+            : el('div', { class: 'note-wow empty', text: '—' })
+        );
+        notesSec.appendChild(row);
+      });
+    }
+    card.appendChild(notesSec);
+
+    const reflEntries = Object.keys(sessionReflections)
+      .filter(k => sessionReflections[k] && sessionReflections[k].text)
+      .sort((a, b) => (sessionReflections[b].ts || 0) - (sessionReflections[a].ts || 0));
+    const reflSec = el('div', { class: 'section' });
+    reflSec.appendChild(el('div', { class: 'section-title', text: 'Reflections (' + reflEntries.length + ')' }));
+    if (!reflEntries.length) {
+      reflSec.appendChild(el('div', { class: 'empty-line', text: 'No reflections requested yet.' }));
+    } else {
+      reflEntries.forEach(slug => {
+        const r = sessionReflections[slug];
+        const row = el('div', { class: 'refl-row' });
+        row.appendChild(el('div', { class: 'refl-head', text: slug + ' · ' + fmtTs(r.ts) }));
+        row.appendChild(el('div', { class: 'refl-text', text: r.deepText || r.text || '' }));
+        reflSec.appendChild(row);
+      });
+    }
+    card.appendChild(reflSec);
+
+    const topRefl = Array.isArray(reflections) ? reflections : (reflections && reflections.text ? [reflections] : []);
+    if (topRefl.length) {
+      const sec = el('div', { class: 'section' });
+      sec.appendChild(el('div', { class: 'section-title', text: 'Top-level reflections' }));
+      topRefl.forEach(r => {
+        const row = el('div', { class: 'refl-row' });
+        row.appendChild(el('div', { class: 'refl-head', text: fmtTs(r.ts) }));
+        row.appendChild(el('div', { class: 'refl-text', text: r.text || '' }));
+        sec.appendChild(row);
+      });
+      card.appendChild(sec);
+    }
+
+    if (snapCount || Object.keys(weekFields).length) {
+      const sec = el('div', { class: 'section' });
+      sec.appendChild(el('div', { class: 'section-title', text: 'Biofield snapshots' }));
+      Object.keys(snapshots).sort().forEach(k => {
+        const s = snapshots[k];
+        const auric = (typeof s.auricMeters === 'number') ? s.auricMeters.toFixed(1) + 'm' : '';
+        const hawk = s.hawkinsTier || (s.hawkinsLevel ? String(s.hawkinsLevel) : '');
+        sec.appendChild(el('div', { class: 'user-stat lit', text: 'week ' + k + ' · ' + [auric, hawk].filter(Boolean).join(' · ') }));
+      });
+      card.appendChild(sec);
+    }
+
+    const raw = el('details', { class: 'raw' });
+    raw.appendChild(el('summary', { text: 'Raw state JSON · ' + Object.keys(state).length + ' keys' }));
+    raw.appendChild(el('pre', { text: JSON.stringify(state, null, 2) }));
+    card.appendChild(raw);
+
+    return card;
+  }
+
+  function renderApp(data) {
+    const app = document.getElementById('app-mount');
+    clear(app);
+    app.removeAttribute('hidden');
+    clear(document.getElementById('gate-mount'));
+
+    app.appendChild(el('div', { class: 'brand' }, [
+      el('span', { class: 'mark', text: 'OPUS' }),
+      el('span', { class: 'dot' }),
+      el('span', { text: 'users admin · live from KV' })
+    ]));
+    app.appendChild(el('h1', null, [
+      'All users, ',
+      el('em', { text: 'mirrored' }),
+      '.'
+    ]));
+    app.appendChild(el('div', { class: 'subtle', text: 'Live read of cloud state. Hourly cron also pushes to a private GitHub repo when GITHUB_* secrets are set.' }));
+
+    const users = (data.users || []).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+
+    let totalNotes = 0, totalWow = 0, totalRefl = 0, totalSnaps = 0;
+    users.forEach(u => {
+      const notes = parseLS(u.state || {}, '.notes.v1') || {};
+      const wow = parseLS(u.state || {}, '.wow.v1') || {};
+      const sr = parseLS(u.state || {}, '.sessionReflections.v1') || {};
+      const sn = parseLS(u.state || {}, '.snapshots.v1') || {};
+      totalNotes += Object.values(notes).filter(v => typeof v === 'string' && v.trim().length).length;
+      totalWow += Object.values(wow).filter(v => Number.isInteger(v) && v >= 1).length;
+      totalRefl += Object.keys(sr).filter(k => sr[k] && sr[k].text).length;
+      totalSnaps += Object.keys(sn).length;
+    });
+
+    const summary = el('div', { class: 'summary' });
+    function sumStat(v, l) {
+      summary.appendChild(el('div', { class: 'summary-stat' }, [
+        el('div', { class: 'summary-value', text: String(v) }),
+        el('div', { class: 'summary-label', text: l })
+      ]));
+    }
+    sumStat(users.length, 'users');
+    sumStat(totalNotes, 'notes');
+    sumStat(totalWow, 'WOW set');
+    sumStat(totalRefl, 'reflections');
+    sumStat(totalSnaps, 'snapshots');
+
+    const actions = el('div', { class: 'summary-actions' });
+    const exportBtn = el('button', { text: 'Export JSON' });
+    exportBtn.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'ramon-portal-users-' + new Date().toISOString().slice(0,10) + '.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 0);
+    });
+    actions.appendChild(exportBtn);
+    const refreshBtn = el('button', { text: 'Refresh' });
+    refreshBtn.addEventListener('click', () => location.reload());
+    actions.appendChild(refreshBtn);
+    summary.appendChild(actions);
+    app.appendChild(summary);
+
+    if (!users.length) {
+      app.appendChild(el('div', { class: 'no-users', text: 'No user state in KV yet.' }));
+      return;
+    }
+    const list = el('div', { class: 'users' });
+    users.forEach(u => list.appendChild(buildUserCard(u)));
+    app.appendChild(list);
+  }
+
+  function showLoading() {
+    const app = document.getElementById('app-mount');
+    clear(app);
+    app.removeAttribute('hidden');
+    app.appendChild(el('div', { class: 'brand' }, [
+      el('span', { class: 'mark', text: 'OPUS' }),
+      el('span', { class: 'dot' }),
+      el('span', { text: 'users admin' })
+    ]));
+    app.appendChild(el('div', { class: 'loading', text: 'Loading user state from cloud…' }));
+  }
+
+  async function load() {
+    const token = getTokenFromUrl() || getStoredToken();
+    if (!token) { renderGate(); return; }
+    storeToken(token);
+    showLoading();
+    try {
+      const resp = await fetch(STATE_ALL + '?key=' + encodeURIComponent(token), {
+        headers: { 'x-admin-token': token }
+      });
+      if (resp.status === 401) {
+        try { sessionStorage.removeItem(SS_KEY); } catch {}
+        renderGate('Token rejected. Try again.');
+        return;
+      }
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      renderApp(data);
+    } catch (err) {
+      renderGate('Could not load: ' + (err.message || err));
+    }
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

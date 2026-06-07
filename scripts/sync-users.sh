@@ -42,6 +42,8 @@ manifest = {"generated_at": __import__("datetime").datetime.utcnow().isoformat()
             "slugs": []}
 for u in users:
     slug = u["slug"]
+    # Key order matches the cron mirror in worker.js so the two writers
+    # produce byte-identical files (no fight if both push to the same repo).
     record = {
         "slug": slug,
         "ts": u.get("ts"),
@@ -49,7 +51,7 @@ for u in users:
     }
     path = os.path.join(out_dir, f"{slug}.json")
     with open(path, "w") as f:
-        json.dump(record, f, indent=2, sort_keys=True)
+        json.dump(record, f, indent=2)
         f.write("\n")
     manifest["slugs"].append(slug)
     print(f"  wrote {path}")

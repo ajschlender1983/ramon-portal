@@ -9,3 +9,4 @@ worker/.wrangler/
 # scripts/sync-users.sh to populate; commit to a separate PRIVATE repo
 # if you want durable history. Do NOT commit to this (public) repo.
 users-data/
+.claude/

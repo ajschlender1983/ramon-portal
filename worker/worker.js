@@ -77,6 +77,24 @@ export default {
       return json({ error: 'method not allowed' }, 405, cors);
     }
 
+    /* v1.13.0: POST /mirror handled before JSON parse because the manual
+       trigger has no body. Same admin-token gate as /state/all. Returns
+       the same {total, changed, failed} summary the hourly cron produces.
+       Lets Adam test the mirror end-to-end without waiting for the next
+       cron tick. */
+    if (url.pathname === '/mirror') {
+      const tok = request.headers.get('x-admin-token') || url.searchParams.get('key') || '';
+      if (!env.ADMIN_TOKEN || tok !== env.ADMIN_TOKEN) {
+        return json({ error: 'unauthorized' }, 401, cors);
+      }
+      try {
+        const summary = await mirrorAllToGitHub(env);
+        return json(summary, 200, cors);
+      } catch (err) {
+        return json({ error: String(err && err.message || err) }, 502, cors);
+      }
+    }
+
     let payload;
     try { payload = await request.json(); }
     catch { return json({ error: 'invalid json body' }, 400, cors); }
@@ -112,6 +130,19 @@ export default {
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 502, cors);
     }
+  },
+
+  /* v1.13.0: hourly cron trigger. Pushes every KV user state that has
+     changed since the last mirror to a private GitHub repo, one JSON
+     file per slug at users-data/<slug>.json. waitUntil keeps the worker
+     alive past the controller-return so the API calls finish even when
+     the cron envelope is short. */
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(
+      mirrorAllToGitHub(env)
+        .then(summary => console.log('cron mirror complete:', JSON.stringify(summary)))
+        .catch(err => console.log('cron mirror failed:', String(err && err.message || err)))
+    );
   }
 };
 
@@ -717,6 +748,175 @@ async function readAllUserStates(env) {
   }
   out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
   return out;
+}
+
+/* ============================================================ v1.13.0: GitHub mirror (Tier 2 backup)
+
+   Hourly cron pushes every changed KV user state to a private GitHub repo
+   as users-data/<slug>.json. Same file shape scripts/sync-users.sh writes:
+     {"slug": "...", "ts": <number>, "state": {...}}
+
+   Skips unchanged users via a SHA-256 fingerprint stored in KV under
+   mirror:sha:<slug>. One user's failure is isolated. Capped at 30 mirrors
+   per run to stay well below GitHub's 5000 req/hr authed budget.
+
+   Required secrets (set via `wrangler secret put <NAME>`):
+     GITHUB_TOKEN   fine-grained PAT, Contents:Write on the target repo only
+     GITHUB_OWNER   GitHub user or org, e.g. ajschlender1983
+     GITHUB_REPO    repo name, e.g. ramon-portal-users-data
+     GITHUB_BRANCH  optional, defaults to "main"
+
+   Without GITHUB_TOKEN / GITHUB_OWNER / GITHUB_REPO the cron silently
+   no-ops and returns {error: 'mirror not configured'}. This lets the cron
+   trigger be deployed before secrets are wired up. */
+
+const MIRROR_MAX_PER_RUN = 30;
+const GITHUB_API = 'https://api.github.com';
+
+async function mirrorAllToGitHub(env) {
+  if (!env.GITHUB_TOKEN || !env.GITHUB_OWNER || !env.GITHUB_REPO) {
+    console.log('mirror not configured: missing GITHUB_TOKEN / GITHUB_OWNER / GITHUB_REPO');
+    return { error: 'mirror not configured' };
+  }
+  if (!env.STATE_KV) {
+    console.log('mirror skipped: STATE_KV not bound');
+    return { error: 'STATE_KV not bound' };
+  }
+
+  const owner = env.GITHUB_OWNER;
+  const repo = env.GITHUB_REPO;
+  const branch = env.GITHUB_BRANCH || 'main';
+
+  const users = await readAllUserStates(env);
+  const summary = { total: users.length, changed: 0, skipped: 0, failed: 0, capped: false };
+
+  let processed = 0;
+  for (const user of users) {
+    if (processed >= MIRROR_MAX_PER_RUN) {
+      summary.capped = true;
+      console.log('mirror cap reached at ' + MIRROR_MAX_PER_RUN + ', remaining users will retry next cron');
+      break;
+    }
+    processed++;
+    try {
+      const fileBody = { slug: user.slug, ts: user.ts, state: user.state };
+      const bodyJson = JSON.stringify(fileBody, null, 2) + '\n';
+      const contentSha = await sha256Hex(bodyJson);
+
+      // Compare against last mirrored SHA. Skip if unchanged to avoid noise commits.
+      const lastSha = await env.STATE_KV.get('mirror:sha:' + user.slug);
+      if (lastSha === contentSha) {
+        summary.skipped++;
+        continue;
+      }
+
+      const path = 'users-data/' + user.slug + '.json';
+      const ok = await putGitHubFile({
+        owner, repo, branch, path,
+        token: env.GITHUB_TOKEN,
+        contentBase64: base64EncodeUtf8(bodyJson),
+        commitMessage: 'mirror ' + user.slug + ' @ ' + new Date(user.ts || Date.now()).toISOString()
+      });
+
+      if (ok) {
+        await env.STATE_KV.put('mirror:sha:' + user.slug, contentSha);
+        summary.changed++;
+      } else {
+        summary.failed++;
+      }
+    } catch (err) {
+      summary.failed++;
+      console.log('mirror error for slug=' + user.slug + ': ' + String(err && err.message || err));
+    }
+  }
+
+  console.log('mirror summary: ' + JSON.stringify(summary));
+  return summary;
+}
+
+/* PUT (or create) a file via GitHub Contents API. Returns true on success,
+   false on benign failure (422 race, persistent 4xx). Throws only on
+   unexpected shapes. The caller catches per-user. */
+async function putGitHubFile({ owner, repo, branch, path, token, contentBase64, commitMessage }) {
+  const baseUrl = GITHUB_API + '/repos/' + owner + '/' + repo + '/contents/' + path;
+  const headers = {
+    'Authorization': 'Bearer ' + token,
+    'Accept': 'application/vnd.github+json',
+    'User-Agent': 'ramon-portal-mirror',
+    'Content-Type': 'application/json'
+  };
+
+  // First, GET the existing file to read its sha. 404 means create, 200 means update.
+  let existingSha = null;
+  const getResp = await fetch(baseUrl + '?ref=' + encodeURIComponent(branch), { headers });
+  if (getResp.status === 200) {
+    const data = await getResp.json();
+    if (data && typeof data.sha === 'string') existingSha = data.sha;
+  } else if (getResp.status === 404) {
+    existingSha = null;
+  } else if (getResp.status === 401 || getResp.status === 403) {
+    const text = await safeText(getResp);
+    console.log('github auth failure (' + getResp.status + ') on GET ' + path + ': ' + text);
+    return false;
+  } else {
+    const text = await safeText(getResp);
+    console.log('github GET ' + path + ' returned ' + getResp.status + ': ' + text);
+    // Continue as if create; PUT will fail loudly if something is truly wrong.
+  }
+
+  const putBody = {
+    message: commitMessage,
+    content: contentBase64,
+    branch
+  };
+  if (existingSha) putBody.sha = existingSha;
+
+  const putResp = await fetch(baseUrl, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(putBody)
+  });
+
+  if (putResp.status === 200 || putResp.status === 201) return true;
+
+  if (putResp.status === 422) {
+    // Most likely a sha mismatch race. Will retry next cron with fresh sha.
+    const text = await safeText(putResp);
+    console.log('github 422 for ' + path + ' (likely sha race), will retry next cron: ' + text);
+    return false;
+  }
+
+  const text = await safeText(putResp);
+  console.log('github PUT ' + path + ' failed ' + putResp.status + ': ' + text);
+  return false;
+}
+
+async function safeText(resp) {
+  try { return (await resp.text()).slice(0, 400); }
+  catch { return '(unreadable body)'; }
+}
+
+/* Workers runtime: btoa exists, but it only handles latin1. UTF-8 safe encode
+   via TextEncoder + chunked btoa. */
+function base64EncodeUtf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
+
+async function sha256Hex(str) {
+  const buf = new TextEncoder().encode(str);
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  const view = new Uint8Array(digest);
+  let hex = '';
+  for (let i = 0; i < view.length; i++) {
+    hex += view[i].toString(16).padStart(2, '0');
+  }
+  return hex;
 }
 
 async function readAllSurveyResponses(env) {
