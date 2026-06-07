@@ -4,3 +4,8 @@ worker/.dev.vars
 worker/.wrangler/
 .wrangler/
 *.log
+
+# User state mirror — contains personal notes. Run
+# scripts/sync-users.sh to populate; commit to a separate PRIVATE repo
+# if you want durable history. Do NOT commit to this (public) repo.
+users-data/

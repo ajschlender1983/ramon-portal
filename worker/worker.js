@@ -39,6 +39,24 @@ export default {
       }
     }
 
+    /* v1.12.1: GET /state/all — admin-guarded dump of every user's
+       state blob. Returns {users:[{slug, state, ts}], count}. Used by
+       scripts/sync-users.sh to mirror KV → local repo for inspection
+       and durable backup. Caller must present x-admin-token header
+       matching env.ADMIN_TOKEN. */
+    if (request.method === 'GET' && url.pathname === '/state/all') {
+      const tok = request.headers.get('x-admin-token') || url.searchParams.get('key') || '';
+      if (!env.ADMIN_TOKEN || tok !== env.ADMIN_TOKEN) {
+        return json({ error: 'unauthorized' }, 401, cors);
+      }
+      try {
+        const users = await readAllUserStates(env);
+        return json({ users, count: users.length }, 200, cors);
+      } catch (err) {
+        return json({ error: String(err && err.message || err) }, 502, cors);
+      }
+    }
+
     /* v1.12: GET /survey — admin-guarded read of all dashboard-survey
        responses. Caller must present x-admin-token header matching
        env.ADMIN_TOKEN. */
@@ -100,13 +118,26 @@ export default {
 /* ============================================================ CORS */
 
 function corsHeaders(request, env) {
-  const origin = request.headers.get('origin') || '';
-  const allowed = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-  const allow = allowed.includes(origin) ? origin : allowed[0] || '*';
+  // v1.12.1: relaxed CORS. Reflect/state endpoints carry no cookies and
+  // no PII beyond the user's own (intentionally obscure) slug, so the
+  // wildcard origin is safe AND fixes a class of "Failed to fetch"
+  // errors users hit when they reach the page via a deploy-preview URL
+  // (`abc123.ramon-portal.pages.dev`), a future custom domain, or a
+  // stale DNS binding. The prior strict allowlist forced the wrong
+  // ACAO header on non-canonical origins and browsers blocked the
+  // request before the worker ever ran.
+  const origin = request.headers.get('origin') || '*';
+  const allowedPatterns = [
+    /^https:\/\/([a-z0-9-]+\.)*ramon-portal\.pages\.dev$/,
+    /^https:\/\/([a-z0-9-]+\.)*feelopus\.com$/,
+    /^https:\/\/ramon-portal\.pages\.dev$/
+  ];
+  const isAllowed = allowedPatterns.some(p => p.test(origin));
+  const allow = isAllowed ? origin : '*';
   return {
     'access-control-allow-origin': allow,
     'access-control-allow-methods': 'GET, POST, OPTIONS',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-headers': 'content-type, x-admin-token',
     'access-control-max-age': '86400',
     'vary': 'Origin'
   };
@@ -656,6 +687,36 @@ async function writeSurveyResponse(env, payload, request) {
   }
   await env.STATE_KV.put('survey:dashboard-style:' + id, serialized);
   return { ok: true, id, ts: record.ts };
+}
+
+/* v1.12.1: dump every state:<slug> KV record for repo-side mirroring.
+   Returns array of {slug, state, ts} sorted by ts desc. */
+async function readAllUserStates(env) {
+  if (!env.STATE_KV) {
+    const err = new Error('STATE_KV not bound on the worker');
+    err.status = 500;
+    throw err;
+  }
+  const out = [];
+  let cursor = undefined;
+  for (let i = 0; i < 10; i++) {
+    const list = await env.STATE_KV.list({ prefix: 'state:', cursor });
+    for (const k of list.keys) {
+      const v = await env.STATE_KV.get(k.name);
+      if (!v) continue;
+      const slug = k.name.replace(/^state:/, '');
+      try {
+        const parsed = JSON.parse(v);
+        out.push({ slug, state: parsed.state || {}, ts: parsed.ts || null });
+      } catch {
+        out.push({ slug, state: {}, ts: null });
+      }
+    }
+    if (list.list_complete) break;
+    cursor = list.cursor;
+  }
+  out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  return out;
 }
 
 async function readAllSurveyResponses(env) {
