@@ -1105,6 +1105,20 @@ async function writeSignup(env, rec) {
   await env.STATE_KV.put('signup:' + rec.slug, JSON.stringify(rec));
 }
 
+/* v1.14.2: read-merge-write for status transitions. The email logger
+   (sendLifecycleEmail, running in waitUntil) and the generate path both
+   do read-modify-write on the same record; whoever writes last with a
+   stale copy clobbers the other's fields. QA caught the 'received'
+   email log entry vanishing this way. All status writes now re-read
+   the fresh record and patch only their own fields. */
+async function updateSignup(env, slug, patch) {
+  const fresh = await readSignup(env, slug);
+  if (!fresh) return null;
+  Object.assign(fresh, patch);
+  await writeSignup(env, fresh);
+  return fresh;
+}
+
 async function readAllSignups(env) {
   const out = [];
   let cursor = undefined;
@@ -1213,27 +1227,23 @@ async function handleGenerate(env, payload, ctx) {
     return { status: 410, body: { slug, status: 'failed' } };
   }
 
-  rec.status = 'generating';
-  rec.lockTs = Date.now();
-  rec.attempts = (rec.attempts || 0) + 1;
-  await writeSignup(env, rec);
+  const attempts = (rec.attempts || 0) + 1;
+  await updateSignup(env, slug, { status: 'generating', lockTs: Date.now(), attempts });
+  rec.attempts = attempts;
 
   try {
     await runGeneration(env, rec);
-    rec.status = 'ready';
-    rec.readyTs = Date.now();
-    rec.error = null;
-    await writeSignup(env, rec);
-    if (ctx) ctx.waitUntil(sendLifecycleEmail(env, rec, 'ready'));
+    const ready = await updateSignup(env, slug, { status: 'ready', readyTs: Date.now(), error: null });
+    if (ctx) ctx.waitUntil(sendLifecycleEmail(env, ready || rec, 'ready'));
     return { status: 200, body: { slug, status: 'ready', portalUrl: portalUrlFor(slug, env) } };
   } catch (err) {
-    rec.status = rec.attempts >= MAX_GENERATION_ATTEMPTS ? 'failed' : 'pending';
-    rec.error = String(err && err.message || err).slice(0, 400);
-    await writeSignup(env, rec);
-    if (rec.status === 'failed' && !rec.failNotified && ctx) {
-      ctx.waitUntil(sendLifecycleEmail(env, rec, 'failed-admin'));
+    const failed = attempts >= MAX_GENERATION_ATTEMPTS;
+    const error = String(err && err.message || err).slice(0, 400);
+    const after = await updateSignup(env, slug, { status: failed ? 'failed' : 'pending', error });
+    if (failed && after && !after.failNotified && ctx) {
+      ctx.waitUntil(sendLifecycleEmail(env, after, 'failed-admin'));
     }
-    return { status: 502, body: { slug, status: rec.status, error: rec.error } };
+    return { status: 502, body: { slug, status: failed ? 'failed' : 'pending', error } };
   }
 }
 
@@ -1540,30 +1550,26 @@ async function sweepSignups(env) {
       if (rec.status === 'generating' && rec.lockTs && (now - rec.lockTs) > SWEEP_STUCK_MS) {
         rec.status = 'pending';
         rec.lockTs = null;
-        await writeSignup(env, rec);
+        await updateSignup(env, rec.slug, { status: 'pending', lockTs: null });
       }
       // Pending with attempts left -> regenerate here in the cron.
       if (rec.status === 'pending' && (rec.attempts || 0) < MAX_GENERATION_ATTEMPTS
           && (now - rec.createdTs) > 120000 && regenBudget > 0 && env.ANTHROPIC_API_KEY) {
         regenBudget--;
-        rec.status = 'generating';
-        rec.lockTs = Date.now();
-        rec.attempts = (rec.attempts || 0) + 1;
-        await writeSignup(env, rec);
+        const attempts = (rec.attempts || 0) + 1;
+        await updateSignup(env, rec.slug, { status: 'generating', lockTs: Date.now(), attempts });
+        rec.attempts = attempts;
         try {
           await runGeneration(env, rec);
-          rec.status = 'ready';
-          rec.readyTs = Date.now();
-          rec.error = null;
-          await writeSignup(env, rec);
-          await sendLifecycleEmail(env, rec, 'ready');
+          const ready = await updateSignup(env, rec.slug, { status: 'ready', readyTs: Date.now(), error: null });
+          await sendLifecycleEmail(env, ready || rec, 'ready');
           summary.regenerated++;
         } catch (err) {
-          rec.status = rec.attempts >= MAX_GENERATION_ATTEMPTS ? 'failed' : 'pending';
-          rec.error = String(err && err.message || err).slice(0, 400);
-          await writeSignup(env, rec);
-          if (rec.status === 'failed' && !rec.failNotified) {
-            await sendLifecycleEmail(env, rec, 'failed-admin');
+          const failed = attempts >= MAX_GENERATION_ATTEMPTS;
+          const error = String(err && err.message || err).slice(0, 400);
+          const after = await updateSignup(env, rec.slug, { status: failed ? 'failed' : 'pending', error });
+          if (failed && after && !after.failNotified) {
+            await sendLifecycleEmail(env, after, 'failed-admin');
             summary.failed++;
           }
         }
