@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#160F25">
+<meta name="robots" content="noindex,nofollow">
+<title>OPUS — bring your reading</title>
+<meta name="description" content="Bring what you were given. We'll build around it.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='100' cy='100' r='84' fill='none' stroke='%236ADFD9' stroke-width='6'/%3E%3Ccircle cx='100' cy='100' r='52' fill='none' stroke='%23C22FCD' stroke-width='4'/%3E%3Ccircle cx='100' cy='100' r='14' fill='%236ADFD9'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #1F1632; --void-deep: #160F25;
+  --surface: #2A2042;
+  --light: #E4E1E6; --mid: #9A90A3; --dim: #635C6E;
+  --teal: #6ADFD9; --gold: #FFD764; --magenta: #C22FCD;
+  --accent-bright: #7B6FA8;
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(ellipse 90% 60% at 70% -10%, rgba(123,111,168,0.16), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 20% 110%, rgba(106,223,217,0.07), transparent 60%),
+    linear-gradient(180deg, var(--void) 0%, var(--void-deep) 100%);
+  background-attachment: fixed;
+  color: var(--light); font-family: var(--sans);
+  font-size: 15px; line-height: 1.65;
+  min-height: 100vh;
+  padding: 48px clamp(20px, 5vw, 48px) 140px;
+}
+.wrap { max-width: 620px; margin: 0 auto; }
+
+.brand {
+  font-family: var(--serif); font-style: italic;
+  letter-spacing: 0.20em; text-transform: uppercase;
+  font-size: 12px; color: var(--mid);
+  margin-bottom: 48px;
+  display: flex; align-items: center; gap: 10px;
+}
+.brand .mark { color: var(--light); font-weight: 500; font-style: normal; }
+.brand .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); opacity: 0.6; }
+
+.eyebrow {
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: var(--teal);
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+}
+h1 {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(32px, 6vw, 44px);
+  line-height: 1.12; color: var(--light);
+  margin-bottom: 20px;
+  letter-spacing: -0.01em;
+}
+.lede {
+  font-size: 15px; color: var(--mid);
+  margin-bottom: 48px;
+  max-width: 54ch;
+}
+
+.field { margin-bottom: 34px; opacity: 1; transition: opacity 0.6s ease; }
+.field.dimmed { opacity: 0.38; pointer-events: none; }
+.field label {
+  display: block;
+  font-family: var(--serif); font-style: italic;
+  font-size: 19px; color: var(--light);
+  margin-bottom: 10px;
+}
+.field input[type="text"], .field input[type="email"], .field textarea {
+  width: 100%;
+  background: rgba(0,0,0,0.28);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  color: var(--light);
+  font-family: var(--sans); font-size: 15px;
+  padding: 14px 16px;
+  transition: border-color 0.3s ease;
+}
+.field input:focus, .field textarea:focus {
+  outline: none;
+  border-color: rgba(106,223,217,0.45);
+}
+.field textarea {
+  min-height: 220px;
+  resize: vertical;
+  line-height: 1.6;
+}
+.micro {
+  font-size: 12px; color: var(--dim);
+  margin-top: 8px;
+  line-height: 1.55;
+}
+.guidance {
+  font-size: 13px; color: var(--mid);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+/* Honeypot: visually gone, present in DOM for bots */
+.hp { position: absolute; left: -9999px; top: -9999px; opacity: 0; height: 0; overflow: hidden; }
+
+.soft-warn {
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: var(--gold);
+  margin-top: 10px;
+  display: none;
+  line-height: 1.55;
+}
+.soft-warn.visible { display: block; }
+
+.actions { margin-top: 44px; }
+.btn-place {
+  display: inline-block;
+  background: var(--gold); color: #1A132A;
+  border: none; border-radius: 10px;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 14px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 15px 34px;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.btn-place:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.btn-place:disabled { opacity: 0.45; cursor: default; transform: none; }
+.submit-err {
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: var(--gold);
+  margin-top: 14px; display: none;
+}
+.submit-err.visible { display: block; }
+
+.disclosure {
+  margin-top: 36px;
+  padding: 18px 20px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  font-size: 12.5px; color: var(--mid);
+  line-height: 1.7;
+}
+.disclosure strong { color: var(--light); font-weight: 500; }
+
+.soft-path {
+  margin-top: 40px;
+  font-size: 12px; color: var(--dim);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* ---------- Waiting screen ---------- */
+#waiting { display: none; text-align: center; padding-top: 8vh; }
+body.waiting #form-view { display: none; }
+body.waiting #waiting { display: block; }
+
+.breath-dot {
+  width: 11px; height: 11px;
+  margin: 0 auto 44px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 22px rgba(255,215,100,0.6);
+  animation: breath 10.91s ease-in-out infinite;
+}
+@keyframes breath {
+  0%, 100% { transform: scale(0.78); opacity: 0.5; }
+  50%      { transform: scale(1.25); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .breath-dot { animation: none; opacity: 0.8; }
+}
+#waiting h2 {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(26px, 4.5vw, 34px);
+  color: var(--light);
+  margin-bottom: 14px;
+}
+.wait-sub {
+  font-size: 14px; color: var(--mid);
+  margin-bottom: 56px;
+}
+.stage-line {
+  font-family: var(--serif); font-style: italic;
+  font-size: 17px; color: var(--teal);
+  min-height: 28px;
+  transition: opacity 0.9s ease;
+  letter-spacing: 0.03em;
+}
+.stage-line.fading { opacity: 0; }
+.wait-leave {
+  margin-top: 64px;
+  font-size: 12px; color: var(--dim);
+  font-style: italic;
+}
+
+/* Failure state */
+body.failed .breath-dot { animation: none; opacity: 0.35; }
+#fail-block { display: none; margin-top: 30px; }
+body.failed #fail-block { display: block; }
+body.failed .stage-line, body.failed .wait-leave { display: none; }
+#fail-block .fail-line {
+  font-family: var(--serif); font-style: italic;
+  font-size: 17px; color: var(--light);
+  margin-bottom: 26px;
+}
+.btn-retry {
+  background: transparent;
+  border: 1px solid rgba(255,215,100,0.5);
+  border-radius: 10px;
+  color: var(--gold);
+  font-family: var(--sans); font-weight: 500;
+  font-size: 13px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 30px;
+  cursor: pointer;
+}
+.btn-retry:hover { background: rgba(255,215,100,0.06); }
+.fail-sub {
+  margin-top: 20px;
+  font-size: 12.5px; color: var(--dim);
+  font-style: italic;
+}
+
+/* Ready state */
+#ready-block { display: none; margin-top: 10px; }
+body.ready #ready-block { display: block; }
+body.ready .stage-line, body.ready .wait-leave, body.ready .wait-sub { display: none; }
+body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
+#ready-block .ready-line {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(22px, 4vw, 28px);
+  color: var(--light);
+  margin-bottom: 30px;
+}
+.btn-enter {
+  display: inline-block;
+  background: var(--gold); color: #1A132A;
+  border-radius: 10px;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 14px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 15px 38px;
+  text-decoration: none;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.btn-enter:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.ready-sub {
+  margin-top: 24px;
+  font-size: 13px; color: var(--mid);
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand">
+    <span class="mark">OPUS</span>
+    <span class="dot"></span>
+    <span>SoundBed</span>
+  </div>
+
+  <div id="form-view">
+    <div class="eyebrow">your reading, made into a room</div>
+    <h1>Bring what you were given. We'll build around it.</h1>
+    <p class="lede">If a practitioner has read your field, paste their words below. Within a few minutes you'll have a private portal: your reading mirrored back, and a four-week path through the SoundBed catalog drawn from it.</p>
+
+    <form id="signup-form" autocomplete="off" novalidate>
+      <div class="field">
+        <label for="f-name">What should we call you?</label>
+        <input type="text" id="f-name" name="name" placeholder="First name is fine" maxlength="80">
+      </div>
+
+      <div class="field">
+        <label for="f-email">Where should we send the door?</label>
+        <input type="email" id="f-email" name="email" placeholder="you@somewhere.com" maxlength="254">
+        <div class="micro">Two emails: one when we receive the reading, one when your portal is ready. Nothing else unless you ask.</div>
+      </div>
+
+      <div class="field">
+        <label for="f-reading">The reading</label>
+        <div class="guidance">Paste the reading exactly as it arrived. Headings, strange spacing, half-sentences, all of it belongs. Don't clean it up; we read it the way your practitioner wrote it.</div>
+        <textarea id="f-reading" name="reading" placeholder="Paste here. ORIC FIELD, CHAKRA SCAN, fragments, notes, however it came to you." maxlength="8000"></textarea>
+        <div class="micro">Only have it as a photo? Type out whatever you can read. Even pieces are workable.</div>
+        <div class="soft-warn" id="short-warn">That looks like a few words. If that's the whole reading, it's enough, go ahead. If there's more, the map gets truer with the full text.</div>
+      </div>
+
+      <!-- Honeypot: humans never see this; bots fill it. -->
+      <div class="hp" aria-hidden="true">
+        <label for="f-website">Website</label>
+        <input type="text" id="f-website" name="website" tabindex="-1">
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn-place" id="place-btn">Place the reading</button>
+        <div class="submit-err" id="submit-err"></div>
+      </div>
+    </form>
+
+    <div class="disclosure">
+      <strong>What this is, plainly.</strong> Your portal is written with the help of AI, built only from the words you give us. It reflects; it never concludes. Nothing here is a diagnosis, a treatment, or a truth about you. Your body remains the source of truth, and you can disagree with any line. The portal lives at a private link that works like a key: anyone holding it can open the room, so keep it close and don't post it publicly. What you write inside stays inside. Never sold, never shared.
+    </div>
+
+    <div class="soft-path">No reading yet? Ask the person who sent you here, or write to us and we'll hold a place until there's a way in without one.</div>
+  </div>
+
+  <div id="waiting">
+    <div class="breath-dot" aria-hidden="true"></div>
+    <h2>Received. Your portal is being made.</h2>
+    <div class="wait-sub">This takes a minute or two. Nothing is asked of you. You could close your eyes.</div>
+    <div class="stage-line" id="stage-line">reading what you shared…</div>
+    <div class="wait-leave">If you'd rather not wait here, close this page. We'll email the door the moment it's ready.</div>
+
+    <div id="fail-block">
+      <div class="fail-line">Something on our side didn't settle. Your reading is safe. We still have it.</div>
+      <button class="btn-retry" id="retry-btn">Try again</button>
+      <div class="fail-sub">If it happens twice, just close this page. We'll finish your portal and email you the door.</div>
+    </div>
+
+    <div id="ready-block">
+      <div class="ready-line">The room is ready.</div>
+      <a class="btn-enter" id="enter-link" href="#">Enter your portal</a>
+      <div class="ready-sub">We've also emailed this link to you. It's your key. Keep it close.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const WORKER = 'https://ramon-resolver.ajschlender.workers.dev';
+  const STAGES = [
+    'reading what you shared…',
+    'sitting with the places that ask for attention…',
+    'choosing sessions from the catalog…',
+    'laying out your four weeks…',
+    'setting the room…'
+  ];
+
+  const form = document.getElementById('signup-form');
+  const nameEl = document.getElementById('f-name');
+  const emailEl = document.getElementById('f-email');
+  const readingEl = document.getElementById('f-reading');
+  const websiteEl = document.getElementById('f-website');
+  const placeBtn = document.getElementById('place-btn');
+  const submitErr = document.getElementById('submit-err');
+  const shortWarn = document.getElementById('short-warn');
+  const stageLine = document.getElementById('stage-line');
+  const enterLink = document.getElementById('enter-link');
+
+  let shortConfirmed = false;
+  let slug = null;
+  let stageTimer = null;
+  let pollTimer = null;
+  let generateAttempted = 0;
+
+  // Soft validation: under ~15 words gets a gentle nudge, never a block.
+  readingEl.addEventListener('input', () => {
+    const words = readingEl.value.trim().split(/\s+/).filter(Boolean).length;
+    if (words > 0 && words < 15 && !shortConfirmed) {
+      shortWarn.classList.add('visible');
+      placeBtn.textContent = 'This is everything I have';
+    } else {
+      shortWarn.classList.remove('visible');
+      placeBtn.textContent = 'Place the reading';
+    }
+  });
+
+  function showErr(msg) {
+    submitErr.textContent = msg;
+    submitErr.classList.add('visible');
+  }
+  function clearErr() {
+    submitErr.classList.remove('visible');
+  }
+
+  function startStages() {
+    let i = 0;
+    stageLine.textContent = STAGES[0];
+    stageTimer = setInterval(() => {
+      i = Math.min(i + 1, STAGES.length - 1);
+      stageLine.classList.add('fading');
+      setTimeout(() => {
+        stageLine.textContent = STAGES[i];
+        stageLine.classList.remove('fading');
+      }, 900);
+      if (i === STAGES.length - 1) {
+        // Hold the last stage; generation may run long.
+        clearInterval(stageTimer);
+        stageTimer = null;
+      }
+    }, 15000);
+  }
+  function stopStages() {
+    if (stageTimer) { clearInterval(stageTimer); stageTimer = null; }
+  }
+
+  function showReady(portalUrl) {
+    stopStages();
+    stopPolling();
+    document.body.classList.remove('failed');
+    document.body.classList.add('ready');
+    enterLink.href = portalUrl;
+  }
+  function showFailed() {
+    stopStages();
+    document.body.classList.add('failed');
+  }
+  function backToWaiting() {
+    document.body.classList.remove('failed');
+    startStages();
+  }
+
+  function startPolling() {
+    // Backup path: if the held /generate fetch dies (mobile network blip,
+    // tab restore), the poll picks up the result the cron or a retry
+    // produced.
+    if (pollTimer) return;
+    pollTimer = setInterval(async () => {
+      if (!slug) return;
+      try {
+        const r = await fetch(WORKER + '/signup-status?slug=' + encodeURIComponent(slug));
+        if (!r.ok) return;
+        const d = await r.json();
+        if (d.status === 'ready' && d.portalUrl) showReady(d.portalUrl);
+      } catch {}
+    }, 5000);
+  }
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  async function generate() {
+    generateAttempted++;
+    try {
+      const resp = await fetch(WORKER + '/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ slug })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (resp.ok && data.status === 'ready' && data.portalUrl) {
+        showReady(data.portalUrl);
+        return;
+      }
+      if (resp.status === 409) {
+        // Another request holds the lock; the poll will catch the result.
+        return;
+      }
+      // Generation failed server-side.
+      if (generateAttempted < 2) {
+        // Auto-retry once silently before surfacing failure.
+        setTimeout(generate, 3000);
+      } else {
+        showFailed();
+      }
+    } catch {
+      // Network drop on the held request; rely on poll + cron.
+      // If still nothing after 3 min, the poll's silence + this state
+      // leaves the waiting copy up, which already tells them email
+      // closes the loop.
+    }
+  }
+
+  document.getElementById('retry-btn').addEventListener('click', () => {
+    backToWaiting();
+    generate();
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearErr();
+
+    const name = nameEl.value.trim();
+    const email = emailEl.value.trim();
+    const reading = readingEl.value.trim();
+
+    if (!name) { showErr('A name, so the room knows who it’s for.'); nameEl.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { showErr('A real email, that’s where we send the door.'); emailEl.focus(); return; }
+    if (!reading) { showErr('The reading is the room’s starting frame. Paste what you have.'); readingEl.focus(); return; }
+
+    const words = reading.split(/\s+/).filter(Boolean).length;
+    if (words < 15 && !shortConfirmed) {
+      shortConfirmed = true;
+      shortWarn.classList.add('visible');
+      placeBtn.textContent = 'This is everything I have';
+      return;
+    }
+
+    placeBtn.disabled = true;
+    placeBtn.textContent = 'Placing…';
+
+    try {
+      const resp = await fetch(WORKER + '/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name, email, reading, website: websiteEl.value })
+      });
+      const data = await resp.json().catch(() => ({}));
+
+      if (resp.status === 429) {
+        showErr('Too many doors opened from this connection. Try again in an hour.');
+        placeBtn.disabled = false;
+        placeBtn.textContent = 'Place the reading';
+        return;
+      }
+      if (data.status === 'existing') {
+        showErr('We already hold a portal for this email. The door has been re-sent; check your inbox.');
+        placeBtn.disabled = false;
+        placeBtn.textContent = 'Place the reading';
+        return;
+      }
+      if (!resp.ok || !data.slug) {
+        showErr(data.error || 'Something didn’t land. Try once more.');
+        placeBtn.disabled = false;
+        placeBtn.textContent = 'Place the reading';
+        return;
+      }
+
+      slug = data.slug;
+      document.body.classList.add('waiting');
+      window.scrollTo(0, 0);
+      startStages();
+      startPolling();
+      generate();
+    } catch {
+      showErr('The connection didn’t hold. Try once more.');
+      placeBtn.disabled = false;
+      placeBtn.textContent = 'Place the reading';
+    }
+  });
+})();
+</script>
+</body>
+</html>

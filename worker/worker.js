@@ -18,7 +18,7 @@ const ANTHROPIC_VERSION = '2023-06-01';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const cors = corsHeaders(request, env);
 
     if (request.method === 'OPTIONS') {
@@ -52,6 +52,62 @@ export default {
       try {
         const users = await readAllUserStates(env);
         return json({ users, count: users.length }, 200, cors);
+      } catch (err) {
+        return json({ error: String(err && err.message || err) }, 502, cors);
+      }
+    }
+
+    /* v1.14.0: GET /userdata?slug=<slug> — public read of a generated
+       user's USER_DATA (self-serve signups). The page bootstrap calls
+       this when /users/<slug>.js 404s. 404 here -> "link no longer
+       active" gate. Edge-cacheable; regeneration is rare. */
+    if (request.method === 'GET' && url.pathname === '/userdata') {
+      try {
+        const slug = validateSlug(url.searchParams.get('slug') || '');
+        const raw = await env.STATE_KV.get('userdata:' + slug);
+        if (!raw) return json({ error: 'not found' }, 404, cors);
+        return new Response(JSON.stringify({ userData: JSON.parse(raw) }), {
+          status: 200,
+          headers: {
+            'content-type': 'application/json',
+            'cache-control': 'public, max-age=300',
+            ...cors
+          }
+        });
+      } catch (err) {
+        return json({ error: String(err && err.message || err) }, 400, cors);
+      }
+    }
+
+    /* v1.14.0: GET /signup-status?slug=<slug> — public polling endpoint
+       for the /begin waiting screen. Reports stuck generation so the
+       client can re-kick /generate. */
+    if (request.method === 'GET' && url.pathname === '/signup-status') {
+      try {
+        const slug = validateSlug(url.searchParams.get('slug') || '');
+        const rec = await readSignup(env, slug);
+        if (!rec) return json({ error: 'not found' }, 404, cors);
+        const out = { slug, status: rec.status, attempts: rec.attempts || 0 };
+        if (rec.status === 'generating' && rec.lockTs && (Date.now() - rec.lockTs) > 150000) {
+          out.status = 'stuck'; // client may re-POST /generate
+        }
+        if (rec.status === 'ready') out.portalUrl = portalUrlFor(slug);
+        return json(out, 200, cors);
+      } catch (err) {
+        return json({ error: String(err && err.message || err) }, 400, cors);
+      }
+    }
+
+    /* v1.14.0: GET /signups — admin list of all signup records for the
+       users-admin dashboard. Same token gate as /state/all. */
+    if (request.method === 'GET' && url.pathname === '/signups') {
+      const tok = request.headers.get('x-admin-token') || url.searchParams.get('key') || '';
+      if (!env.ADMIN_TOKEN || tok !== env.ADMIN_TOKEN) {
+        return json({ error: 'unauthorized' }, 401, cors);
+      }
+      try {
+        const signups = await readAllSignups(env);
+        return json({ signups, count: signups.length }, 200, cors);
       } catch (err) {
         return json({ error: String(err && err.message || err) }, 502, cors);
       }
@@ -110,6 +166,25 @@ export default {
         const result = await writeSurveyResponse(env, payload, request);
         return json(result, 200, cors);
       }
+      /* v1.14.0: POST /signup — public self-serve signup. Validates,
+         rate-limits per IP, dedupes by email, stores signup:<slug>,
+         sends the "received" email via waitUntil, returns fast. No
+         Claude call here. */
+      if (url.pathname === '/signup') {
+        const r = await handleSignup(env, payload, request, ctx);
+        return json(r.body, r.status, cors);
+      }
+      /* v1.14.0: POST /generate {slug} — client-held generation request
+         (the proven /deepen pattern: in-request Claude calls, browser
+         holds the fetch 60-120s). Idempotent via lock semantics; the
+         cron sweep is the backstop for disconnects. */
+      if (url.pathname === '/generate') {
+        if (!env.ANTHROPIC_API_KEY) {
+          return json({ error: 'ANTHROPIC_API_KEY not configured on the worker' }, 500, cors);
+        }
+        const r = await handleGenerate(env, payload, ctx);
+        return json(r.body, r.status, cors);
+      }
       // All other endpoints require ANTHROPIC_API_KEY (AI calls).
       if (!env.ANTHROPIC_API_KEY) {
         return json({ error: 'ANTHROPIC_API_KEY not configured on the worker' }, 500, cors);
@@ -138,11 +213,17 @@ export default {
      alive past the controller-return so the API calls finish even when
      the cron envelope is short. */
   async scheduled(controller, env, ctx) {
-    ctx.waitUntil(
+    ctx.waitUntil(Promise.allSettled([
       mirrorAllToGitHub(env)
         .then(summary => console.log('cron mirror complete:', JSON.stringify(summary)))
-        .catch(err => console.log('cron mirror failed:', String(err && err.message || err)))
-    );
+        .catch(err => console.log('cron mirror failed:', String(err && err.message || err))),
+      // v1.14.0: sweep stuck/pending signups (regenerate server-side) and
+      // send day-3 check-in emails. Cron handlers get a 15-min budget, so
+      // long Claude calls are safe here.
+      sweepSignups(env)
+        .then(summary => console.log('cron signup sweep:', JSON.stringify(summary)))
+        .catch(err => console.log('cron signup sweep failed:', String(err && err.message || err)))
+    ]));
   }
 };
 
@@ -206,7 +287,7 @@ function humanize(text) {
   return s.trim();
 }
 
-async function callClaude(env, { system, messages, max_tokens = 1024 }) {
+async function callClaude(env, { system, messages, max_tokens = 1024, timeoutMs = 30000 }) {
   const body = {
     model: env.MODEL || 'claude-sonnet-4-5',
     max_tokens,
@@ -215,7 +296,10 @@ async function callClaude(env, { system, messages, max_tokens = 1024 }) {
   };
   const attempt = async () => {
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 30000);
+    // v1.14.0: parameterized timeout. Signup generation calls produce
+    // 2-4k output tokens and run 45-90s on Sonnet; the old hard 30s
+    // abort would kill every one of them.
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
       const resp = await fetch(ANTHROPIC_URL, {
         method: 'POST',
@@ -942,4 +1026,542 @@ async function readAllSurveyResponses(env) {
   }
   out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
   return out;
+}
+
+/* ============================================================
+   v1.14.0: Self-serve signup + portal generation
+   ============================================================
+   Flow:
+     POST /signup {name, email, reading, website?}  -> {slug, status:'pending'}
+       (website is a hidden honeypot field; non-empty -> fake success)
+     POST /generate {slug}                          -> held by client 60-120s
+       runs two chained Claude calls in-request (the proven /deepen
+       pattern), merges with the canonical catalog template, stores
+       userdata:<slug>, emails the portal link.
+     GET /signup-status?slug    -> {status, portalUrl?}  (poll backup)
+     GET /userdata?slug         -> {userData}            (page bootstrap)
+     GET /signups               -> admin list
+
+   KV keys:
+     signup:<slug>     {slug,name,email,readingRaw,status,attempts,lockTs,
+                        createdTs,readyTs,error,ip,emails[],day3Sent,failNotified}
+     userdata:<slug>   full merged USER_DATA JSON
+     idx:email:<sha>   slug   (dedupe, sha256 of lowercased email)
+     rl:signup:<ip>    counter, TTL 1h
+     template:catalog-v1  cached catalog template JSON (TTL 1h)
+
+   Secrets (set via wrangler secret put):
+     RESEND_API_KEY  - optional; emails no-op without it
+   Vars (optional):
+     EMAIL_FROM      - default 'OPUS SoundBed <portal@feelopus.com>'
+     ADMIN_EMAIL     - default 'adam@feelopus.com'
+     PORTAL_BASE     - default 'https://ramon-portal.pages.dev'
+   ============================================================ */
+
+const SIGNUP_MAX_READING = 8000;
+const SIGNUP_MAX_NAME = 80;
+const SIGNUP_RATE_LIMIT = 5;            // signups per IP per hour
+const GENERATE_LOCK_MS = 120000;        // lock considered live for 2 min
+const SWEEP_STUCK_MS = 600000;          // cron resets locks older than 10 min
+const MAX_GENERATION_ATTEMPTS = 3;
+const TEMPLATE_URL = 'https://ramon-portal.pages.dev/templates/catalog-v1.json';
+
+function portalUrlFor(slug) {
+  return 'https://ramon-portal.pages.dev/?u=' + encodeURIComponent(slug);
+}
+
+function makeSlug(name) {
+  const head = String(name || '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 12) || 'guest';
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const buf = new Uint8Array(8);
+  crypto.getRandomValues(buf);
+  let suffix = '';
+  for (let i = 0; i < 8; i++) suffix += chars[buf[i] % 36];
+  return head + '-' + suffix;
+}
+
+async function readSignup(env, slug) {
+  const raw = await env.STATE_KV.get('signup:' + slug);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+async function writeSignup(env, rec) {
+  await env.STATE_KV.put('signup:' + rec.slug, JSON.stringify(rec));
+}
+
+async function readAllSignups(env) {
+  const out = [];
+  let cursor = undefined;
+  for (let i = 0; i < 10; i++) {
+    const list = await env.STATE_KV.list({ prefix: 'signup:', cursor });
+    for (const k of list.keys) {
+      const v = await env.STATE_KV.get(k.name);
+      if (!v) continue;
+      try {
+        const rec = JSON.parse(v);
+        // Never ship the full reading text in the list payload; admin
+        // can see it per user. Keep the list light.
+        out.push({
+          slug: rec.slug, name: rec.name, email: rec.email,
+          status: rec.status, attempts: rec.attempts || 0,
+          createdTs: rec.createdTs, readyTs: rec.readyTs || null,
+          error: rec.error || null, emails: rec.emails || [],
+          readingChars: (rec.readingRaw || '').length
+        });
+      } catch {}
+    }
+    if (list.list_complete) break;
+    cursor = list.cursor;
+  }
+  out.sort((a, b) => (b.createdTs || 0) - (a.createdTs || 0));
+  return out;
+}
+
+async function handleSignup(env, payload, request, ctx) {
+  // Honeypot: bots fill every field. Return a fake success, do nothing.
+  if (payload && typeof payload.website === 'string' && payload.website.trim()) {
+    return { status: 201, body: { slug: 'ok', status: 'pending' } };
+  }
+
+  const name = (payload && typeof payload.name === 'string' ? payload.name : '').trim().slice(0, SIGNUP_MAX_NAME);
+  const email = (payload && typeof payload.email === 'string' ? payload.email : '').trim().toLowerCase().slice(0, 254);
+  const reading = (payload && typeof payload.reading === 'string' ? payload.reading : '').trim().slice(0, SIGNUP_MAX_READING);
+
+  if (!name) return { status: 400, body: { error: 'name required' } };
+  if (!/^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return { status: 400, body: { error: 'a real email is required, that is where we send the door' } };
+  }
+  if (!reading || reading.length < 3) {
+    return { status: 400, body: { error: 'reading required' } };
+  }
+
+  // Rate limit per IP: KV counter, racy but a fine deterrent.
+  const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+  const rlKey = 'rl:signup:' + ip;
+  const count = parseInt(await env.STATE_KV.get(rlKey) || '0', 10);
+  if (count >= SIGNUP_RATE_LIMIT) {
+    return { status: 429, body: { error: 'too many signups from this connection, try again in an hour' } };
+  }
+  await env.STATE_KV.put(rlKey, String(count + 1), { expirationTtl: 3600 });
+
+  // Email dedupe: same email -> same portal. Re-send the link, don't
+  // create a duplicate. Don't leak the slug in the response body.
+  const emailSha = await sha256Hex(email);
+  const existingSlug = await env.STATE_KV.get('idx:email:' + emailSha);
+  if (existingSlug) {
+    const existing = await readSignup(env, existingSlug);
+    if (existing && existing.status === 'ready') {
+      if (ctx) ctx.waitUntil(sendLifecycleEmail(env, existing, 'ready'));
+      return { status: 200, body: { status: 'existing', message: 'we already hold a portal for this email, the door has been re-sent' } };
+    }
+    if (existing) {
+      // Pending/failed prior signup for this email: resume it.
+      return { status: 200, body: { slug: existing.slug, status: existing.status } };
+    }
+  }
+
+  let slug = makeSlug(name);
+  for (let i = 0; i < 3; i++) {
+    if (!(await env.STATE_KV.get('signup:' + slug))) break;
+    slug = makeSlug(name);
+  }
+
+  const rec = {
+    slug, name, email, readingRaw: reading,
+    status: 'pending', attempts: 0, lockTs: null,
+    createdTs: Date.now(), readyTs: null, error: null, ip,
+    emails: [], day3Sent: false, failNotified: false
+  };
+  await writeSignup(env, rec);
+  await env.STATE_KV.put('idx:email:' + emailSha, slug);
+
+  if (ctx) ctx.waitUntil(sendLifecycleEmail(env, rec, 'received'));
+  return { status: 201, body: { slug, status: 'pending' } };
+}
+
+async function handleGenerate(env, payload, ctx) {
+  let slug;
+  try { slug = validateSlug(payload && payload.slug); }
+  catch { return { status: 400, body: { error: 'invalid slug' } }; }
+
+  const rec = await readSignup(env, slug);
+  if (!rec) return { status: 404, body: { error: 'not found' } };
+
+  if (rec.status === 'ready') {
+    return { status: 200, body: { slug, status: 'ready', portalUrl: portalUrlFor(slug) } };
+  }
+  if (rec.status === 'generating' && rec.lockTs && (Date.now() - rec.lockTs) < GENERATE_LOCK_MS) {
+    return { status: 409, body: { slug, status: 'generating', retryAfter: 15 } };
+  }
+  if ((rec.attempts || 0) >= MAX_GENERATION_ATTEMPTS) {
+    return { status: 410, body: { slug, status: 'failed' } };
+  }
+
+  rec.status = 'generating';
+  rec.lockTs = Date.now();
+  rec.attempts = (rec.attempts || 0) + 1;
+  await writeSignup(env, rec);
+
+  try {
+    await runGeneration(env, rec);
+    rec.status = 'ready';
+    rec.readyTs = Date.now();
+    rec.error = null;
+    await writeSignup(env, rec);
+    if (ctx) ctx.waitUntil(sendLifecycleEmail(env, rec, 'ready'));
+    return { status: 200, body: { slug, status: 'ready', portalUrl: portalUrlFor(slug) } };
+  } catch (err) {
+    rec.status = rec.attempts >= MAX_GENERATION_ATTEMPTS ? 'failed' : 'pending';
+    rec.error = String(err && err.message || err).slice(0, 400);
+    await writeSignup(env, rec);
+    if (rec.status === 'failed' && !rec.failNotified && ctx) {
+      ctx.waitUntil(sendLifecycleEmail(env, rec, 'failed-admin'));
+    }
+    return { status: 502, body: { slug, status: rec.status, error: rec.error } };
+  }
+}
+
+/* Two chained Claude calls + template merge. Throws on hard failure;
+   degrades to canonical plan ordering on soft (parse) failure. */
+async function runGeneration(env, rec) {
+  const template = await getCatalogTemplate(env);
+
+  // Call 1: the existing expand pipeline. Normalized + clamped already.
+  const expand = await expandIntakeWithTimeout(env, {
+    mode: 'reading',
+    userName: rec.name,
+    fields: { rawReading: rec.readingRaw }
+  });
+
+  // Call 2: session layer (week plan + per-session why/intention).
+  let sessionLayer = null;
+  try {
+    const raw = await callClaude(env, {
+      system: SESSION_LAYER_SYSTEM(rec.name),
+      max_tokens: 4000,
+      timeoutMs: 90000,
+      messages: [{ role: 'user', content: buildSessionLayerUser(rec, expand, template) }]
+    });
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (m) sessionLayer = JSON.parse(m[0]);
+  } catch (err) {
+    // Soft failure: portal ships with canonical plan ordering.
+    console.log('session layer generation failed for ' + rec.slug + ': ' + String(err && err.message || err));
+  }
+
+  const userData = mergePortal(template, expand, sessionLayer, rec);
+  await env.STATE_KV.put('userdata:' + rec.slug, JSON.stringify(userData));
+}
+
+async function expandIntakeWithTimeout(env, payload) {
+  // expandIntake calls callClaude with default 30s; for signup we route
+  // through a longer-budget variant of the same prompt contract.
+  const raw = await callClaude(env, {
+    system: EXPAND_SYSTEM(payload.userName),
+    max_tokens: 1800,
+    timeoutMs: 90000,
+    messages: [{ role: 'user', content: buildExpandUser(payload) }]
+  });
+  let parsed = null;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (m) parsed = JSON.parse(m[0]);
+  } catch { /* fall through */ }
+  if (!parsed || typeof parsed !== 'object') parsed = expandFallback(payload.userName);
+  return normalizeExpandResult(parsed, payload.userName);
+}
+
+function SESSION_LAYER_SYSTEM(userName) {
+  const name = nameOrFallback(userName);
+  return `You are curating a 4-week SoundBed session plan for ${name} from their biofield reading.
+
+You have a FIXED catalog of 16 sessions (slugs provided in the user message). Your job: assign all 16 sessions across 4 weeks (4 per week, each used exactly once), give each week a title + intent + responds line, and write a personalized "why" and "intention" for every session.
+
+Return ONLY this JSON, no prose, no fences:
+
+{
+  "weeks": [
+    { "week": 1, "title": "<2-5 words>", "intent": "<one sentence>", "responds": "<short clause list citing their reading>", "sessions": ["<slug>","<slug>","<slug>","<slug>"] },
+    { "week": 2, ... }, { "week": 3, ... }, { "week": 4, ... }
+  ],
+  "sessionNotes": {
+    "<slug>": { "why": "<max 40 words, references THEIR reading specifically>", "intention": "<max 25 words, first person, present tense>" },
+    ... all 16 slugs ...
+  }
+}
+
+Rules:
+- 'welcome-to-opus' is ALWAYS the first session of week 1.
+- Week 1 grounds. Build intensity gradually; never put throat/expression work before the body has a settling week.
+- Honor what the reading says is strong (feed it) vs depleted (meet it gently).
+- "why" strings speak directly to ${name} in second person and cite their reading by paraphrase.
+- "intention" strings are in ${name}'s first-person voice.
+- Mirror, never conclude. No medical or psychological claims.
+
+${HUMANIZER_RULES}`;
+}
+
+function buildSessionLayerUser(rec, expand, template) {
+  const sessionLines = Object.entries(template.sessions).map(([slug, s]) =>
+    `- ${slug}: ${s.heading} (${s.category}) - ${s.subtitle}`
+  ).join('\n');
+  const chakraLines = (expand.chakraStates || []).map(c => `- ${c.label}: ${c.state} (${c.note})`).join('\n');
+  return [
+    `THE READING (source of truth):`,
+    rec.readingRaw,
+    ``,
+    `PARSED CHAKRA STATES:`,
+    chakraLines,
+    ``,
+    `PRIMARY BLOCK: ${expand.primaryBlockQuote}`,
+    `ARCHETYPE: ${expand.archetype}`,
+    ``,
+    `THE 16 SESSIONS (use each slug exactly once):`,
+    sessionLines,
+    ``,
+    `Now produce the JSON. Return ONLY the JSON.`
+  ].join('\n');
+}
+
+function mergePortal(template, expand, sessionLayer, rec) {
+  const sessions = {};
+  for (const [slug, s] of Object.entries(template.sessions)) {
+    sessions[slug] = { ...s };
+  }
+
+  // Overlay per-session why/intention when valid.
+  const notes = (sessionLayer && sessionLayer.sessionNotes && typeof sessionLayer.sessionNotes === 'object')
+    ? sessionLayer.sessionNotes : {};
+  for (const [slug, n] of Object.entries(notes)) {
+    if (!sessions[slug] || !n || typeof n !== 'object') continue;
+    if (typeof n.why === 'string' && n.why.trim() && n.why.length <= 600) {
+      sessions[slug].why = n.why.trim();
+    }
+    if (typeof n.intention === 'string' && n.intention.trim() && n.intention.length <= 400) {
+      sessions[slug].intention = n.intention.trim();
+    }
+  }
+
+  // Validate the generated week plan; fall back to canonical ordering.
+  let plan = template.defaultPlan.map(p => ({ ...p, sessions: [...p.sessions] }));
+  const weeks = sessionLayer && Array.isArray(sessionLayer.weeks) ? sessionLayer.weeks : null;
+  if (weeks && weeks.length === 4) {
+    const allSlugs = [];
+    let valid = true;
+    for (const w of weeks) {
+      if (!w || !Array.isArray(w.sessions) || w.sessions.length !== 4) { valid = false; break; }
+      for (const s of w.sessions) {
+        if (!sessions[s]) { valid = false; break; }
+        allSlugs.push(s);
+      }
+      if (!valid) break;
+    }
+    if (valid && new Set(allSlugs).size === 16 && weeks[0].sessions[0] === 'welcome-to-opus') {
+      plan = weeks.map((w, i) => ({
+        week: i + 1,
+        title: (typeof w.title === 'string' && w.title.trim()) ? w.title.trim().slice(0, 60) : template.defaultPlan[i].title,
+        intent: (typeof w.intent === 'string' && w.intent.trim()) ? w.intent.trim().slice(0, 300) : template.defaultPlan[i].intent,
+        responds: (typeof w.responds === 'string' && w.responds.trim()) ? w.responds.trim().slice(0, 400) : template.defaultPlan[i].responds,
+        sessions: w.sessions
+      }));
+    }
+  }
+
+  const now = new Date();
+  const period = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+  return {
+    slug: rec.slug,
+    displayName: rec.name,
+    period,
+    portrait: '',
+    generated: true,
+    generatedTs: Date.now(),
+    auricMeters: expand.auricMeters,
+    hawkinsLevel: expand.hawkinsLevel,
+    hawkinsTarget: expand.hawkinsTarget,
+    dna: expand.dna,
+    primaryBlockQuote: expand.primaryBlockQuote,
+    archetype: expand.archetype,
+    chakraStates: expand.chakraStates,
+    reading: rec.readingRaw,
+    sessions,
+    prompts: template.prompts,
+    plan,
+    heldInReserve: template.heldInReserve,
+    slugToChakra: template.slugToChakra
+  };
+}
+
+async function getCatalogTemplate(env) {
+  const cached = await env.STATE_KV.get('template:catalog-v1');
+  if (cached) {
+    try { return JSON.parse(cached); } catch { /* refetch */ }
+  }
+  const resp = await fetch(TEMPLATE_URL, { headers: { 'accept': 'application/json' } });
+  if (!resp.ok) throw new Error('catalog template fetch failed: HTTP ' + resp.status);
+  const template = await resp.json();
+  if (!template || !template.sessions || Object.keys(template.sessions).length !== 16) {
+    throw new Error('catalog template malformed');
+  }
+  await env.STATE_KV.put('template:catalog-v1', JSON.stringify(template), { expirationTtl: 3600 });
+  return template;
+}
+
+/* ============================================================ Email layer (Resend) */
+
+function EMAIL_COPY(type, rec) {
+  const name = rec.name || 'Friend';
+  const link = portalUrlFor(rec.slug);
+  if (type === 'received') {
+    return {
+      subject: 'We have your reading',
+      text: `${name},\n\nYour reading arrived a moment ago. It's in good hands.\n\nWe're reading it the way your practitioner wrote it, nothing summarized, nothing graded, and building a private portal around it: your words mirrored back, and four weeks of SoundBed sessions drawn from what the reading says.\n\nOne more email is coming, usually within minutes, with the door. Nothing is asked of you until then.\n\nthe OPUS portal`
+    };
+  }
+  if (type === 'ready') {
+    return {
+      subject: 'Your portal is open',
+      text: `${name},\n\nThe room is ready: ${link}\n\nThat link is yours alone. It's the only key to this room, so keep it the way you'd keep a key. Don't post it anywhere public. If you lose it, reply here and we'll send it again.\n\nInside: the reading you shared, held as the starting frame. A four-week map built from it. A place to leave a note after each session. Go when you're ready. It isn't going anywhere.\n\nthe OPUS portal`
+    };
+  }
+  if (type === 'day3') {
+    return {
+      subject: 'Still here',
+      text: `${name},\n\nNo task in this email. The portal is still holding your reading, whether you've been once, daily, or not yet at all. All three are fine.\n\nOne ask, only if it's easy: if anything in your map reads wrong, a word, a session, a week that doesn't sound like you, reply and say so. We adjust quietly.\n\nthe OPUS portal`
+    };
+  }
+  if (type === 'failed-admin') {
+    return {
+      subject: '[portal] generation failed 3x: ' + rec.slug,
+      text: `Signup ${rec.slug} (${rec.name}, ${rec.email}) failed generation ${rec.attempts} times.\nLast error: ${rec.error || 'unknown'}\nCreated: ${new Date(rec.createdTs).toISOString()}\n\nCheck: https://ramon-portal.pages.dev/users-admin\nRetry: POST /generate {"slug":"${rec.slug}"}`
+    };
+  }
+  return null;
+}
+
+async function sendLifecycleEmail(env, rec, type) {
+  const copy = EMAIL_COPY(type, rec);
+  if (!copy) return;
+  const to = type === 'failed-admin' ? (env.ADMIN_EMAIL || 'adam@feelopus.com') : rec.email;
+  const result = { type, ts: Date.now(), ok: false };
+
+  if (!env.RESEND_API_KEY) {
+    result.error = 'no-key';
+    console.log('email skipped (no RESEND_API_KEY): ' + type + ' -> ' + to);
+  } else {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 10000);
+      try {
+        const resp = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'authorization': 'Bearer ' + env.RESEND_API_KEY,
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: env.EMAIL_FROM || 'OPUS SoundBed <portal@feelopus.com>',
+            to: [to],
+            subject: copy.subject,
+            text: copy.text
+          }),
+          signal: ctrl.signal
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok) {
+          result.ok = true;
+          result.providerId = data.id || null;
+        } else {
+          result.error = (data && data.message) || ('HTTP ' + resp.status);
+        }
+      } finally {
+        clearTimeout(t);
+      }
+    } catch (err) {
+      result.error = String(err && err.message || err).slice(0, 200);
+    }
+  }
+
+  // Record the send attempt on the signup record. Never throw.
+  try {
+    const fresh = await readSignup(env, rec.slug);
+    if (fresh) {
+      fresh.emails = fresh.emails || [];
+      fresh.emails.push(result);
+      if (type === 'day3' && result.ok) fresh.day3Sent = true;
+      if (type === 'failed-admin' && result.ok) fresh.failNotified = true;
+      await writeSignup(env, fresh);
+    }
+  } catch {}
+}
+
+/* ============================================================ Cron sweep */
+
+async function sweepSignups(env) {
+  if (!env.STATE_KV) return { error: 'STATE_KV not bound' };
+  const summary = { scanned: 0, regenerated: 0, day3Sent: 0, failed: 0 };
+  const records = [];
+  let cursor = undefined;
+  for (let i = 0; i < 10; i++) {
+    const list = await env.STATE_KV.list({ prefix: 'signup:', cursor });
+    for (const k of list.keys) {
+      const v = await env.STATE_KV.get(k.name);
+      if (!v) continue;
+      try { records.push(JSON.parse(v)); } catch {}
+    }
+    if (list.list_complete) break;
+    cursor = list.cursor;
+  }
+  summary.scanned = records.length;
+
+  const now = Date.now();
+  let regenBudget = 3; // max regenerations per sweep; cron runs hourly
+
+  for (const rec of records) {
+    try {
+      // Stale generating lock -> reset to pending.
+      if (rec.status === 'generating' && rec.lockTs && (now - rec.lockTs) > SWEEP_STUCK_MS) {
+        rec.status = 'pending';
+        rec.lockTs = null;
+        await writeSignup(env, rec);
+      }
+      // Pending with attempts left -> regenerate here in the cron.
+      if (rec.status === 'pending' && (rec.attempts || 0) < MAX_GENERATION_ATTEMPTS
+          && (now - rec.createdTs) > 120000 && regenBudget > 0 && env.ANTHROPIC_API_KEY) {
+        regenBudget--;
+        rec.status = 'generating';
+        rec.lockTs = Date.now();
+        rec.attempts = (rec.attempts || 0) + 1;
+        await writeSignup(env, rec);
+        try {
+          await runGeneration(env, rec);
+          rec.status = 'ready';
+          rec.readyTs = Date.now();
+          rec.error = null;
+          await writeSignup(env, rec);
+          await sendLifecycleEmail(env, rec, 'ready');
+          summary.regenerated++;
+        } catch (err) {
+          rec.status = rec.attempts >= MAX_GENERATION_ATTEMPTS ? 'failed' : 'pending';
+          rec.error = String(err && err.message || err).slice(0, 400);
+          await writeSignup(env, rec);
+          if (rec.status === 'failed' && !rec.failNotified) {
+            await sendLifecycleEmail(env, rec, 'failed-admin');
+            summary.failed++;
+          }
+        }
+      }
+      // Ready 3+ days, no day-3 email yet -> send it once.
+      if (rec.status === 'ready' && rec.readyTs && !rec.day3Sent
+          && (now - rec.readyTs) > 3 * 86400000 && (now - rec.readyTs) < 14 * 86400000) {
+        await sendLifecycleEmail(env, rec, 'day3');
+        summary.day3Sent++;
+      }
+    } catch (err) {
+      console.log('sweep error for ' + rec.slug + ': ' + String(err && err.message || err));
+    }
+  }
+  return summary;
 }

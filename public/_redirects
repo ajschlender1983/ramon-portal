@@ -36,6 +36,14 @@
 /users                  /users-admin/  200
 /users/                 /users-admin/  200
 
+# v1.14 — Self-serve signup
+/begin                  /begin/  200
+/begin/                 /begin/  200
+/join                   /begin/  200
+/join/                  /begin/  200
+/start                  /begin/  200
+/start/                 /begin/  200
+
 # Trailing-slash variants are the matchers because Cloudflare Pages
 # auto-adds a trailing slash before our rules fire (308 redirect from
 # /paul to /paul/). The 200 rewrite then catches the trailing-slash

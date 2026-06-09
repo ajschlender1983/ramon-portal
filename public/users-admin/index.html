@@ -263,6 +263,45 @@ details.raw pre {
   text-align: center; color: var(--mid);
   font-style: italic; padding: 40px 0;
 }
+
+/* Signups table */
+.signups-section { margin-bottom: 36px; }
+.signups-title {
+  font-family: var(--serif); font-style: italic;
+  font-size: 18px; color: var(--light);
+  margin-bottom: 14px;
+}
+.signup-row {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--dim);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+}
+.signup-row.st-ready { border-left-color: var(--teal); }
+.signup-row.st-generating, .signup-row.st-pending { border-left-color: var(--gold); }
+.signup-row.st-failed { border-left-color: #DE1545; }
+.signup-name { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--light); }
+.signup-email { color: var(--mid); font-family: monospace; font-size: 11px; }
+.signup-status {
+  padding: 2px 10px; border-radius: 4px;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  border: 1px solid var(--glass-border); color: var(--mid);
+}
+.st-ready .signup-status { color: var(--teal); border-color: rgba(106,223,217,0.4); }
+.st-failed .signup-status { color: #DE1545; border-color: rgba(222,21,69,0.4); }
+.st-generating .signup-status, .st-pending .signup-status { color: var(--gold); border-color: rgba(255,215,100,0.4); }
+.signup-meta { color: var(--dim); font-size: 11px; }
+.signup-link { margin-left: auto; }
+.signup-link a {
+  color: var(--gold); text-decoration: none;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.signup-link a:hover { text-decoration: underline; }
+.signup-emails { width: 100%; color: var(--dim); font-size: 10.5px; font-family: monospace; }
 </style>
 </head>
 <body>
@@ -274,6 +313,7 @@ details.raw pre {
 (function () {
   const WORKER = 'https://ramon-resolver.ajschlender.workers.dev';
   const STATE_ALL = WORKER + '/state/all';
+  const SIGNUPS = WORKER + '/signups';
   const SS_KEY = 'usersAdmin.token.v1';
 
   const DISPLAY_NAMES = {
@@ -503,7 +543,41 @@ details.raw pre {
     return card;
   }
 
-  function renderApp(data) {
+  function fmtDate(ts) {
+    if (!ts) return '—';
+    try { return new Date(ts).toLocaleString(); } catch { return String(ts); }
+  }
+
+  function buildSignupsSection(signups) {
+    const sec = el('div', { class: 'signups-section' });
+    sec.appendChild(el('div', { class: 'signups-title', text: 'Signups (' + signups.length + ')' }));
+    if (!signups.length) {
+      sec.appendChild(el('div', { class: 'empty-line', text: 'No self-serve signups yet. Share /begin to invite people.' }));
+      return sec;
+    }
+    signups.forEach(s => {
+      const row = el('div', { class: 'signup-row st-' + (s.status || 'pending') });
+      row.appendChild(el('div', { class: 'signup-name', text: s.name || '—' }));
+      row.appendChild(el('div', { class: 'signup-email', text: s.email || '' }));
+      row.appendChild(el('div', { class: 'signup-status', text: s.status || '?' }));
+      row.appendChild(el('div', { class: 'signup-meta', text: 'signed up ' + fmtDate(s.createdTs) + (s.attempts > 1 ? ' · ' + s.attempts + ' attempts' : '') + ' · reading ' + (s.readingChars || 0) + ' chars' }));
+      if (s.error) row.appendChild(el('div', { class: 'signup-meta', text: 'error: ' + s.error }));
+      if (s.status === 'ready') {
+        const link = el('div', { class: 'signup-link' });
+        const a = el('a', { href: 'https://ramon-portal.pages.dev/?u=' + encodeURIComponent(s.slug), target: '_blank', rel: 'noopener', text: 'open portal' });
+        link.appendChild(a);
+        row.appendChild(link);
+      }
+      if (Array.isArray(s.emails) && s.emails.length) {
+        const parts = s.emails.map(e => e.type + ':' + (e.ok ? 'sent' : (e.error || 'failed')));
+        row.appendChild(el('div', { class: 'signup-emails', text: 'emails · ' + parts.join(' · ') }));
+      }
+      sec.appendChild(row);
+    });
+    return sec;
+  }
+
+  function renderApp(data, signups) {
     const app = document.getElementById('app-mount');
     clear(app);
     app.removeAttribute('hidden');
@@ -520,6 +594,8 @@ details.raw pre {
       '.'
     ]));
     app.appendChild(el('div', { class: 'subtle', text: 'Live read of cloud state. Hourly cron also pushes to a private GitHub repo when GITHUB_* secrets are set.' }));
+
+    app.appendChild(buildSignupsSection(signups || []));
 
     const users = (data.users || []).sort((a, b) => (b.ts || 0) - (a.ts || 0));
 
@@ -602,7 +678,17 @@ details.raw pre {
       }
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const data = await resp.json();
-      renderApp(data);
+      let signups = [];
+      try {
+        const sresp = await fetch(SIGNUPS + '?key=' + encodeURIComponent(token), {
+          headers: { 'x-admin-token': token }
+        });
+        if (sresp.ok) {
+          const sdata = await sresp.json();
+          signups = sdata.signups || [];
+        }
+      } catch {}
+      renderApp(data, signups);
     } catch (err) {
       renderGate('Could not load: ' + (err.message || err));
     }

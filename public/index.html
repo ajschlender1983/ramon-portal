@@ -4303,12 +4303,28 @@ window.__userDataPromise = (function() {
   if (!slug || !/^[a-z0-9-]+$/i.test(slug)) {
     return Promise.resolve(null);
   }
+  /* v1.14.0: dynamic users. Static /users/<slug>.js wins when present
+     (hand-curated portals). When it 404s, fall back to the worker's
+     generated USER_DATA store (self-serve signups via /begin). Unknown
+     slugs still resolve null -> the "link no longer active" gate. */
+  function fetchGeneratedUser(slugIn) {
+    return fetch('https://ramon-resolver.ajschlender.workers.dev/userdata?slug=' + encodeURIComponent(slugIn))
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (data && data.userData && data.userData.slug) {
+          window.USER_DATA = data.userData;
+          return window.USER_DATA;
+        }
+        return null;
+      })
+      .catch(function() { return null; });
+  }
   return new Promise(function(resolve) {
     var s = document.createElement('script');
     s.src = '/users/' + encodeURIComponent(slug) + '.js';
     s.async = false;
     s.onload = function() { resolve(window.USER_DATA || null); };
-    s.onerror = function() { resolve(null); };
+    s.onerror = function() { fetchGeneratedUser(slug).then(resolve); };
     document.head.appendChild(s);
   });
 })();
@@ -4672,7 +4688,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.12.0';
+const VERSION = '1.14.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
