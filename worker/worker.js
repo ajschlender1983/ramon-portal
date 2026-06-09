@@ -1489,6 +1489,10 @@ async function sendLifecycleEmail(env, rec, type) {
           body: JSON.stringify({
             from: env.EMAIL_FROM || 'OPUS SoundBed <portal@feelopus.com>',
             to: [to],
+            // v1.14.3: the email copy invites replies ("reply here and
+            // we'll send it again") but the sending address has no
+            // inbox. Route replies to a monitored address.
+            reply_to: env.ADMIN_EMAIL || 'adam@feelopus.com',
             subject: copy.subject,
             text: copy.text
           }),

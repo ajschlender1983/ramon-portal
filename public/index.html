@@ -2338,6 +2338,18 @@ main { position: relative; z-index: 2; }
    left in place but inert (nothing in the rendered DOM uses it now). */
 
 /* Whisper line at section transitions (Principle 03 distributed) */
+/* v1.14.3: first-visit whisper for generated (self-serve) users.
+   One line above the hero, gone on return visits. */
+.arrival-whisper {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--teal);
+  letter-spacing: 0.04em;
+  margin-bottom: 18px;
+  opacity: 0.85;
+}
+
 .principle-whisper {
   text-align: center;
   font-family: var(--serif); font-style: italic; font-size: 12px;
@@ -4688,7 +4700,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.14.0';
+const VERSION = '1.14.3';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -6714,6 +6726,31 @@ function composeCenterSummary(center, latestState, sessions, mode) {
   if (done >= total - 1 && total > 0) return 'the ' + label + ' has been gathered, session by session.';
   if (done >= 1) return 'the ' + label + ' is gathering. ' + done + ' of ' + total + ' sessions met.';
   return 'the ' + label + ' is still being met.';
+}
+
+/* v1.14.3: arrival moment for generated users. First visit only
+   (per-device localStorage flag): one whisper line above the hero
+   naming when their reading was shared, and the Input collapse starts
+   open so the first thing after the hero is their own words mirrored
+   back. Returning visits render exactly as before. Hand-built users
+   skip this; they got a personal handoff. */
+function mountArrivalWhisper() {
+  if (!USER || !USER.generated || !USER.slug) return;
+  const key = USER.slug + '.arrived.v1';
+  let seen = null;
+  try { seen = localStorage.getItem(key); } catch {}
+  if (seen) return;
+  try { localStorage.setItem(key, String(Date.now())); } catch {}
+  const hero = document.querySelector('.hero');
+  if (hero) {
+    const d = new Date(USER.generatedTs || Date.now());
+    const when = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    const line = el('div', { class: 'arrival-whisper',
+      text: 'built from the reading you shared on ' + when + '. everything below came from your words.' });
+    hero.insertBefore(line, hero.firstChild);
+  }
+  const collapse = document.querySelector('.input-collapse');
+  if (collapse) collapse.setAttribute('open', '');
 }
 
 function mountArc() {
@@ -9483,6 +9520,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await CloudSync.rehydrate(USER.slug);
   ramonState = loadState();
   applyUserToDOM();
+  mountArrivalWhisper();
 
   renderPhaseTabs();
   renderPhasePanels();
