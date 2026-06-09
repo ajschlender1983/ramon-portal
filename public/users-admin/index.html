@@ -564,7 +564,7 @@ details.raw pre {
       if (s.error) row.appendChild(el('div', { class: 'signup-meta', text: 'error: ' + s.error }));
       if (s.status === 'ready') {
         const link = el('div', { class: 'signup-link' });
-        const a = el('a', { href: 'https://ramon-portal.pages.dev/?u=' + encodeURIComponent(s.slug), target: '_blank', rel: 'noopener', text: 'open portal' });
+        const a = el('a', { href: location.origin + '/?u=' + encodeURIComponent(s.slug), target: '_blank', rel: 'noopener', text: 'open portal' });
         link.appendChild(a);
         row.appendChild(link);
       }

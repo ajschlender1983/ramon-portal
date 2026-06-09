@@ -91,7 +91,7 @@ export default {
         if (rec.status === 'generating' && rec.lockTs && (Date.now() - rec.lockTs) > 150000) {
           out.status = 'stuck'; // client may re-POST /generate
         }
-        if (rec.status === 'ready') out.portalUrl = portalUrlFor(slug);
+        if (rec.status === 'ready') out.portalUrl = portalUrlFor(slug, env);
         return json(out, 200, cors);
       } catch (err) {
         return json({ error: String(err && err.message || err) }, 400, cors);
@@ -244,7 +244,15 @@ function corsHeaders(request, env) {
     /^https:\/\/([a-z0-9-]+\.)*feelopus\.com$/,
     /^https:\/\/ramon-portal\.pages\.dev$/
   ];
-  const isAllowed = allowedPatterns.some(p => p.test(origin));
+  // v1.14.1: the custom domain (PORTAL_BASE var) is always allowed,
+  // including its subdomains, so the domain swap needs no code change.
+  let isAllowed = allowedPatterns.some(p => p.test(origin));
+  if (!isAllowed && env && env.PORTAL_BASE) {
+    try {
+      const host = new URL(env.PORTAL_BASE).hostname.replace(/\./g, '\\.');
+      isAllowed = new RegExp('^https://([a-z0-9-]+\\.)*' + host + '$').test(origin);
+    } catch { /* malformed PORTAL_BASE: ignore */ }
+  }
   const allow = isAllowed ? origin : '*';
   return {
     'access-control-allow-origin': allow,
@@ -1066,8 +1074,15 @@ const SWEEP_STUCK_MS = 600000;          // cron resets locks older than 10 min
 const MAX_GENERATION_ATTEMPTS = 3;
 const TEMPLATE_URL = 'https://ramon-portal.pages.dev/templates/catalog-v1.json';
 
-function portalUrlFor(slug) {
-  return 'https://ramon-portal.pages.dev/?u=' + encodeURIComponent(slug);
+/* v1.14.1: PORTAL_BASE env var drives every user-facing link (status
+   responses, emails, admin alerts). Set it in wrangler.toml [vars] when
+   the custom domain lands; the pages.dev origin keeps working alongside
+   it for anyone holding an old link. */
+function portalBase(env) {
+  return (env && env.PORTAL_BASE) || 'https://ramon-portal.pages.dev';
+}
+function portalUrlFor(slug, env) {
+  return portalBase(env) + '/?u=' + encodeURIComponent(slug);
 }
 
 function makeSlug(name) {
@@ -1189,7 +1204,7 @@ async function handleGenerate(env, payload, ctx) {
   if (!rec) return { status: 404, body: { error: 'not found' } };
 
   if (rec.status === 'ready') {
-    return { status: 200, body: { slug, status: 'ready', portalUrl: portalUrlFor(slug) } };
+    return { status: 200, body: { slug, status: 'ready', portalUrl: portalUrlFor(slug, env) } };
   }
   if (rec.status === 'generating' && rec.lockTs && (Date.now() - rec.lockTs) < GENERATE_LOCK_MS) {
     return { status: 409, body: { slug, status: 'generating', retryAfter: 15 } };
@@ -1210,7 +1225,7 @@ async function handleGenerate(env, payload, ctx) {
     rec.error = null;
     await writeSignup(env, rec);
     if (ctx) ctx.waitUntil(sendLifecycleEmail(env, rec, 'ready'));
-    return { status: 200, body: { slug, status: 'ready', portalUrl: portalUrlFor(slug) } };
+    return { status: 200, body: { slug, status: 'ready', portalUrl: portalUrlFor(slug, env) } };
   } catch (err) {
     rec.status = rec.attempts >= MAX_GENERATION_ATTEMPTS ? 'failed' : 'pending';
     rec.error = String(err && err.message || err).slice(0, 400);
@@ -1411,9 +1426,9 @@ async function getCatalogTemplate(env) {
 
 /* ============================================================ Email layer (Resend) */
 
-function EMAIL_COPY(type, rec) {
+function EMAIL_COPY(type, rec, env) {
   const name = rec.name || 'Friend';
-  const link = portalUrlFor(rec.slug);
+  const link = portalUrlFor(rec.slug, env);
   if (type === 'received') {
     return {
       subject: 'We have your reading',
@@ -1435,14 +1450,14 @@ function EMAIL_COPY(type, rec) {
   if (type === 'failed-admin') {
     return {
       subject: '[portal] generation failed 3x: ' + rec.slug,
-      text: `Signup ${rec.slug} (${rec.name}, ${rec.email}) failed generation ${rec.attempts} times.\nLast error: ${rec.error || 'unknown'}\nCreated: ${new Date(rec.createdTs).toISOString()}\n\nCheck: https://ramon-portal.pages.dev/users-admin\nRetry: POST /generate {"slug":"${rec.slug}"}`
+      text: `Signup ${rec.slug} (${rec.name}, ${rec.email}) failed generation ${rec.attempts} times.\nLast error: ${rec.error || 'unknown'}\nCreated: ${new Date(rec.createdTs).toISOString()}\n\nCheck: ${portalBase(env)}/users-admin\nRetry: POST /generate {"slug":"${rec.slug}"}`
     };
   }
   return null;
 }
 
 async function sendLifecycleEmail(env, rec, type) {
-  const copy = EMAIL_COPY(type, rec);
+  const copy = EMAIL_COPY(type, rec, env);
   if (!copy) return;
   const to = type === 'failed-admin' ? (env.ADMIN_EMAIL || 'adam@feelopus.com') : rec.email;
   const result = { type, ts: Date.now(), ok: false };
