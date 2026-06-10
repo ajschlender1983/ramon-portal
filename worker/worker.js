@@ -453,7 +453,7 @@ function buildReflectUser(payload) {
 - Weeks completed so far: ${j.weeksCompleted ?? 0}
 - Sessions with at least one note: ${j.sessionsWithNoteCount ?? 0}/16`,
 
-`THEIR BIOFIELD READING (frames mirrored from their practitioner)
+`THEIR BIOFIELD READING (mirrored from their field scan)
 ${frameLines || '(not parsed)'}`,
 
 `THEIR NOTES FOR THIS SESSION
@@ -566,7 +566,7 @@ Your job: produce a JSON record with the following exact shape. No prose, no com
     { "id": "sacral",    "label": "Sacral",       "state": "<canonical state>", "yPct": 60, "note": "..." },
     { "id": "root",      "label": "Root",         "state": "<canonical state>", "yPct": 76, "note": "..." }
   ],
-  "reading": "<a 6-section narrative reading body. Sections are: 🜂 ORIC FIELD, 🜁 DNA STRAND ACTIVATION, 🜃 CHAKRA SCAN, 🜄 ORGANIC FIELD, 🜅 VIBRATIONAL LEVEL, 🜆 PRIMARY BLOCK, 🜇 ARCHETYPE. Write as if a thoughtful energetic practitioner wrote it for ${name} based on the intake provided. 350-500 words total. The numbers in the structured fields MUST match what's in the reading text.>"
+  "reading": "<a 6-section narrative reading body. Sections are: 🜂 ORIC FIELD, 🜁 DNA STRAND ACTIVATION, 🜃 CHAKRA SCAN, 🜄 ORGANIC FIELD, 🜅 VIBRATIONAL LEVEL, 🜆 PRIMARY BLOCK, 🜇 ARCHETYPE. Write as the output of a careful field scan performed for ${name}, grounded in the intake provided. Precise, warm, energetic language. 350-500 words total. The numbers in the structured fields MUST match what's in the reading text.>"
 }
 
 The CANONICAL chakra state words (use ONLY these): undercharged, stabilizing, holding, consolidating, clear, carrying-a-lot, radiant.
@@ -1159,7 +1159,7 @@ async function handleSignup(env, payload, request, ctx) {
 
   if (!name) return { status: 400, body: { error: 'name required' } };
   if (!/^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-    return { status: 400, body: { error: 'a real email is required, that is where we send the door' } };
+    return { status: 400, body: { error: 'a real email is required, that is where we send your portal link' } };
   }
   if (!reading || reading.length < 3) {
     return { status: 400, body: { error: 'reading required' } };
@@ -1182,7 +1182,7 @@ async function handleSignup(env, payload, request, ctx) {
     const existing = await readSignup(env, existingSlug);
     if (existing && existing.status === 'ready') {
       if (ctx) ctx.waitUntil(sendLifecycleEmail(env, existing, 'ready'));
-      return { status: 200, body: { status: 'existing', message: 'we already hold a portal for this email, the door has been re-sent' } };
+      return { status: 200, body: { status: 'existing', message: 'this email already has a portal, we re-sent the link' } };
     }
     if (existing) {
       // Pending/failed prior signup for this email: resume it.
@@ -1441,20 +1441,20 @@ function EMAIL_COPY(type, rec, env) {
   const link = portalUrlFor(rec.slug, env);
   if (type === 'received') {
     return {
-      subject: 'We have your reading',
-      text: `${name},\n\nYour reading arrived a moment ago. It's in good hands.\n\nWe're reading it the way your practitioner wrote it, nothing summarized, nothing graded, and building a private portal around it: your words mirrored back, and four weeks of SoundBed sessions drawn from what the reading says.\n\nOne more email is coming, usually within minutes, with the door. Nothing is asked of you until then.\n\nthe OPUS portal`
+      subject: 'We got your scan',
+      text: `${name},\n\nYour scan results just arrived.\n\nWe're building your portal now: your reading mirrored back, nothing summarized and nothing graded, plus a four-week SoundBed session plan drawn from it.\n\nOne more email is coming, usually within minutes, with your portal link.\n\nOPUS SoundBed`
     };
   }
   if (type === 'ready') {
     return {
-      subject: 'Your portal is open',
-      text: `${name},\n\nThe room is ready: ${link}\n\nThat link is yours alone. It's the only key to this room, so keep it the way you'd keep a key. Don't post it anywhere public. If you lose it, reply here and we'll send it again.\n\nInside: the reading you shared, held as the starting frame. A four-week map built from it. A place to leave a note after each session. Go when you're ready. It isn't going anywhere.\n\nthe OPUS portal`
+      subject: 'Your portal is ready',
+      text: `${name},\n\nYour portal is ready: ${link}\n\nThat link is yours alone — it's how you get in, so keep it private and don't post it anywhere public. If you lose it, reply to this email and we'll send it again.\n\nInside: your scan mirrored back, a four-week session map built from it, and a place to leave a note after each session. Go whenever you're ready.\n\nOPUS SoundBed`
     };
   }
   if (type === 'day3') {
     return {
       subject: 'Still here',
-      text: `${name},\n\nNo task in this email. The portal is still holding your reading, whether you've been once, daily, or not yet at all. All three are fine.\n\nOne ask, only if it's easy: if anything in your map reads wrong, a word, a session, a week that doesn't sound like you, reply and say so. We adjust quietly.\n\nthe OPUS portal`
+      text: `${name},\n\nNo task in this email. Your portal is still there, whether you've been once, daily, or not yet at all. All three are fine.\n\nOne ask, only if it's easy: if anything in your map reads wrong, a word, a session, a week that doesn't sound like you, reply and tell us. We'll adjust.\n\nOPUS SoundBed`
     };
   }
   if (type === 'failed-admin') {

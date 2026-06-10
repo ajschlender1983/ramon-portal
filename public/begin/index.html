@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#160F25">
-<title>First Month Map — bring your reading</title>
-<meta name="description" content="Paste the reading you were given. Within minutes: a private portal with your words mirrored back and a four-week SoundBed path drawn from them.">
-<meta property="og:title" content="First Month Map — bring what you were given">
-<meta property="og:description" content="Paste your field reading. We build a private four-week SoundBed portal around it.">
+<title>First Month Map — get started</title>
+<meta name="description" content="Paste your field scan results. In a minute or two you get a private portal: your reading mirrored back, and a four-week SoundBed session plan built from it.">
+<meta property="og:title" content="First Month Map — your four-week SoundBed plan">
+<meta property="og:description" content="Paste your field scan results. We build a private four-week SoundBed portal from them.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://firstmonthmap.com/begin">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='100' cy='100' r='84' fill='none' stroke='%236ADFD9' stroke-width='6'/%3E%3Ccircle cx='100' cy='100' r='52' fill='none' stroke='%23C22FCD' stroke-width='4'/%3E%3Ccircle cx='100' cy='100' r='14' fill='%236ADFD9'/%3E%3C/svg%3E">
@@ -302,31 +302,31 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
   </div>
 
   <div id="form-view">
-    <div class="eyebrow">your reading, made into a room</div>
-    <h1>Bring what you were given. We'll build around it.</h1>
-    <p class="lede">If a practitioner has read your field, paste their words below. Within a few minutes you'll have a private portal: your reading mirrored back, and a four-week path through the SoundBed catalog drawn from it.</p>
+    <div class="eyebrow">a personal four-week SoundBed plan</div>
+    <h1>Paste your scan results. We'll build your map.</h1>
+    <p class="lede">If you've had your field scanned, paste the results below. In a minute or two you'll have a private portal: your reading mirrored back, and a four-week path through the SoundBed catalog built from it.</p>
 
     <form id="signup-form" autocomplete="off" novalidate>
       <div class="field">
-        <label for="f-name">What should we call you?</label>
+        <label for="f-name">Your first name</label>
         <input type="text" id="f-name" name="name" placeholder="First name is fine" maxlength="80" autocomplete="given-name">
       </div>
 
       <div class="field">
-        <label for="f-email">Where should we send the door?</label>
+        <label for="f-email">Your email</label>
         <input type="email" id="f-email" name="email" placeholder="you@somewhere.com" maxlength="254" autocomplete="email">
-        <div class="micro">Two emails: one when we receive the reading, one when your portal is ready. Nothing else unless you ask.</div>
+        <div class="micro">Two emails: one confirming we got your scan, one with your portal link. Nothing else.</div>
       </div>
 
       <div class="field">
-        <label for="f-reading">The reading</label>
-        <div class="guidance">Paste the reading exactly as it arrived. Headings, strange spacing, half-sentences, all of it belongs. Don't clean it up; we read it the way your practitioner wrote it.</div>
-        <textarea id="f-reading" name="reading" placeholder="Paste here. ORIC FIELD, CHAKRA SCAN, fragments, notes, however it came to you." maxlength="8000"></textarea>
+        <label for="f-reading">Your scan results</label>
+        <div class="guidance">Paste the results exactly as they arrived. Headings, strange spacing, half-sentences are all fine. Don't clean it up.</div>
+        <textarea id="f-reading" name="reading" placeholder="Paste here. ORIC FIELD, CHAKRA SCAN, fragments — however it came to you." maxlength="8000"></textarea>
         <div class="micro">Only have it as a photo? Type out whatever you can read. Even pieces are workable.</div>
         <div class="soft-warn" id="short-warn">That looks like a few words. If that's the whole reading, it's enough, go ahead. If there's more, the map gets truer with the full text.</div>
 
         <div class="orion-card">
-          <div class="orion-title">No reading yet? Get one in Orion.</div>
+          <div class="orion-title">No scan yet? Get one in Orion.</div>
           <div class="orion-steps">Create an account in Orion Messenger. Simply type <em>"Scan my field"</em> to The Architect, then paste the results above.</div>
           <a class="btn-orion" href="https://beta.orionmessenger.io/register" target="_blank" rel="noopener">Get Orion Messenger</a>
         </div>
@@ -339,13 +339,13 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
       </div>
 
       <div class="actions">
-        <button type="submit" class="btn-place" id="place-btn">Place the reading</button>
+        <button type="submit" class="btn-place" id="place-btn">Build my map</button>
         <div class="submit-err" id="submit-err"></div>
       </div>
     </form>
 
     <div class="disclosure">
-      <strong>What this is, plainly.</strong> Your portal is written with the help of AI, built only from the words you give us. It reflects; it never concludes. Nothing here is a diagnosis, a treatment, or a truth about you. Your body remains the source of truth, and you can disagree with any line. The portal lives at a private link that works like a key: anyone holding it can open the room, so keep it close and don't post it publicly. What you write inside stays inside. Never sold, never shared.
+      <strong>What this is, plainly.</strong> Your portal is written with the help of AI, built only from the words you give us. It reflects; it never concludes. Nothing here is a diagnosis, a treatment, or a truth about you. Your body remains the source of truth, and you can disagree with any line. Your portal lives at a private link; anyone with the link can open it, so keep it to yourself and don't post it publicly. What you write inside stays inside. Never sold, never shared.
     </div>
 
   </div>
@@ -355,18 +355,18 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
     <h2>Received. Your portal is being made.</h2>
     <div class="wait-sub">This takes a minute or two. Nothing is asked of you. You could close your eyes.</div>
     <div class="stage-line" id="stage-line">reading what you shared…</div>
-    <div class="wait-leave">If you'd rather not wait here, close this page. We'll email the door the moment it's ready.</div>
+    <div class="wait-leave">If you'd rather not wait, close this page. We'll email your portal link the moment it's ready.</div>
 
     <div id="fail-block">
-      <div class="fail-line">Something on our side didn't settle. Your reading is safe. We still have it.</div>
+      <div class="fail-line">Something went wrong on our side. Your scan is saved — nothing was lost.</div>
       <button class="btn-retry" id="retry-btn">Try again</button>
-      <div class="fail-sub">If it happens twice, just close this page. We'll finish your portal and email you the door.</div>
+      <div class="fail-sub">If it happens twice, just close this page. We'll finish your portal and email you the link.</div>
     </div>
 
     <div id="ready-block">
-      <div class="ready-line">The room is ready.</div>
-      <a class="btn-enter" id="enter-link" href="#">Enter your portal</a>
-      <div class="ready-sub">We've also emailed this link to you. It's your key. Keep it close.</div>
+      <div class="ready-line">Your portal is ready.</div>
+      <a class="btn-enter" id="enter-link" href="#">Open your portal</a>
+      <div class="ready-sub">We've also emailed you this link. Keep it private — it's how you get back in.</div>
     </div>
   </div>
 </div>
@@ -375,11 +375,11 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
 (function () {
   const WORKER = 'https://ramon-resolver.ajschlender.workers.dev';
   const STAGES = [
-    'reading what you shared…',
-    'sitting with the places that ask for attention…',
+    'reading your scan…',
+    'noting what stands out…',
     'choosing sessions from the catalog…',
     'laying out your four weeks…',
-    'setting the room…'
+    'finishing your portal…'
   ];
 
   const form = document.getElementById('signup-form');
@@ -407,7 +407,7 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
       placeBtn.textContent = 'This is everything I have';
     } else {
       shortWarn.classList.remove('visible');
-      placeBtn.textContent = 'Place the reading';
+      placeBtn.textContent = 'Build my map';
     }
   });
 
@@ -524,9 +524,9 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
     const email = emailEl.value.trim();
     const reading = readingEl.value.trim();
 
-    if (!name) { showErr('A name, so the room knows who it’s for.'); nameEl.focus(); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { showErr('A real email, that’s where we send the door.'); emailEl.focus(); return; }
-    if (!reading) { showErr('The reading is the room’s starting frame. Paste what you have.'); readingEl.focus(); return; }
+    if (!name) { showErr('Please add your first name.'); nameEl.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { showErr('Please enter a real email — that’s where your portal link goes.'); emailEl.focus(); return; }
+    if (!reading) { showErr('Paste your scan results — that’s what we build from.'); readingEl.focus(); return; }
 
     const words = reading.split(/\s+/).filter(Boolean).length;
     if (words < 15 && !shortConfirmed) {
@@ -537,7 +537,7 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
     }
 
     placeBtn.disabled = true;
-    placeBtn.textContent = 'Placing…';
+    placeBtn.textContent = 'Building…';
 
     try {
       const resp = await fetch(WORKER + '/signup', {
@@ -548,21 +548,21 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
       const data = await resp.json().catch(() => ({}));
 
       if (resp.status === 429) {
-        showErr('Too many doors opened from this connection. Try again in an hour.');
+        showErr('Too many signups from this connection. Try again in an hour.');
         placeBtn.disabled = false;
-        placeBtn.textContent = 'Place the reading';
+        placeBtn.textContent = 'Build my map';
         return;
       }
       if (data.status === 'existing') {
-        showErr('We already hold a portal for this email. The door has been re-sent; check your inbox.');
+        showErr('This email already has a portal. We’ve re-sent the link — check your inbox.');
         placeBtn.disabled = false;
-        placeBtn.textContent = 'Place the reading';
+        placeBtn.textContent = 'Build my map';
         return;
       }
       if (!resp.ok || !data.slug) {
         showErr(data.error || 'Something didn’t land. Try once more.');
         placeBtn.disabled = false;
-        placeBtn.textContent = 'Place the reading';
+        placeBtn.textContent = 'Build my map';
         return;
       }
 
@@ -575,7 +575,7 @@ body.ready .breath-dot { animation: none; transform: scale(1.1); opacity: 1; }
     } catch {
       showErr('The connection didn’t hold. Try once more.');
       placeBtn.disabled = false;
-      placeBtn.textContent = 'Place the reading';
+      placeBtn.textContent = 'Build my map';
     }
   });
 })();

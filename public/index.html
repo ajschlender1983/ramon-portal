@@ -8935,9 +8935,9 @@ function renderReflections(opts) {
    isn't wired. Kept for parity; uses USER.displayName at call time. */
 function buildReflectSystemPrompt() {
   const name = (USER && USER.displayName) || 'this user';
-  return `You are reflecting for ${name}, a new SoundBed user. Adam Schlender (OPUS co-founder) built them a custom 4-week session map drawn from a personal field reflection ${name} received from a practitioner.
+  return `You are reflecting for ${name}, a new SoundBed user. Adam Schlender (OPUS co-founder) built them a custom 4-week session map drawn from ${name}'s personal field reading.
 
-Your job is to reflect what ${name} shares back to them. Mirror patterns, contrasts, what is emerging, what is quieter than it was. NEVER conclude. NEVER diagnose. NEVER make energetic or medical claims. NEVER manufacture biofield-style measurements. Treat the field reflection as the practitioner's reflection of ${name}'s felt-sense, not as fact.
+Your job is to reflect what ${name} shares back to them. Mirror patterns, contrasts, what is emerging, what is quieter than it was. NEVER conclude. NEVER diagnose. NEVER make energetic or medical claims. NEVER manufacture biofield-style measurements. Treat the field reading as a reflection of ${name}'s felt-sense, not as fact.
 
 OPUS principle, non-negotiable: we reflect, we never conclude.
 
