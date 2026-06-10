@@ -10,7 +10,7 @@
 
 window.OPUS = window.OPUS || {};
 
-const VERSION = '2.0.0-alpha.4';
+const VERSION = '2.0.0-alpha.5';
 
 const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
 const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
@@ -58,14 +58,39 @@ const CloudSync = (function () {
     return state;
   }
 
+  // v1.15.1 (alpha.5): deep merge — see public/index.html for rationale.
+  // JSON objects merge by sub-key (server wins conflicts, local-only
+  // sub-keys survive); arrays union; plain strings keep server-wins.
+  function mergeStateValues(localVal, serverVal) {
+    try {
+      const l = JSON.parse(localVal);
+      const sv = JSON.parse(serverVal);
+      if (Array.isArray(l) && Array.isArray(sv)) {
+        const seen = new Set(sv.map(x => JSON.stringify(x)));
+        return JSON.stringify(sv.concat(l.filter(x => !seen.has(JSON.stringify(x)))));
+      }
+      if (l && sv && typeof l === 'object' && typeof sv === 'object'
+          && !Array.isArray(l) && !Array.isArray(sv)) {
+        return JSON.stringify(Object.assign({}, l, sv));
+      }
+    } catch { /* one side is not JSON */ }
+    return serverVal;
+  }
+
   function applyServerStateToLS(state) {
     if (!state || typeof state !== 'object') return 0;
     let n = 0;
-    // v1.11.5: ADDITIVE merge — DO NOT remove local keys missing from
-    // server. Was nuking unpushed local notes when sendBeacon failed on
-    // tab close. Local-only keys now survive and push on next debounce.
+    // v1.11.5: ADDITIVE merge — local-only keys survive a rehydrate.
+    // v1.15.1: DEEP merge — local-only sub-keys inside JSON blobs
+    // survive too (the recovery path for pre-v1.11.6 stranded writes).
     for (const k in state) {
-      if (typeof state[k] === 'string') { localStorage.setItem(k, state[k]); n++; }
+      if (typeof state[k] !== 'string') continue;
+      const localVal = localStorage.getItem(k);
+      const merged = (localVal && localVal !== state[k])
+        ? mergeStateValues(localVal, state[k])
+        : state[k];
+      localStorage.setItem(k, merged);
+      n++;
     }
     return n;
   }

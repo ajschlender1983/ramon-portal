@@ -4639,6 +4639,27 @@ const RESOLVE_STATE   = RESOLVE_BASE + '/state';   // v1.11.0: per-slug state bl
    relevant per-browser anyway).
    ============================================================ */
 
+/* v1.15.1: deep merge for cloud-synced localStorage values. Both sides
+   are strings; when both parse as JSON objects, merge by sub-key with
+   server winning conflicts and local-only sub-keys surviving. Arrays
+   union (server order first). Anything else: server wins. Top-level so
+   it is unit-testable from the console. */
+function mergeStateValues(localVal, serverVal) {
+  try {
+    const l = JSON.parse(localVal);
+    const sv = JSON.parse(serverVal);
+    if (Array.isArray(l) && Array.isArray(sv)) {
+      const seen = new Set(sv.map(x => JSON.stringify(x)));
+      return JSON.stringify(sv.concat(l.filter(x => !seen.has(JSON.stringify(x)))));
+    }
+    if (l && sv && typeof l === 'object' && typeof sv === 'object'
+        && !Array.isArray(l) && !Array.isArray(sv)) {
+      return JSON.stringify(Object.assign({}, l, sv));
+    }
+  } catch { /* one side is not JSON */ }
+  return serverVal;
+}
+
 const CloudSync = (function () {
   const SYNC_DEBOUNCE_MS = 1200;
   const SYNCED_LS_SUFFIXES = [
@@ -4672,21 +4693,24 @@ const CloudSync = (function () {
     if (!state || typeof state !== 'object') return 0;
     let n = 0;
     // v1.11.5: ADDITIVE merge — DO NOT remove local keys missing from
-    // server. The previous "server wins / delete missing" policy caused
-    // data loss when a user typed a note, the 1.2s debounce + sendBeacon
-    // push didn't complete before tab close (mobile Safari + some
-    // network conditions), and the next page load wiped the unpushed
-    // note because cloud didn't know about it. Now: server values
-    // overwrite local for the same key (server wins for known keys),
-    // but local-only keys survive and push on the next debounce cycle.
-    // Trade-off: a key deleted on device A may persist on device B
-    // until device B writes the same key. Acceptable for personal
-    // note-taking; data preservation is the priority.
+    // server (unpushed local writes must survive a rehydrate).
+    // v1.15.1: DEEP merge — additivity at the localStorage-KEY level is
+    // not enough, because each key holds one JSON blob. Real case: a
+    // user's week of notes lived only in old-origin localStorage (the
+    // pre-v1.11.6 sync race ate the pushes); the server's notes.v1 held
+    // one newer session. Key-level "server wins" would have replaced
+    // the 8-session local blob with the 1-session server blob, then
+    // pushed the loss back to the cloud. Now JSON objects merge by
+    // sub-key (server wins conflicts, local-only sub-keys survive) and
+    // arrays union. Plain strings keep server-wins.
     for (const k in state) {
-      if (typeof state[k] === 'string') {
-        localStorage.setItem(k, state[k]);
-        n++;
-      }
+      if (typeof state[k] !== 'string') continue;
+      const localVal = localStorage.getItem(k);
+      const merged = (localVal && localVal !== state[k])
+        ? mergeStateValues(localVal, state[k])
+        : state[k];
+      localStorage.setItem(k, merged);
+      n++;
     }
     return n;
   }
@@ -4804,7 +4828,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.15.0';
+const VERSION = '1.15.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
