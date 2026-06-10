@@ -4358,6 +4358,50 @@ section#reflect.reflected .section-title em {
   letter-spacing: 0.02em;
   margin-top: 4px;
 }
+/* v1.15.2: Arc strips v2 — collapsible compact drawer */
+.arc-strips-toggle {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 14px 4px 10px;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 11px; letter-spacing: 0.2em;
+  color: var(--mid); text-transform: uppercase;
+  transition: color 0.25s ease;
+}
+.arc-strips-toggle:hover { color: var(--light); }
+.arc-strips-toggle-icon {
+  width: 7px; height: 7px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.3s ease;
+  margin-top: -3px;
+}
+.arc-strips-drawer.open ~ .arc-strips-toggle .arc-strips-toggle-icon,
+.arc-strips-toggle[aria-expanded="true"] .arc-strips-toggle-icon {
+  transform: rotate(-135deg); margin-top: 3px;
+}
+.arc-strips-drawer { display: none; }
+.arc-strips-drawer.open { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+.arc-strip-v2 {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--arc-state-tint, var(--accent));
+  background: rgba(255,255,255,0.02);
+  border-radius: 4px;
+}
+.arc-strip-v2-head {
+  display: flex; align-items: baseline; gap: 12px;
+}
+.arc-strip-v2 .arc-strip-pills { margin-bottom: 0; }
+.arc-strip-v2 .arc-strip-track { margin: 2px 0 2px; }
+.arc-strip-v2 .arc-strip-quote { margin-bottom: 0; }
+.arc-strip-v2 .arc-strip-summary { margin-top: 0; }
+
 .arc-coda {
   text-align: center;
   font-family: var(--serif);
@@ -4828,7 +4872,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.15.1';
+const VERSION = '1.15.2';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7046,13 +7090,115 @@ function buildArcMiniSilhouette(snap, mode) {
   return svg;
 }
 
+/* v1.15.2: Arc strips v2 — collapsible drawer, compact rows, no week
+   badges, no empty pip tracks, no day-1 filler lines. Rolled out per
+   slug (Paul first) so Adam reviews before the rest migrate. */
+const ARC_V2_SLUGS = ['paul-x8t3m'];
+
+function arcStripsV2Enabled() {
+  return !!(USER && ARC_V2_SLUGS.includes(USER.slug));
+}
+
 function buildArcStrips(s) {
+  if (arcStripsV2Enabled()) return buildArcStripsV2(s);
   const wrap = el('div', { class: 'arc-strips' });
   s.centers.forEach((c, i) => {
     wrap.appendChild(buildArcStrip(c, s.axis, s.mode, i));
   });
   wrap.appendChild(el('div', { class: 'arc-coda', text: 'we reflect, we never conclude.' }));
   return wrap;
+}
+
+function buildArcStripsV2(s) {
+  const wrap = el('div', { class: 'arc-strips arc-strips--v2' });
+  const lsKey = (USER && USER.slug ? USER.slug : 'anon') + '.arcStripsOpen.v1';
+  let open = false;
+  try { open = localStorage.getItem(lsKey) === '1'; } catch {}
+
+  // How much has actually happened? Drives the toggle caption.
+  const doneCount = s.centers.reduce((n, c) => n + c.sessions.filter(x => x.done).length, 0);
+  const capturedWeeks = s.axis.points.filter(p => p.captured).length;
+
+  const toggle = el('button', { class: 'arc-strips-toggle', type: 'button', 'aria-expanded': open ? 'true' : 'false' });
+  toggle.appendChild(el('span', { class: 'arc-strips-toggle-icon', 'aria-hidden': 'true' }));
+  const centersWord = s.mode === 'pattern' ? 'the three centers' : 'the seven centers';
+  const caption = doneCount > 0
+    ? centersWord + ' · ' + doneCount + ' session' + (doneCount === 1 ? '' : 's') + ' met'
+    : centersWord;
+  toggle.appendChild(el('span', { class: 'arc-strips-toggle-text', text: caption }));
+  wrap.appendChild(toggle);
+
+  const drawer = el('div', { class: 'arc-strips-drawer' + (open ? ' open' : '') });
+  s.centers.forEach(c => drawer.appendChild(buildArcStripV2(c, s.axis, capturedWeeks)));
+  drawer.appendChild(el('div', { class: 'arc-coda', text: 'we reflect, we never conclude.' }));
+  wrap.appendChild(drawer);
+
+  toggle.addEventListener('click', () => {
+    const now = drawer.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', now ? 'true' : 'false');
+    try { localStorage.setItem(lsKey, now ? '1' : '0'); } catch {}
+  });
+  return wrap;
+}
+
+function buildArcStripV2(center, axis, capturedWeeks) {
+  const row = el('div', { class: 'arc-strip-v2' });
+  row.style.setProperty('--arc-state-tint', arcStateTint(center.state));
+
+  const head = el('div', { class: 'arc-strip-v2-head' });
+  head.appendChild(el('span', { class: 'arc-strip-label', text: center.label.toUpperCase() }));
+  head.appendChild(el('span', { class: 'arc-strip-state', text: center.state || '' }));
+  row.appendChild(head);
+
+  // Pip track only when the journey has more than the baseline captured;
+  // four empty circles at day one convey nothing.
+  if (capturedWeeks > 1) {
+    const track = el('div', { class: 'arc-strip-track' });
+    axis.points.forEach((p, i) => {
+      const pip = center.pips[i] || { lit: false };
+      const pipEl = el('div', { class: 'arc-pip' + (pip.lit ? ' is-lit' : ' is-open') });
+      if (pip.lit && pip.state) pipEl.style.background = arcStateTint(pip.state);
+      track.appendChild(pipEl);
+      if (i < axis.points.length - 1) {
+        const isDashed = !pip.lit || !center.pips[i+1] || !center.pips[i+1].lit;
+        track.appendChild(el('div', { class: 'arc-pip-line' + (isDashed ? ' is-dashed' : '') }));
+      }
+    });
+    row.appendChild(track);
+  }
+
+  if (center.sessions.length) {
+    const pills = el('div', { class: 'arc-strip-pills' });
+    center.sessions.forEach(sx => {
+      const pill = el('div', {
+        class: 'arc-pill' + (sx.done ? ' is-done' : '') + (sx.peak ? ' is-peak' : '')
+      });
+      pill.appendChild(el('div', { class: 'arc-pill-name', text: sx.heading }));
+      const meta = el('div', { class: 'arc-pill-meta' });
+      if (sx.peak) meta.appendChild(el('span', { class: 'arc-pill-mark', text: '\u2726 ' + sx.wow }));
+      else if (sx.done) meta.appendChild(el('span', { class: 'arc-pill-mark arc-pill-mark--soft', text: '\u2726' }));
+      if (sx.week) meta.appendChild(el('span', { class: 'arc-pill-week', text: 'wk ' + sx.week }));
+      if (meta.firstChild) pill.appendChild(meta);
+      pills.appendChild(pill);
+    });
+    row.appendChild(pills);
+  }
+
+  if (center.quote) {
+    const q = el('div', { class: 'arc-strip-quote' });
+    q.appendChild(el('span', { class: 'arc-q-text', text: '"' + center.quote.text + '"' }));
+    q.appendChild(el('span', { class: 'arc-q-attr', text: ' \u2014 your note, ' + center.quote.sessionHeading.toLowerCase() }));
+    row.appendChild(q);
+  }
+
+  // Summary only when there is activity to summarize. The day-one
+  // restatements ("the crown starts radiant") were filler.
+  const done = center.sessions.filter(x => x.done).length;
+  if (done > 0) {
+    row.appendChild(el('div', { class: 'arc-strip-summary', text: center.summary }));
+  }
+
+  return row;
 }
 
 function buildArcStrip(center, axis, mode, idx) {
