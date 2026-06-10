@@ -2338,6 +2338,110 @@ main { position: relative; z-index: 2; }
    left in place but inert (nothing in the rendered DOM uses it now). */
 
 /* Whisper line at section transitions (Principle 03 distributed) */
+/* v1.15.0: EBI feedback button + panel. Floating, quiet, bottom-right.
+   Tooltip on hover; panel opens in place. Motion: fade only. */
+.ebi-fab {
+  position: fixed;
+  right: 22px; bottom: 22px;
+  z-index: 600;
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 18px;
+  background: rgba(31,22,50,0.92);
+  border: 1px solid rgba(255,215,100,0.35);
+  border-radius: 999px;
+  color: var(--gold);
+  font-family: var(--sans);
+  font-size: 12px; letter-spacing: 0.14em;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.ebi-fab:hover { border-color: rgba(255,215,100,0.7); transform: translateY(-1px); }
+.ebi-fab .spark { font-size: 13px; }
+.ebi-tooltip {
+  position: fixed;
+  right: 22px; bottom: 70px;
+  z-index: 600;
+  max-width: 250px;
+  padding: 10px 14px;
+  background: rgba(22,15,37,0.96);
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 10px;
+  font-family: var(--serif); font-style: italic;
+  font-size: 13px; color: var(--light);
+  line-height: 1.5;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.ebi-fab:hover + .ebi-tooltip, .ebi-fab:focus-visible + .ebi-tooltip { opacity: 1; }
+.ebi-panel {
+  position: fixed;
+  right: 22px; bottom: 76px;
+  z-index: 610;
+  width: min(340px, calc(100vw - 44px));
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(31,22,50,0.97), rgba(22,15,37,0.97));
+  border: 1px solid rgba(255,215,100,0.25);
+  border-radius: 14px;
+  box-shadow: 0 18px 50px -18px rgba(0,0,0,0.7);
+  display: none;
+}
+.ebi-panel.open { display: block; }
+.ebi-panel-title {
+  font-family: var(--serif); font-style: italic;
+  font-size: 17px; color: var(--gold);
+  margin-bottom: 6px;
+}
+.ebi-panel-sub {
+  font-size: 12px; color: var(--mid);
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.ebi-panel textarea {
+  width: 100%;
+  min-height: 96px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--light);
+  font-family: var(--sans); font-size: 13px;
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.ebi-panel textarea:focus { outline: none; border-color: rgba(255,215,100,0.4); }
+.ebi-panel-actions {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 12px;
+}
+.ebi-send {
+  background: var(--gold); color: #1A132A;
+  border: none; border-radius: 8px;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  cursor: pointer;
+}
+.ebi-send:disabled { opacity: 0.45; cursor: default; }
+.ebi-cancel {
+  background: none; border: none;
+  color: var(--dim); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer; font-family: var(--sans);
+}
+.ebi-status {
+  font-family: var(--serif); font-style: italic;
+  font-size: 13px; color: var(--teal);
+  margin-top: 10px; min-height: 18px;
+}
+@media (max-width: 720px) {
+  .ebi-fab { right: 14px; bottom: 14px; padding: 10px 15px; }
+  .ebi-panel { right: 14px; bottom: 64px; }
+  .ebi-tooltip { display: none; }
+}
+@media print { .ebi-fab, .ebi-panel, .ebi-tooltip { display: none !important; } }
+
 /* v1.14.3: first-visit whisper for generated (self-serve) users.
    One line above the hero, gone on return visits. */
 .arrival-whisper {
@@ -4700,7 +4804,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.14.3';
+const VERSION = '1.15.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -6726,6 +6830,81 @@ function composeCenterSummary(center, latestState, sessions, mode) {
   if (done >= total - 1 && total > 0) return 'the ' + label + ' has been gathered, session by session.';
   if (done >= 1) return 'the ' + label + ' is gathering. ' + done + ' of ' + total + ' sessions met.';
   return 'the ' + label + ' is still being met.';
+}
+
+/* v1.15.0: EBI feedback button. Floating affordance on every portal.
+   Submissions go to the worker, get classified (bug / feature /
+   improvement), bugs are auto-queued for fixing, the rest surface in
+   the admin dashboard. */
+function mountEbiButton() {
+  if (document.querySelector('.ebi-fab')) return;
+
+  const fab = el('button', { class: 'ebi-fab', type: 'button', 'aria-label': 'EBI: share feedback' });
+  fab.appendChild(el('span', { class: 'spark', text: '\u2726' }));
+  fab.appendChild(el('span', { text: 'EBI' }));
+
+  const tip = el('div', { class: 'ebi-tooltip', role: 'tooltip',
+    text: 'Even Better If. See a bug? Have an idea? Tell us. Bugs get fixed, ideas get heard.' });
+
+  const panel = el('div', { class: 'ebi-panel' });
+  panel.appendChild(el('div', { class: 'ebi-panel-title', text: 'Even better if\u2026' }));
+  panel.appendChild(el('div', { class: 'ebi-panel-sub',
+    text: 'What broke, what confused you, or what would make this better. A sentence is plenty.' }));
+  const ta = el('textarea', { maxlength: '2000', placeholder: 'Even better if\u2026' });
+  panel.appendChild(ta);
+  const actions = el('div', { class: 'ebi-panel-actions' });
+  const send = el('button', { class: 'ebi-send', type: 'button', text: 'Send' });
+  const cancel = el('button', { class: 'ebi-cancel', type: 'button', text: 'Close' });
+  actions.appendChild(send);
+  actions.appendChild(cancel);
+  panel.appendChild(actions);
+  const status = el('div', { class: 'ebi-status' });
+  panel.appendChild(status);
+
+  function closePanel() {
+    panel.classList.remove('open');
+    status.textContent = '';
+  }
+  fab.addEventListener('click', () => {
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) ta.focus();
+  });
+  cancel.addEventListener('click', closePanel);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+
+  send.addEventListener('click', async () => {
+    const text = ta.value.trim();
+    if (text.length < 3) { status.textContent = 'A few words is all it takes.'; return; }
+    send.disabled = true;
+    status.textContent = 'Sending\u2026';
+    try {
+      const resp = await fetch(RESOLVE_BASE + '/feedback', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          slug: (USER && USER.slug) || '',
+          name: (USER && USER.displayName) || '',
+          page: location.pathname + location.search
+        })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) throw new Error(data.error || 'HTTP ' + resp.status);
+      ta.value = '';
+      status.textContent = data.type === 'bug'
+        ? 'Received. That one goes to the front of the line.'
+        : 'Received. Thank you for shaping this.';
+      setTimeout(closePanel, 2600);
+    } catch (err) {
+      status.textContent = 'Did not send (' + (err.message || err) + '). Try once more.';
+    } finally {
+      send.disabled = false;
+    }
+  });
+
+  document.body.appendChild(fab);
+  document.body.appendChild(tip);
+  document.body.appendChild(panel);
 }
 
 /* v1.14.3: arrival moment for generated users. First visit only
@@ -9521,6 +9700,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   ramonState = loadState();
   applyUserToDOM();
   mountArrivalWhisper();
+  mountEbiButton();
 
   renderPhaseTabs();
   renderPhasePanels();

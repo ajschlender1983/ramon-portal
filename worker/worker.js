@@ -113,6 +113,20 @@ export default {
       }
     }
 
+    /* v1.15.0: GET /feedback — admin list of all EBI feedback records. */
+    if (request.method === 'GET' && url.pathname === '/feedback') {
+      const tok = request.headers.get('x-admin-token') || url.searchParams.get('key') || '';
+      if (!env.ADMIN_TOKEN || tok !== env.ADMIN_TOKEN) {
+        return json({ error: 'unauthorized' }, 401, cors);
+      }
+      try {
+        const feedback = await readAllFeedback(env);
+        return json({ feedback, count: feedback.length }, 200, cors);
+      } catch (err) {
+        return json({ error: String(err && err.message || err) }, 502, cors);
+      }
+    }
+
     /* v1.12: GET /survey — admin-guarded read of all dashboard-survey
        responses. Caller must present x-admin-token header matching
        env.ADMIN_TOKEN. */
@@ -165,6 +179,23 @@ export default {
       if (url.pathname === '/survey') {
         const result = await writeSurveyResponse(env, payload, request);
         return json(result, 200, cors);
+      }
+      /* v1.15.0: POST /feedback — public EBI feedback. Classified via
+         Claude (bug/feature/improvement); bugs alert the admin and queue
+         for the auto-fix agent. */
+      if (url.pathname === '/feedback') {
+        const r = await handleFeedback(env, payload, request, ctx);
+        return json(r.body, r.status, cors);
+      }
+      /* v1.15.0: POST /feedback/update — admin status transitions, used
+         by the auto-fix agent (fixing -> fixed / needs-human). */
+      if (url.pathname === '/feedback/update') {
+        const tok = request.headers.get('x-admin-token') || url.searchParams.get('key') || '';
+        if (!env.ADMIN_TOKEN || tok !== env.ADMIN_TOKEN) {
+          return json({ error: 'unauthorized' }, 401, cors);
+        }
+        const r = await updateFeedback(env, payload);
+        return json(r.body, r.status, cors);
       }
       /* v1.14.0: POST /signup — public self-serve signup. Validates,
          rate-limits per IP, dedupes by email, stores signup:<slug>,
@@ -1589,4 +1620,164 @@ async function sweepSignups(env) {
     }
   }
   return summary;
+}
+
+/* ============================================================
+   v1.15.0: EBI feedback loop
+   ============================================================
+   POST /feedback          public; rate-limited; Claude-classified
+   GET  /feedback          admin; all records, newest first
+   POST /feedback/update   admin; {id, status, note}
+
+   KV: feedback:<id>  {id, ts, slug, name, text, page, ua,
+                       type: bug|feature|improvement|appreciation|other,
+                       severity: low|medium|high,
+                       summary, status: new|fixing|fixed|needs-human|noted,
+                       fixNote}
+
+   Routing: type 'bug' -> immediate admin email with triage + a local
+   recurring Claude Code agent (created outside this worker) polls for
+   status=new bugs, fixes them in the repo, deploys, and updates status.
+   Everything else surfaces in the users-admin Feedback section.
+   ============================================================ */
+
+const FEEDBACK_MAX_CHARS = 2000;
+const FEEDBACK_RATE_LIMIT = 10; // per IP per hour
+
+function feedbackId() {
+  const buf = new Uint8Array(6);
+  crypto.getRandomValues(buf);
+  let s = '';
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 6; i++) s += chars[buf[i] % 36];
+  return Date.now() + '-' + s;
+}
+
+/* Heuristic fallback when the Claude classification call fails: the
+   feedback still lands, just with a cruder type. */
+function classifyHeuristic(text) {
+  const t = text.toLowerCase();
+  if (/\b(bug|broken|error|fail|crash|doesn'?t (work|load|save)|can'?t (see|open|click|save)|wrong|missing|blank|stuck|404|glitch)\b/.test(t)) {
+    return { type: 'bug', severity: 'medium', summary: text.slice(0, 90) };
+  }
+  if (/\b(love|beautiful|amazing|thank|grateful|wonderful)\b/.test(t) && text.length < 220) {
+    return { type: 'appreciation', severity: 'low', summary: text.slice(0, 90) };
+  }
+  if (/\b(add|wish|would be|could you|feature|idea|suggest|what if)\b/.test(t)) {
+    return { type: 'feature', severity: 'low', summary: text.slice(0, 90) };
+  }
+  return { type: 'improvement', severity: 'low', summary: text.slice(0, 90) };
+}
+
+async function classifyFeedback(env, text, page) {
+  if (!env.ANTHROPIC_API_KEY) return classifyHeuristic(text);
+  try {
+    const raw = await callClaude(env, {
+      system: `You triage user feedback for a SoundBed wellness portal. Return ONLY JSON:
+{"type":"bug|feature|improvement|appreciation|other","severity":"low|medium|high","summary":"<max 20 words, plain, names the affected surface if a bug>"}
+Rules: "bug" only when something is broken or not working as described. Requests and ideas are "feature". Tone/copy/UX suggestions are "improvement". Praise with no ask is "appreciation". severity high = data loss or cannot use the portal.`,
+      max_tokens: 200,
+      timeoutMs: 15000,
+      messages: [{ role: 'user', content: `Page: ${page || 'unknown'}\nFeedback:\n${text}` }]
+    });
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (m) {
+      const p = JSON.parse(m[0]);
+      const type = ['bug','feature','improvement','appreciation','other'].includes(p.type) ? p.type : 'other';
+      const severity = ['low','medium','high'].includes(p.severity) ? p.severity : 'low';
+      const summary = (typeof p.summary === 'string' && p.summary.trim()) ? p.summary.trim().slice(0, 160) : text.slice(0, 90);
+      return { type, severity, summary };
+    }
+  } catch (err) {
+    console.log('feedback classify failed: ' + String(err && err.message || err));
+  }
+  return classifyHeuristic(text);
+}
+
+async function handleFeedback(env, payload, request, ctx) {
+  const text = (payload && typeof payload.text === 'string' ? payload.text : '').trim().slice(0, FEEDBACK_MAX_CHARS);
+  if (!text || text.length < 3) return { status: 400, body: { error: 'feedback text required' } };
+
+  const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+  const rlKey = 'rl:feedback:' + ip;
+  const count = parseInt(await env.STATE_KV.get(rlKey) || '0', 10);
+  if (count >= FEEDBACK_RATE_LIMIT) {
+    return { status: 429, body: { error: 'plenty received from this connection, try again in an hour' } };
+  }
+  await env.STATE_KV.put(rlKey, String(count + 1), { expirationTtl: 3600 });
+
+  const cls = await classifyFeedback(env, text, payload.page);
+  const rec = {
+    id: feedbackId(),
+    ts: Date.now(),
+    slug: (typeof payload.slug === 'string' ? payload.slug : '').slice(0, 60),
+    name: (typeof payload.name === 'string' ? payload.name : '').slice(0, 80),
+    text,
+    page: (typeof payload.page === 'string' ? payload.page : '').slice(0, 200),
+    ua: (request.headers.get('user-agent') || '').slice(0, 200),
+    type: cls.type,
+    severity: cls.severity,
+    summary: cls.summary,
+    status: cls.type === 'bug' ? 'new' : 'noted',
+    fixNote: null
+  };
+  await env.STATE_KV.put('feedback:' + rec.id, JSON.stringify(rec));
+
+  if (rec.type === 'bug' && ctx) {
+    ctx.waitUntil(sendFeedbackBugAlert(env, rec));
+  }
+  return { status: 201, body: { ok: true, type: rec.type } };
+}
+
+async function sendFeedbackBugAlert(env, rec) {
+  if (!env.RESEND_API_KEY) { console.log('bug alert skipped (no key): ' + rec.id); return; }
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'authorization': 'Bearer ' + env.RESEND_API_KEY,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: env.EMAIL_FROM || 'OPUS SoundBed <portal@firstmonthmap.com>',
+        to: [env.ADMIN_EMAIL || 'adam@feelopus.com'],
+        reply_to: env.ADMIN_EMAIL || 'adam@feelopus.com',
+        subject: '[portal bug] ' + rec.summary.slice(0, 80),
+        text: `Bug feedback from ${rec.name || 'anonymous'} (${rec.slug || 'no slug'})\nSeverity: ${rec.severity}\nPage: ${rec.page}\n\nTheir words:\n${rec.text}\n\nTriage summary: ${rec.summary}\n\nThe auto-fix agent will pick this up on its next run. Track it:\n${portalBase(env)}/users-admin\n\nFeedback id: ${rec.id}`
+      })
+    });
+  } catch (err) {
+    console.log('bug alert email failed: ' + String(err && err.message || err));
+  }
+}
+
+async function readAllFeedback(env) {
+  const out = [];
+  let cursor = undefined;
+  for (let i = 0; i < 10; i++) {
+    const list = await env.STATE_KV.list({ prefix: 'feedback:', cursor });
+    for (const k of list.keys) {
+      const v = await env.STATE_KV.get(k.name);
+      if (!v) continue;
+      try { out.push(JSON.parse(v)); } catch {}
+    }
+    if (list.list_complete) break;
+    cursor = list.cursor;
+  }
+  out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  return out;
+}
+
+async function updateFeedback(env, payload) {
+  const id = (payload && typeof payload.id === 'string' ? payload.id : '').trim();
+  if (!id || !/^[0-9]+-[a-z0-9]{6}$/.test(id)) return { status: 400, body: { error: 'invalid id' } };
+  const raw = await env.STATE_KV.get('feedback:' + id);
+  if (!raw) return { status: 404, body: { error: 'not found' } };
+  let rec;
+  try { rec = JSON.parse(raw); } catch { return { status: 500, body: { error: 'corrupt record' } }; }
+  const validStatus = ['new', 'fixing', 'fixed', 'needs-human', 'noted'];
+  if (payload.status && validStatus.includes(payload.status)) rec.status = payload.status;
+  if (typeof payload.note === 'string') rec.fixNote = payload.note.slice(0, 600);
+  await env.STATE_KV.put('feedback:' + id, JSON.stringify(rec));
+  return { status: 200, body: { ok: true, id, status: rec.status } };
 }

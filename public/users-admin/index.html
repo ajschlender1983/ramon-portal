@@ -264,6 +264,44 @@ details.raw pre {
   font-style: italic; padding: 40px 0;
 }
 
+/* Feedback section */
+.fb-row {
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--accent-bright);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+}
+.fb-row.t-bug { border-left-color: #DE1545; }
+.fb-row.t-feature, .fb-row.t-improvement { border-left-color: var(--gold); }
+.fb-row.t-appreciation { border-left-color: var(--teal); }
+.fb-type {
+  padding: 2px 10px; border-radius: 4px;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  border: 1px solid var(--glass-border); color: var(--mid);
+}
+.t-bug .fb-type { color: #DE1545; border-color: rgba(222,21,69,0.4); }
+.t-feature .fb-type, .t-improvement .fb-type { color: var(--gold); border-color: rgba(255,215,100,0.4); }
+.t-appreciation .fb-type { color: var(--teal); border-color: rgba(106,223,217,0.4); }
+.fb-status {
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--mid);
+}
+.fb-status.st-fixed { color: var(--teal); }
+.fb-status.st-new, .fb-status.st-fixing { color: var(--gold); }
+.fb-status.st-needs-human { color: #DE1545; }
+.fb-who { color: var(--dim); font-size: 11px; }
+.fb-text {
+  width: 100%;
+  font-family: var(--serif); font-style: italic;
+  font-size: 14px; color: var(--light);
+  line-height: 1.5;
+}
+.fb-note { width: 100%; color: var(--dim); font-size: 11px; font-family: monospace; }
+
 /* Signups table */
 .signups-section { margin-bottom: 36px; }
 .signups-title {
@@ -314,6 +352,7 @@ details.raw pre {
   const WORKER = 'https://ramon-resolver.ajschlender.workers.dev';
   const STATE_ALL = WORKER + '/state/all';
   const SIGNUPS = WORKER + '/signups';
+  const FEEDBACK = WORKER + '/feedback';
   const SS_KEY = 'usersAdmin.token.v1';
 
   const DISPLAY_NAMES = {
@@ -548,6 +587,32 @@ details.raw pre {
     try { return new Date(ts).toLocaleString(); } catch { return String(ts); }
   }
 
+  function buildFeedbackSection(feedback) {
+    const sec = el('div', { class: 'signups-section' });
+    const bugs = feedback.filter(f => f.type === 'bug');
+    const ideas = feedback.filter(f => f.type !== 'bug');
+    sec.appendChild(el('div', { class: 'signups-title', text: 'EBI feedback (' + feedback.length + ')' }));
+    if (!feedback.length) {
+      sec.appendChild(el('div', { class: 'empty-line', text: 'Nothing yet. The EBI button is live on every portal.' }));
+      return sec;
+    }
+    function row(f) {
+      const r = el('div', { class: 'fb-row t-' + (f.type || 'other') });
+      r.appendChild(el('div', { class: 'fb-type', text: f.type || '?' }));
+      if (f.type === 'bug') {
+        r.appendChild(el('div', { class: 'fb-status st-' + (f.status || 'new'), text: f.status || 'new' }));
+        if (f.severity) r.appendChild(el('div', { class: 'fb-who', text: f.severity }));
+      }
+      r.appendChild(el('div', { class: 'fb-who', text: (f.name || 'anonymous') + (f.slug ? ' · ' + f.slug : '') + ' · ' + fmtTs(f.ts) + (f.page ? ' · ' + f.page : '') }));
+      r.appendChild(el('div', { class: 'fb-text', text: '\u201C' + (f.text || '') + '\u201D' }));
+      if (f.fixNote) r.appendChild(el('div', { class: 'fb-note', text: 'fix note: ' + f.fixNote }));
+      return r;
+    }
+    bugs.forEach(f => sec.appendChild(row(f)));
+    ideas.forEach(f => sec.appendChild(row(f)));
+    return sec;
+  }
+
   function buildSignupsSection(signups) {
     const sec = el('div', { class: 'signups-section' });
     sec.appendChild(el('div', { class: 'signups-title', text: 'Signups (' + signups.length + ')' }));
@@ -577,7 +642,7 @@ details.raw pre {
     return sec;
   }
 
-  function renderApp(data, signups) {
+  function renderApp(data, signups, feedback) {
     const app = document.getElementById('app-mount');
     clear(app);
     app.removeAttribute('hidden');
@@ -595,6 +660,7 @@ details.raw pre {
     ]));
     app.appendChild(el('div', { class: 'subtle', text: 'Live read of cloud state. Hourly cron also pushes to a private GitHub repo when GITHUB_* secrets are set.' }));
 
+    app.appendChild(buildFeedbackSection(feedback || []));
     app.appendChild(buildSignupsSection(signups || []));
 
     const users = (data.users || []).sort((a, b) => (b.ts || 0) - (a.ts || 0));
@@ -688,7 +754,17 @@ details.raw pre {
           signups = sdata.signups || [];
         }
       } catch {}
-      renderApp(data, signups);
+      let feedback = [];
+      try {
+        const fresp = await fetch(FEEDBACK + '?key=' + encodeURIComponent(token), {
+          headers: { 'x-admin-token': token }
+        });
+        if (fresp.ok) {
+          const fdata = await fresp.json();
+          feedback = fdata.feedback || [];
+        }
+      } catch {}
+      renderApp(data, signups, feedback);
     } catch (err) {
       renderGate('Could not load: ' + (err.message || err));
     }
