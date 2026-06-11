@@ -773,6 +773,26 @@ async function readState(env, slugInput) {
   }
 }
 
+/* v1.15.3: server-side deep merge for state values. Mirrors the client
+   mergeStateValues: JSON objects merge by sub-key (incoming wins
+   conflicts, existing-only sub-keys survive), arrays union, plain
+   strings incoming-wins. */
+function mergeStateValueServer(existingVal, incomingVal) {
+  try {
+    const e = JSON.parse(existingVal);
+    const i = JSON.parse(incomingVal);
+    if (Array.isArray(e) && Array.isArray(i)) {
+      const seen = new Set(i.map(x => JSON.stringify(x)));
+      return JSON.stringify(i.concat(e.filter(x => !seen.has(JSON.stringify(x)))));
+    }
+    if (e && i && typeof e === 'object' && typeof i === 'object'
+        && !Array.isArray(e) && !Array.isArray(i)) {
+      return JSON.stringify(Object.assign({}, e, i));
+    }
+  } catch { /* not JSON on one side */ }
+  return incomingVal;
+}
+
 async function writeState(env, payload) {
   if (!env.STATE_KV) {
     const err = new Error('STATE_KV not bound on the worker');
@@ -780,7 +800,35 @@ async function writeState(env, payload) {
     throw err;
   }
   const slug = validateSlug(payload && payload.slug);
-  const state = (payload && payload.state && typeof payload.state === 'object') ? payload.state : {};
+  const incoming = (payload && payload.state && typeof payload.state === 'object') ? payload.state : {};
+
+  /* v1.15.3: NEVER blind-replace the record. Real incident (June 11):
+     Paul's recovery visit from an empty browser pushed a freshly-seeded
+     snapshot (field/snapshots/examples/state only) and wiped his
+     notes/wow/reflections from the cloud — the client's rehydrate had
+     seen an empty read, so its safety merge never engaged. The server
+     is the single choke point every client version passes through, so
+     additivity is enforced HERE: existing keys survive unless the
+     incoming push carries the same key, and JSON values deep-merge.
+     Trade-off: deletions never propagate; data preservation has been
+     the stated priority since v1.11.5. */
+  let existing = {};
+  const prevRaw = await env.STATE_KV.get('state:' + slug);
+  if (prevRaw) {
+    try { existing = JSON.parse(prevRaw).state || {}; } catch {}
+    /* One-deep rollback point, refreshed on every write. */
+    try { await env.STATE_KV.put('state.bak:' + slug, prevRaw); } catch {}
+  }
+
+  const state = {};
+  for (const k of new Set([...Object.keys(existing), ...Object.keys(incoming)])) {
+    const e = existing[k];
+    const i = incoming[k];
+    if (typeof i !== 'string') { state[k] = e; continue; }
+    if (typeof e !== 'string' || e === i) { state[k] = i; continue; }
+    state[k] = mergeStateValueServer(e, i);
+  }
+
   const record = { state, ts: Date.now() };
   const serialized = JSON.stringify(record);
   if (serialized.length > MAX_STATE_BYTES) {
