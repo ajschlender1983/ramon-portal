@@ -778,18 +778,23 @@ async function readState(env, slugInput) {
    conflicts, existing-only sub-keys survive), arrays union, plain
    strings incoming-wins. */
 function mergeStateValueServer(existingVal, incomingVal) {
-  try {
-    const e = JSON.parse(existingVal);
-    const i = JSON.parse(incomingVal);
-    if (Array.isArray(e) && Array.isArray(i)) {
-      const seen = new Set(i.map(x => JSON.stringify(x)));
-      return JSON.stringify(i.concat(e.filter(x => !seen.has(JSON.stringify(x)))));
-    }
-    if (e && i && typeof e === 'object' && typeof i === 'object'
-        && !Array.isArray(e) && !Array.isArray(i)) {
-      return JSON.stringify(Object.assign({}, e, i));
-    }
-  } catch { /* not JSON on one side */ }
+  let e = undefined, i = undefined, eOk = false, iOk = false;
+  try { e = JSON.parse(existingVal); eOk = true; } catch {}
+  try { i = JSON.parse(incomingVal); iOk = true; } catch {}
+  /* v1.15.4: structured data never loses to garbage. If the existing
+     value is valid JSON and the incoming one is not, keep existing
+     (a client pushing junk into notes.v1 must not corrupt it). Both
+     plain strings (field.v1 etc.): incoming wins, as before. */
+  if (eOk && !iOk) return existingVal;
+  if (!eOk) return incomingVal;
+  if (Array.isArray(e) && Array.isArray(i)) {
+    const seen = new Set(i.map(x => JSON.stringify(x)));
+    return JSON.stringify(i.concat(e.filter(x => !seen.has(JSON.stringify(x)))));
+  }
+  if (e && i && typeof e === 'object' && typeof i === 'object'
+      && !Array.isArray(e) && !Array.isArray(i)) {
+    return JSON.stringify(Object.assign({}, e, i));
+  }
   return incomingVal;
 }
 
@@ -818,6 +823,18 @@ async function writeState(env, payload) {
     try { existing = JSON.parse(prevRaw).state || {}; } catch {}
     /* One-deep rollback point, refreshed on every write. */
     try { await env.STATE_KV.put('state.bak:' + slug, prevRaw); } catch {}
+    /* v1.15.4: daily point-in-time snapshot, 30-day TTL. First write of
+       each UTC day freezes the record as it stood before that write.
+       Gives 30 days of server-side recovery depth independent of the
+       one-deep bak and the local mirror. Cost: one KV read + put per
+       user per day. */
+    try {
+      const day = new Date().toISOString().slice(0, 10);
+      const dailyKey = 'state.daily:' + slug + ':' + day;
+      if (!(await env.STATE_KV.get(dailyKey))) {
+        await env.STATE_KV.put(dailyKey, prevRaw, { expirationTtl: 30 * 86400 });
+      }
+    } catch {}
   }
 
   const state = {};

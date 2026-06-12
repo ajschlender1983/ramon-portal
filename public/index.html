@@ -4689,18 +4689,20 @@ const RESOLVE_STATE   = RESOLVE_BASE + '/state';   // v1.11.0: per-slug state bl
    union (server order first). Anything else: server wins. Top-level so
    it is unit-testable from the console. */
 function mergeStateValues(localVal, serverVal) {
-  try {
-    const l = JSON.parse(localVal);
-    const sv = JSON.parse(serverVal);
-    if (Array.isArray(l) && Array.isArray(sv)) {
-      const seen = new Set(sv.map(x => JSON.stringify(x)));
-      return JSON.stringify(sv.concat(l.filter(x => !seen.has(JSON.stringify(x)))));
-    }
-    if (l && sv && typeof l === 'object' && typeof sv === 'object'
-        && !Array.isArray(l) && !Array.isArray(sv)) {
-      return JSON.stringify(Object.assign({}, l, sv));
-    }
-  } catch { /* one side is not JSON */ }
+  let l = undefined, sv = undefined, lOk = false, svOk = false;
+  try { l = JSON.parse(localVal); lOk = true; } catch {}
+  try { sv = JSON.parse(serverVal); svOk = true; } catch {}
+  // v1.15.4: structured local data never loses to a garbage server value.
+  if (lOk && !svOk) return localVal;
+  if (!lOk) return serverVal;
+  if (Array.isArray(l) && Array.isArray(sv)) {
+    const seen = new Set(sv.map(x => JSON.stringify(x)));
+    return JSON.stringify(sv.concat(l.filter(x => !seen.has(JSON.stringify(x)))));
+  }
+  if (l && sv && typeof l === 'object' && typeof sv === 'object'
+      && !Array.isArray(l) && !Array.isArray(sv)) {
+    return JSON.stringify(Object.assign({}, l, sv));
+  }
   return serverVal;
 }
 
@@ -4872,7 +4874,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.15.2';
+const VERSION = '1.15.4';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the

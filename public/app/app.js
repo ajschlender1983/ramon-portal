@@ -10,7 +10,7 @@
 
 window.OPUS = window.OPUS || {};
 
-const VERSION = '2.0.0-alpha.5';
+const VERSION = '2.0.0-alpha.6';
 
 const RESOLVE_BASE = 'https://ramon-resolver.ajschlender.workers.dev';
 const RESOLVE_REFLECT = RESOLVE_BASE + '/reflect';
@@ -62,18 +62,20 @@ const CloudSync = (function () {
   // JSON objects merge by sub-key (server wins conflicts, local-only
   // sub-keys survive); arrays union; plain strings keep server-wins.
   function mergeStateValues(localVal, serverVal) {
-    try {
-      const l = JSON.parse(localVal);
-      const sv = JSON.parse(serverVal);
-      if (Array.isArray(l) && Array.isArray(sv)) {
-        const seen = new Set(sv.map(x => JSON.stringify(x)));
-        return JSON.stringify(sv.concat(l.filter(x => !seen.has(JSON.stringify(x)))));
-      }
-      if (l && sv && typeof l === 'object' && typeof sv === 'object'
-          && !Array.isArray(l) && !Array.isArray(sv)) {
-        return JSON.stringify(Object.assign({}, l, sv));
-      }
-    } catch { /* one side is not JSON */ }
+    let l = undefined, sv = undefined, lOk = false, svOk = false;
+    try { l = JSON.parse(localVal); lOk = true; } catch {}
+    try { sv = JSON.parse(serverVal); svOk = true; } catch {}
+    // v1.15.4: structured local data never loses to a garbage server value.
+    if (lOk && !svOk) return localVal;
+    if (!lOk) return serverVal;
+    if (Array.isArray(l) && Array.isArray(sv)) {
+      const seen = new Set(sv.map(x => JSON.stringify(x)));
+      return JSON.stringify(sv.concat(l.filter(x => !seen.has(JSON.stringify(x)))));
+    }
+    if (l && sv && typeof l === 'object' && typeof sv === 'object'
+        && !Array.isArray(l) && !Array.isArray(sv)) {
+      return JSON.stringify(Object.assign({}, l, sv));
+    }
     return serverVal;
   }
 
