@@ -4874,7 +4874,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.15.4';
+const VERSION = '1.15.5';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7095,9 +7095,12 @@ function buildArcMiniSilhouette(snap, mode) {
 /* v1.15.2: Arc strips v2 — collapsible drawer, compact rows, no week
    badges, no empty pip tracks, no day-1 filler lines. Rolled out per
    slug (Paul first) so Adam reviews before the rest migrate. */
-const ARC_V2_SLUGS = ['paul-x8t3m'];
+/* v1.15.5: v2 rolled out to everyone after review on Paul's portal.
+   Set to an array of slugs to re-gate, null = all users. */
+const ARC_V2_SLUGS = null;
 
 function arcStripsV2Enabled() {
+  if (ARC_V2_SLUGS === null) return true;
   return !!(USER && ARC_V2_SLUGS.includes(USER.slug));
 }
 

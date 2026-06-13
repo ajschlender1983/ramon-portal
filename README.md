@@ -1,8 +1,25 @@
-# Ramon Portal
+# Ramon Portal / First Month Map
 
-A private 30-day SoundBed map drawn from a personal Biofield reading. Self-contained static page + a Cloudflare Worker that proxies the Anthropic API for per-session reflections. Multi-user since v1.1.0: the same site serves any number of users via per-user data files and a slug-based URL.
+A self-serve SoundBed wellness portal at **https://firstmonthmap.com** (also ramon-portal.pages.dev). Anyone with a field-scan reading signs up at `/begin`, and Claude generates a private, personalized 30-day portal in under a minute. Static Cloudflare Pages site + one Cloudflare Worker (Anthropic proxy, KV state, signup pipeline, email, feedback).
 
-> Personal experiment. Not OPUS-affiliated. Contains personal data — keep this repo **private**.
+> Personal experiment. Contains personal data — keep this repo **private**.
+
+## The system at a glance (v1.15.x)
+
+| Surface | URL | What it is |
+|---|---|---|
+| Signup | `firstmonthmap.com/begin` (also /join, /start) | Public front door: name + email + pasted scan results -> generated portal. Orion Messenger card for people without a scan. |
+| Portal | `firstmonthmap.com/?u=<slug>` or `/paul`-style pretty paths | The 30-day map: Arc journey dashboard, biofield dashboard, 16 session cards with Before/After notes + WOW ratings + AI reflections, EBI feedback button. |
+| Users admin | `firstmonthmap.com/users-admin?key=<ADMIN_TOKEN>` | Everything in one login: EBI feedback (bugs with fix status, ideas), signups with email logs, every user's notes/WOW/reflections/snapshots. |
+| Survey | `firstmonthmap.com/survey` (+ `/survey/admin`) | Dashboard-voice beta survey (earlier experiment, still live). |
+
+**Worker endpoints** (`ramon-resolver.ajschlender.workers.dev`): `/reflect`, `/deepen`, `/expand` (AI); `/state` GET/POST + `/state/all` + `/userdata` (cloud sync + generated users); `/signup`, `/generate`, `/signup-status`, `/signups` (self-serve pipeline); `/feedback` + `/feedback/update` (EBI loop); `/survey`; `/mirror` (GitHub backup, needs GITHUB_* secrets). Hourly cron: GitHub mirror + signup sweep + day-3 emails.
+
+**Email** (Resend, domain `firstmonthmap.com` verified): scan-received, portal-ready (the magic-link credential), day-3 check-in, bug alerts and generation-failure alerts to the admin. All carry `reply_to` the admin address.
+
+**Data protection — five layers** (post-incident, June 2026): (1) server-side deep merge in `writeState` — no client can blind-replace a record; (2) garbage rejection — valid JSON never loses to an unparseable push, enforced at worker + both clients; (3) `state.bak:<slug>` one-deep rollback on every write; (4) `state.daily:<slug>:<date>` 30-day point-in-time snapshots; (5) `scripts/sync-users.sh` mirrors all cloud state to `users-data/` (its own git repo, gitignored here) — automated every 6h by the `portal-data-backup` scheduled task.
+
+**Feedback loop**: the floating EBI button posts to `/feedback`; Claude classifies bug/feature/improvement; bugs email the admin instantly and queue for the `portal-bug-autofix` scheduled task (local Claude Code, every 4h) which fixes, deploys, and marks them resolved; ideas land in the admin dashboard.
 
 ## Layout
 

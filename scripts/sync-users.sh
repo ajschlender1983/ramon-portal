@@ -58,6 +58,17 @@ for u in users:
 with open(os.path.join(out_dir, "MANIFEST.json"), "w") as f:
     json.dump(manifest, f, indent=2, sort_keys=True)
     f.write("\n")
+
+# Prune mirror files for slugs no longer in KV (deleted test accounts
+# etc.). The mirror's own git history still holds every pruned file.
+current = set(manifest["slugs"])
+for fname in os.listdir(out_dir):
+    if not fname.endswith(".json") or fname == "MANIFEST.json":
+        continue
+    slug = fname[:-5]
+    if slug not in current:
+        os.remove(os.path.join(out_dir, fname))
+        print(f"  pruned stale {fname}")
 PY
 
 echo
