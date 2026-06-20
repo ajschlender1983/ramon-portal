@@ -3351,6 +3351,65 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .session-card.resolving .session-body,
 .session-card.deepening .session-body { opacity: 0.78; }
 
+/* v1.15.6: deepen waiting experience — breathing ring + insight carousel.
+   Replaces the bare spinner during the ~20s deepen. Mounts inside the
+   resolved-reflection region. */
+.deepen-wait {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  padding: 26px 16px 8px;
+  gap: 20px;
+}
+.deepen-ring {
+  position: relative;
+  width: 92px; height: 92px;
+}
+.deepen-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.deepen-ring .ring-track { fill: none; stroke: rgba(255,215,100,0.14); stroke-width: 3; }
+.deepen-ring .ring-fill {
+  fill: none; stroke: var(--gold); stroke-width: 3; stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(255,215,100,0.45));
+  transition: stroke-dashoffset 0.4s linear;
+}
+/* Inner orb breathes on the 10.91s master clock (the breath guide). */
+.deepen-ring .ring-core {
+  position: absolute; inset: 0; margin: auto;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,215,100,0.9), rgba(255,215,100,0.15));
+  animation: deepen-breath 10910ms ease-in-out infinite;
+}
+@keyframes deepen-breath {
+  0%, 100% { transform: scale(0.72); opacity: 0.55; }
+  50%      { transform: scale(1.18); opacity: 1; }
+}
+.deepen-breath-cue {
+  font-family: var(--serif); font-style: italic;
+  font-size: 12px; color: var(--dim);
+  letter-spacing: 0.06em;
+  margin-top: -8px;
+}
+.deepen-carousel {
+  min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  max-width: 30ch;
+}
+.deepen-carousel-line {
+  font-family: var(--serif); font-style: italic;
+  font-size: 16px; line-height: 1.5; color: var(--light);
+  transition: opacity 0.8s ease;
+}
+.deepen-carousel-line.fading { opacity: 0; }
+.deepen-wait-leave {
+  font-size: 11px; color: var(--dim);
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .deepen-ring .ring-core { animation: none; opacity: 0.85; }
+  .deepen-ring .ring-fill { transition: none; }
+  .deepen-carousel-line { transition: none; }
+}
+
 .session-spotify {
   font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--mid); display: inline-flex; align-items: center; gap: 6px;
@@ -4874,7 +4933,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.15.5';
+const VERSION = '1.15.6';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -9215,15 +9274,163 @@ function editSessionNotes(slug) {
   updateResolveButton(slug);
 }
 
+/* v1.15.6: deepen waiting experience — breathing ring + insight carousel.
+   Builds the rotating lines from two decks: the work narrated (always
+   available) and the user's own words pulled from their notes/reflection
+   (when present). Graceful fallback for sparse history. */
+function buildDeepenCarouselLines(slug) {
+  const process = [
+    'Reading what you wrote, slowly.',
+    'Listening for what’s underneath the words.',
+    'Letting the first reflection settle.',
+    'Finding the truer version.'
+  ];
+  const onDepth = [
+    'A deeper reflection isn’t a longer one. It’s one that’s been sat with.',
+    'We’re not concluding anything. We’re listening more closely.'
+  ];
+  // The user's own words, mirrored back (quotation, not inference).
+  const mine = [];
+  try {
+    const notes = getNotes();
+    const after = (notes[slug + '__after'] || '').trim();
+    if (after) {
+      const frag = after.replace(/\s+/g, ' ').slice(0, 70).replace(/\s\S*$/, '');
+      if (frag.length > 8) mine.push('Earlier you wrote: “' + frag + '…”');
+    }
+    const sess = SESSIONS[slug];
+    const w = getWow()[slug];
+    const wl = WOW_LABELS[w];
+    if (sess && wl && w >= 4) mine.push(sess.heading.split('|')[0].trim() + '. You rated it ' + wl.short + '.');
+    const deepenedCount = Object.values(getSessionReflections()).filter(r => r && r.deepText).length;
+    if (deepenedCount === 0) mine.push('This is your first time going deeper.');
+  } catch {}
+  // Interleave: process line, then a personal/depth line, repeating.
+  const flavor = mine.concat(onDepth);
+  const out = [];
+  for (let i = 0; i < process.length; i++) {
+    out.push(process[i]);
+    if (flavor[i]) out.push(flavor[i]);
+  }
+  return out;
+}
+
+function mountDeepenWait(card, slug) {
+  const refl = card.querySelector('.resolved-reflection');
+  if (!refl) return null;
+  // Hide the prior reflection text + actions while waiting.
+  const wait = el('div', { class: 'deepen-wait' });
+
+  const ring = el('div', { class: 'deepen-ring' });
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  const C = 2 * Math.PI * 44;
+  const track = document.createElementNS(NS, 'circle');
+  track.setAttribute('class', 'ring-track'); track.setAttribute('cx','50'); track.setAttribute('cy','50'); track.setAttribute('r','44');
+  const fill = document.createElementNS(NS, 'circle');
+  fill.setAttribute('class', 'ring-fill'); fill.setAttribute('cx','50'); fill.setAttribute('cy','50'); fill.setAttribute('r','44');
+  fill.setAttribute('stroke-dasharray', String(C));
+  fill.setAttribute('stroke-dashoffset', String(C));
+  svg.appendChild(track); svg.appendChild(fill);
+  ring.appendChild(svg);
+  ring.appendChild(el('div', { class: 'ring-core' }));
+  wait.appendChild(ring);
+  wait.appendChild(el('div', { class: 'deepen-breath-cue', text: 'breathe with this while you wait' }));
+
+  const carousel = el('div', { class: 'deepen-carousel' });
+  const line = el('div', { class: 'deepen-carousel-line', text: '' });
+  carousel.appendChild(line);
+  wait.appendChild(carousel);
+  wait.appendChild(el('div', { class: 'deepen-wait-leave', text: 'you can leave this page — it will be here when you return' }));
+
+  refl.appendChild(wait);
+
+  // Animate the ring toward ~92% over ~22s; completion snaps it to full.
+  const EST_MS = 22000;
+  const t0 = Date.now();
+  const ringTimer = setInterval(() => {
+    const pct = Math.min(0.92, (Date.now() - t0) / EST_MS);
+    fill.setAttribute('stroke-dashoffset', String(C * (1 - pct)));
+  }, 400);
+
+  // Rotate carousel lines every ~5s.
+  const lines = buildDeepenCarouselLines(slug);
+  let li = 0;
+  line.textContent = lines[0] || 'Going deeper.';
+  const carTimer = setInterval(() => {
+    li = (li + 1) % lines.length;
+    line.classList.add('fading');
+    setTimeout(() => { line.textContent = lines[li]; line.classList.remove('fading'); }, 800);
+  }, 5000);
+
+  return {
+    el: wait,
+    complete() { fill.setAttribute('stroke-dashoffset', '0'); },
+    destroy() { clearInterval(ringTimer); clearInterval(carTimer); if (wait.parentNode) wait.parentNode.removeChild(wait); }
+  };
+}
+
+const deepenPolls = {};
+
+function applyDeepText(card, slug, text) {
+  saveSessionReflection(slug, { deepText: text, deepenedAt: Date.now(), deepPending: false });
+  const reflEl = card && card.querySelector('.resolved-reflection .resolved-text');
+  if (reflEl) reflEl.textContent = humanize(text);
+  if (card) { card.classList.remove('deepening'); card.classList.add('deepened'); }
+}
+
+/* Recovery poll: if the live deepen fetch dies, the worker still finishes
+   and persists the result to KV (v1.15.6 server-side). Poll /state until
+   the deepText lands, then render it — no reload needed. Capped at ~100s. */
+function startDeepenPoll(slug) {
+  if (deepenPolls[slug]) return;
+  const userSlug = (USER && USER.slug) || '';
+  if (!userSlug) return;
+  let tries = 0;
+  deepenPolls[slug] = setInterval(async () => {
+    tries++;
+    if (tries > 20) { clearInterval(deepenPolls[slug]); delete deepenPolls[slug]; return; }
+    try {
+      const resp = await fetch(RESOLVE_STATE + '?slug=' + encodeURIComponent(userSlug));
+      if (!resp.ok) return;
+      const data = await resp.json();
+      const srRaw = data && data.state && data.state[userSlug + '.sessionReflections.v1'];
+      if (!srRaw) return;
+      const sr = JSON.parse(srRaw);
+      const dt = sr[slug] && sr[slug].deepText;
+      if (dt) {
+        clearInterval(deepenPolls[slug]); delete deepenPolls[slug];
+        const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+        if (card) {
+          const w = card.__deepenWait; if (w) { w.complete(); setTimeout(() => w.destroy(), 500); card.__deepenWait = null; }
+          setCardStatus(card, '');
+        }
+        applyDeepText(card, slug, dt);
+      }
+    } catch {}
+  }, 5000);
+}
+
 async function deepenSession(slug) {
   const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
   if (!card) return;
   const existing = getSessionReflections()[slug];
   if (!existing || !existing.text) return;
+  if (card.classList.contains('deepening')) return; // guard double-click
+
   card.classList.add('deepening');
-  setCardStatus(card, 'Going deeper… this takes about 20 seconds.');
+  setCardStatus(card, '');
+  // Mark pending so a reload mid-flight knows to resume the poll.
+  saveSessionReflection(slug, { deepPending: true, deepPendingAt: Date.now() });
+
+  // Mount the breathing ring + carousel.
+  if (card.__deepenWait) card.__deepenWait.destroy();
+  card.__deepenWait = mountDeepenWait(card, slug);
+
   const payload = buildResolvePayload(slug);
   payload.priorReflection = existing.deepText || existing.text;
+
   try {
     const resp = await fetch(RESOLVE_DEEPEN, {
       method: 'POST',
@@ -9238,17 +9445,43 @@ async function deepenSession(slug) {
     const data = await resp.json();
     const text = humanize((data && (data.deepReflection || data.text)) || '');
     if (!text) throw new Error('empty deep reflection');
-    saveSessionReflection(slug, { deepText: text, passes: data.passes || null, deepenedAt: Date.now() });
-    card.classList.remove('deepening');
-    setCardStatus(card, '');
-    const reflEl = card.querySelector('.resolved-reflection .resolved-text');
-    if (reflEl) reflEl.textContent = text;
-    card.classList.add('deepened');
+    if (card.__deepenWait) { card.__deepenWait.complete(); setTimeout(() => { if (card.__deepenWait) { card.__deepenWait.destroy(); card.__deepenWait = null; } }, 500); }
+    applyDeepText(card, slug, text);
     runCelebration('reflection-received');
   } catch (err) {
-    card.classList.remove('deepening');
-    setCardStatus(card, 'Deepen failed: ' + (err.message || err), { error: true });
+    // The fetch died, but the worker persists the result to KV regardless.
+    // Keep the wait visible and poll for the result to land.
+    if (card.__deepenWait) {
+      const cue = card.__deepenWait.el.querySelector('.deepen-wait-leave');
+      if (cue) cue.textContent = 'still composing — this will appear here, even if you close the page';
+    }
+    startDeepenPoll(slug);
   }
+}
+
+/* On load, resume any deepen that was pending when the page last closed.
+   If the result already landed in KV (rehydrated), show it; otherwise
+   keep polling until it does. */
+function resumePendingDeepens() {
+  const all = getSessionReflections();
+  Object.keys(all).forEach(slug => {
+    const r = all[slug];
+    if (!r) return;
+    if (r.deepText && r.deepPending) {
+      // Result arrived while away: render + clear the flag.
+      const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+      applyDeepText(card, slug, r.deepText);
+    } else if (r.deepPending && !r.deepText) {
+      const since = Date.now() - (r.deepPendingAt || 0);
+      if (since < 120000) {
+        const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
+        if (card) { card.classList.add('deepening'); card.__deepenWait = mountDeepenWait(card, slug); }
+        startDeepenPoll(slug);
+      } else {
+        saveSessionReflection(slug, { deepPending: false }); // stale; give up quietly
+      }
+    }
+  });
 }
 
 function getSessionReflections() {
@@ -9892,6 +10125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       collapseCardToReflection(card, slug);
     }
   });
+  resumePendingDeepens(); // v1.15.6: recover any deepen interrupted mid-flight
   refreshAllResolveButtons();
   applyExpandedStates();
   loadField();

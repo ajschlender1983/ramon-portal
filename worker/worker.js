@@ -222,11 +222,22 @@ export default {
       }
       if (url.pathname === '/reflect') {
         const text = await reflectOne(env, payload);
+        // v1.15.6: persist server-side so a dropped client fetch can't
+        // lose the result; client recovers it on next load.
+        if (payload && payload.userSlug && payload.slug) {
+          await persistReflectionToKV(env, payload.userSlug, payload.slug,
+            { text, ts: Date.now(), dirty: false });
+        }
         return json({ reflection: text }, 200, cors);
       }
       if (url.pathname === '/deepen') {
         const passes = await deepenChain(env, payload);
-        return json({ deepReflection: passes[3], passes }, 200, cors);
+        const deepText = passes[3];
+        if (payload && payload.userSlug && payload.slug) {
+          await persistReflectionToKV(env, payload.userSlug, payload.slug,
+            { deepText, deepenedAt: Date.now() });
+        }
+        return json({ deepReflection: deepText, passes }, 200, cors);
       }
       if (url.pathname === '/expand') {
         const userData = await expandIntake(env, payload);
@@ -855,6 +866,35 @@ async function writeState(env, payload) {
   }
   await env.STATE_KV.put('state:' + slug, serialized);
   return { ok: true, slug, ts: record.ts };
+}
+
+/* v1.15.6: persist a computed reflection straight into the user's KV
+   state so it is never lost if the client's long fetch dies mid-flight
+   (mobile screen-lock / app-switch during the ~20s deepen). Session-
+   level deep merge: the existing session entry's fields (text, ts) are
+   preserved and the new fields (deepText, deepenedAt, or text) added.
+   Routed through writeState so the .bak + daily-snapshot protections
+   apply. Best-effort: never throws into the request path. */
+async function persistReflectionToKV(env, userSlug, sessionSlug, partial) {
+  if (!env.STATE_KV) return;
+  let uslug;
+  try { uslug = validateSlug(userSlug); } catch { return; }
+  if (!sessionSlug || !/^[a-z0-9-]+$/i.test(sessionSlug)) return;
+  try {
+    const key = uslug + '.sessionReflections.v1';
+    let allRefl = {};
+    const prevRaw = await env.STATE_KV.get('state:' + uslug);
+    if (prevRaw) {
+      try {
+        const st = JSON.parse(prevRaw).state || {};
+        if (st[key]) allRefl = JSON.parse(st[key]) || {};
+      } catch {}
+    }
+    allRefl[sessionSlug] = Object.assign({}, allRefl[sessionSlug] || {}, partial);
+    await writeState(env, { slug: uslug, state: { [key]: JSON.stringify(allRefl) } });
+  } catch (err) {
+    console.log('persistReflectionToKV failed: ' + String(err && err.message || err));
+  }
 }
 
 /* ============================================================ v1.12: Dashboard-style beta survey
