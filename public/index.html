@@ -4933,7 +4933,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.15.6';
+const VERSION = '1.15.7';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7332,7 +7332,14 @@ function buildArcStrip(center, axis, mode, idx) {
 
 function mountConstellation() {
   const root = document.getElementById('hero-constellation');
+  if (!root) return;
   while (root.firstChild) root.removeChild(root.firstChild);
+  // v1.15.7: hero constellation (polyline + dots) removed per Adam —
+  // read as a distracting "weird line/dot" over the hero. Early-return
+  // leaves the container empty for every user. Builder kept below in
+  // case we ever want it back.
+  return;
+  // eslint-disable-next-line no-unreachable
   // SVG polyline behind dots
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
