@@ -4181,14 +4181,21 @@ section#reflect.reflected .section-title em {
   pointer-events: none;
 }
 /* spine */
-.arc-spine-faint { stroke: rgba(255,255,255,0.10); stroke-width: 2; }
+.arc-spine-faint { stroke: rgba(255,255,255,0.09); stroke-width: 2; }
 .arc-spine-lit {
-  stroke: var(--gold); stroke-width: 3; stroke-linecap: round;
+  stroke: var(--gold); stroke-width: 4; stroke-linecap: round;
   stroke-dasharray: 70 900;
   animation: arc-spine-climb 9s linear infinite;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 @keyframes arc-spine-climb { to { stroke-dashoffset: -970; } }
+/* spine milestone nodes — stations the light has reached (EBI Pass 2) */
+.arc-spine-node { fill: var(--gold); opacity: 0.85; }
+.arc-spine-node.is-lead {
+  fill: #FFF4D6;
+  filter: drop-shadow(0 0 6px rgba(255,215,100,0.8));
+  opacity: calc(0.7 + 0.3 * var(--breath-pulse, 0.5));   /* leading edge pulses */
+}
 /* embers — additive light; breath on the master clock */
 .arc-ember {
   mix-blend-mode: screen;
@@ -4196,11 +4203,20 @@ section#reflect.reflected .section-title em {
   transform-box: fill-box; transform-origin: center;
   transform: scale(calc(0.97 + 0.06 * var(--breath-pulse, 0.5)));
 }
-.arc-ember.is-dormant { mix-blend-mode: screen; }
+/* seed ring — the "where it began" reference; growth = gap to the bloom */
+.arc-ember-seed {
+  fill: none; stroke: rgba(255,255,255,0.22); stroke-width: 1;
+  stroke-dasharray: 2 3; mix-blend-mode: normal;
+}
+/* dormant centers read as a cool, waiting coal — clearly "not yet" */
+.arc-ember--dormant { opacity: calc(var(--emb, 0.2) * (0.8 + 0.2 * var(--breath-pulse, 0.5))); }
+.arc-ember--dormant .arc-ember-haze { filter: url(#arc-ember-glow) saturate(0.55) brightness(0.8); }
 .arc-ember-core { mix-blend-mode: screen; }
 .arc-ember-ring {
-  fill: none; stroke: var(--gold); stroke-width: 1.5; opacity: 0.5;
+  fill: none; stroke: var(--gold); stroke-width: 1.5;
+  opacity: calc(0.4 + 0.25 * var(--breath-pulse, 0.5));   /* deepening breathes */
 }
+.arc-ember-spark { mix-blend-mode: screen; opacity: 0.85; }
 .arc-ember.is-peak .arc-ember-core { opacity: 0.95; }
 /* entrance: ground→crown ignition, once */
 .arc-rising.igniting .arc-ember {
@@ -4223,7 +4239,9 @@ section#reflect.reflected .section-title em {
 }
 @media (prefers-reduced-motion: reduce) {
   .arc-spine-lit { animation: none; stroke-dashoffset: 0; stroke-dasharray: none; }
-  .arc-ember { animation: none !important; opacity: var(--emb, 0.6); transform: none; }
+  .arc-ember, .arc-ember--dormant { animation: none !important; opacity: var(--emb, 0.6); transform: none; }
+  .arc-spine-node.is-lead { opacity: 0.9; }
+  .arc-ember-ring { opacity: 0.5; }
 }
 
 /* v1.16: "your reading" supporting cards (no second body) */
@@ -5059,7 +5077,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.16.0';
+const VERSION = '1.16.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7341,6 +7359,7 @@ function buildRisingLightHero(s) {
   faint.setAttribute('x2', CX); faint.setAttribute('y2', topY);
   svg.appendChild(faint);
 
+  const SEED_R = 13;  // every center's starting size — the "where it began" reference
   if (s.waterline) {
     const litTop = toCy(s.waterline.yPct);
     const lit = document.createElementNS(SVGNS, 'line');
@@ -7349,46 +7368,90 @@ function buildRisingLightHero(s) {
     lit.setAttribute('x2', CX); lit.setAttribute('y2', litTop);
     lit.setAttribute('filter', 'url(#arc-ember-glow)');
     svg.appendChild(lit);
+
+    // v1.16.1 (EBI Pass 2): milestone nodes on the lit spine — each
+    // tended center is a station the light has reached; the waterline
+    // (top of the climb) is the pulsing leading edge. Makes the climb
+    // legible as discrete progress, not just a bar.
+    centers.filter(c => c.light && c.light.done > 0).forEach(c => {
+      const node = document.createElementNS(SVGNS, 'circle');
+      const isLead = s.waterline && c.id === s.waterline.id;
+      node.setAttribute('class', 'arc-spine-node' + (isLead ? ' is-lead' : ''));
+      node.setAttribute('cx', CX); node.setAttribute('cy', toCy(c.yPct));
+      node.setAttribute('r', isLead ? 7 : 4);
+      svg.appendChild(node);
+    });
   }
 
   // --- embers, drawn root→crown so DOM order = ignition order ---
+  // v1.16.1 (EBI Pass 1): three clearly-stepped tiers so dormant /
+  // tended / fully-tended read at a glance, plus a peak spark and a
+  // seed-ring (EBI Pass 2) showing how far each ember has grown.
   const ordered = centers.slice().sort((a, b) => b.yPct - a.yPct); // root first
   ordered.forEach((c, i) => {
     const cy = toCy(c.yPct);
-    const L = c.light || { charge: 0, tint: arcStateTint(c.state) };
-    const charge = Math.max(0, Math.min(1, L.charge || 0));
+    const L = c.light || { charge: 0, done: 0, total: 0, tint: arcStateTint(c.state) };
+    const done = L.done || 0, total = L.total || 0;
+    const tier = done === 0 ? 'dormant' : (total > 0 && done >= total ? 'full' : 'partial');
     const tint = L.peak ? '#FFD764' : (L.tint || arcStateTint(c.state));
-    const R = 16 + charge * 16;                 // 16 (untended) → 32 (full)
-    const baseOp = (0.30 + 0.55 * charge).toFixed(3);
+
+    // Stepped geometry — perceptible jumps, not a smooth ramp.
+    const R = tier === 'dormant' ? SEED_R : (tier === 'full' ? 32 : 24) + (L.peak ? 3 : 0);
+    const baseOp = tier === 'dormant' ? 0.20 : (tier === 'full' ? 0.92 : 0.62);
 
     const g = document.createElementNS(SVGNS, 'g');
-    g.setAttribute('class', 'arc-ember' + (L.peak ? ' is-peak' : '') + (charge > 0 ? '' : ' is-dormant'));
-    g.style.setProperty('--emb', baseOp);
+    g.setAttribute('class', 'arc-ember arc-ember--' + tier + (L.peak ? ' is-peak' : ''));
+    g.style.setProperty('--emb', baseOp.toFixed(3));
     g.style.setProperty('--igd', (i * 0.06).toFixed(2) + 's'); // 60ms stagger up
+
+    // SEED RING (Pass 2): faint static marker at the starting size. The
+    // gap between this and the bloom = how far this center has come.
+    const seed = document.createElementNS(SVGNS, 'circle');
+    seed.setAttribute('class', 'arc-ember-seed');
+    seed.setAttribute('cx', CX); seed.setAttribute('cy', cy);
+    seed.setAttribute('r', SEED_R);
+    g.appendChild(seed);
 
     // deepening halo ring
     if (L.deepened) {
       const ring = document.createElementNS(SVGNS, 'circle');
       ring.setAttribute('class', 'arc-ember-ring');
       ring.setAttribute('cx', CX); ring.setAttribute('cy', cy);
-      ring.setAttribute('r', R + 10);
+      ring.setAttribute('r', R + 11);
       g.appendChild(ring);
     }
     // haze (colored glow)
     const haze = document.createElementNS(SVGNS, 'circle');
+    haze.setAttribute('class', 'arc-ember-haze');
     haze.setAttribute('cx', CX); haze.setAttribute('cy', cy);
     haze.setAttribute('r', R);
     haze.setAttribute('fill', tint);
     haze.setAttribute('filter', 'url(#arc-ember-glow)');
     g.appendChild(haze);
-    // hot core
-    const core = document.createElementNS(SVGNS, 'circle');
-    core.setAttribute('class', 'arc-ember-core');
-    core.setAttribute('cx', CX); core.setAttribute('cy', cy);
-    core.setAttribute('r', (R * 0.42).toFixed(1));
-    core.setAttribute('fill', '#fff');
-    core.setAttribute('opacity', (0.35 + 0.5 * charge).toFixed(3));
-    g.appendChild(core);
+    // hot core — only once tended (dormant centers stay a cool coal)
+    if (tier !== 'dormant') {
+      const core = document.createElementNS(SVGNS, 'circle');
+      core.setAttribute('class', 'arc-ember-core');
+      core.setAttribute('cx', CX); core.setAttribute('cy', cy);
+      core.setAttribute('r', (R * 0.4).toFixed(1));
+      core.setAttribute('fill', '#fff');
+      core.setAttribute('opacity', (tier === 'full' ? 0.9 : 0.6).toFixed(2));
+      g.appendChild(core);
+    }
+    // peak spark (Pass 1): a small sacred 4-point gleam on WOW centers
+    if (L.peak) {
+      const spark = document.createElementNS(SVGNS, 'path');
+      spark.setAttribute('class', 'arc-ember-spark');
+      const sx = CX, sy = cy, a = R * 1.15, b = R * 0.32;
+      spark.setAttribute('d',
+        'M' + sx + ' ' + (sy - a) +
+        'Q' + (sx + b) + ' ' + (sy - b) + ' ' + (sx + a) + ' ' + sy +
+        'Q' + (sx + b) + ' ' + (sy + b) + ' ' + sx + ' ' + (sy + a) +
+        'Q' + (sx - b) + ' ' + (sy + b) + ' ' + (sx - a) + ' ' + sy +
+        'Q' + (sx - b) + ' ' + (sy - b) + ' ' + sx + ' ' + (sy - a) + 'Z');
+      spark.setAttribute('fill', '#FFF4D6');
+      g.appendChild(spark);
+    }
 
     svg.appendChild(g);
   });
