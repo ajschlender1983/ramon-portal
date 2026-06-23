@@ -202,6 +202,37 @@ main { position: relative; z-index: 2; }
   max-width: 1240px; margin: 0 auto;
   position: relative;
 }
+/* v1.16.2: split header — title text + Rising Light body, side by side */
+.hero--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 32vw, 360px);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  padding-top: clamp(48px, 9vw, 120px);
+  padding-bottom: clamp(32px, 6vw, 72px);
+}
+.hero--split .hero-text { min-width: 0; }
+.hero--split .hero-title { font-size: clamp(34px, 4.6vw, 60px); margin-bottom: 22px; max-width: none; }
+.hero--split .hero-lede { margin-bottom: 0; }
+.hero-arc { min-width: 0; }
+/* In the header the Arc drops its card chrome — the body floats clean. */
+.arc-dashboard--hero {
+  border: none; background: none; padding: 0; margin: 0;
+}
+.arc-dashboard--hero .arc-rising-eyebrow { display: none; }  /* the hero already says THE ARC context */
+.arc-dashboard--hero .arc-rising { padding-top: 0; }
+.arc-dashboard--hero .arc-rising-figure { width: clamp(220px, 30vw, 340px); }
+@media (max-width: 880px) {
+  .hero--split {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    text-align: center;
+    justify-items: center;
+  }
+  .hero--split .hero-text { order: 1; }
+  .hero-arc { order: 2; }
+  .hero--split .hero-lede { margin-left: auto; margin-right: auto; }
+}
 .hero-eyebrow {
   font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
   color: var(--teal); margin-bottom: 24px;
@@ -4721,26 +4752,29 @@ window.__userDataPromise = (function() {
 
 <main>
 
-<header class="hero">
-  <div class="hero-constellation" id="hero-constellation" aria-hidden="true"></div>
-  <div class="hero-eyebrow reveal">Designed for <span data-user-name>—</span> · <span data-user-period>—</span></div>
-  <div class="hero-principle-1 reveal">The Input is the starting frame.<em> Your body is the source of truth.</em></div>
-  <h1 class="hero-title reveal"><em data-user-possessive>—</em> First Month Map<br><span class="aurora-text">A SoundBed Experiment</span></h1>
-  <p class="hero-lede reveal" id="hero-lede" data-hero-lede-mount>
-    Someone who works with energy gave you a reading. We're holding it as a starting point. From what they offered, we drew a 4-week path through 16 sessions in the OPUS catalog. As you move through it, the notes you take become part of the conversation.
-  </p>
+<!-- v1.16.2: unified header — the title and the Rising Light body sit
+     together as one header. Text column left, glowing chakra body right
+     (stacks on mobile). The Arc mounts into #arc-mount inside the hero. -->
+<header class="hero hero--split">
+  <div class="hero-text">
+    <div class="hero-constellation" id="hero-constellation" aria-hidden="true"></div>
+    <div class="hero-eyebrow reveal">Designed for <span data-user-name>—</span> · <span data-user-period>—</span></div>
+    <div class="hero-principle-1 reveal">The Input is the starting frame.<em> Your body is the source of truth.</em></div>
+    <h1 class="hero-title reveal"><em data-user-possessive>—</em> First Month Map<br><span class="aurora-text">A SoundBed Experiment</span></h1>
+    <p class="hero-lede reveal" id="hero-lede" data-hero-lede-mount>
+      Someone who works with energy gave you a reading. We're holding it as a starting point. From what they offered, we drew a 4-week path through 16 sessions in the OPUS catalog. As you move through it, the notes you take become part of the conversation.
+    </p>
+  </div>
+  <div class="hero-arc">
+    <!-- The Arc — Rising Light body. Filled by mountArc(). -->
+    <div class="arc-dashboard arc-dashboard--hero" id="arc-mount"></div>
+  </div>
 </header>
 
 <hr class="gradient-divider">
 <div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
 
 <section class="section reveal" id="input">
-  <!-- v1.12.0: The Arc — 30-day journey dashboard. Mounts above the
-       section masthead. Two registers: system journey (mini silhouettes
-       across baseline → week 4) + per-center strips (one row per chakra
-       or somatic location). Filled by mountArc(). -->
-  <div class="arc-dashboard" id="arc-mount"></div>
-
   <!-- v1.9.21: portrait + name masthead moved here (was inside the body-
        aurora hero). Introduces the person to the section before the
        section-label narrates "The Input". Filled by mountSectionMasthead. -->
@@ -5077,7 +5111,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.16.1';
+const VERSION = '1.16.2';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
