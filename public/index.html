@@ -4151,6 +4151,132 @@ section#reflect.reflected .section-title em {
   position: relative;
 }
 .arc-dashboard:empty { display: none; }
+
+/* ============================================================
+   v1.16: THE RISING LIGHT — the single luminous body hero
+   ============================================================ */
+.arc-rising { text-align: center; padding: 8px 0 4px; }
+.arc-rising-eyebrow {
+  font-family: var(--sans); font-size: 11px; letter-spacing: 0.34em;
+  color: var(--gold); text-transform: uppercase; opacity: 0.85;
+  margin-bottom: 18px;
+}
+.arc-rising-figure {
+  position: relative;
+  width: clamp(200px, 42vw, 300px);
+  aspect-ratio: 703 / 1024;
+  margin: 0 auto;
+}
+.arc-rising-body {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  opacity: 0.5;                 /* a soft figure; the light is the story */
+  -webkit-user-select: none; user-select: none; pointer-events: none;
+}
+.arc-rising-light {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+/* spine */
+.arc-spine-faint { stroke: rgba(255,255,255,0.10); stroke-width: 2; }
+.arc-spine-lit {
+  stroke: var(--gold); stroke-width: 3; stroke-linecap: round;
+  stroke-dasharray: 70 900;
+  animation: arc-spine-climb 9s linear infinite;
+  opacity: 0.9;
+}
+@keyframes arc-spine-climb { to { stroke-dashoffset: -970; } }
+/* embers — additive light; breath on the master clock */
+.arc-ember {
+  mix-blend-mode: screen;
+  opacity: calc(var(--emb, 0.5) * (0.86 + 0.14 * var(--breath-pulse, 0.5)));
+  transform-box: fill-box; transform-origin: center;
+  transform: scale(calc(0.97 + 0.06 * var(--breath-pulse, 0.5)));
+}
+.arc-ember.is-dormant { mix-blend-mode: screen; }
+.arc-ember-core { mix-blend-mode: screen; }
+.arc-ember-ring {
+  fill: none; stroke: var(--gold); stroke-width: 1.5; opacity: 0.5;
+}
+.arc-ember.is-peak .arc-ember-core { opacity: 0.95; }
+/* entrance: ground→crown ignition, once */
+.arc-rising.igniting .arc-ember {
+  animation: arc-ignite 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: var(--igd, 0s);
+}
+@keyframes arc-ignite {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: calc(var(--emb, 0.5)); transform: scale(1); }
+}
+.arc-rising-caption {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(15px, 2.2vw, 18px); color: var(--light);
+  line-height: 1.5; letter-spacing: 0.01em;
+  max-width: 30ch; margin: 22px auto 0;
+}
+.arc-rising-origin {
+  font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em;
+  color: var(--mid); text-transform: lowercase; margin-top: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .arc-spine-lit { animation: none; stroke-dashoffset: 0; stroke-dasharray: none; }
+  .arc-ember { animation: none !important; opacity: var(--emb, 0.6); transform: none; }
+}
+
+/* v1.16: "your reading" supporting cards (no second body) */
+.bf-reading-detail { margin: 32px auto 0; max-width: 1000px; }
+.bf-reading-eyebrow {
+  font-family: var(--sans); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--mid); text-transform: uppercase; text-align: center;
+  margin-bottom: 16px;
+}
+.bf-reading-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px; align-items: start;
+}
+@media (max-width: 720px) { .bf-reading-grid { grid-template-columns: 1fr; } }
+/* neutralize the absolute body-stage positioning when cards flow on their own */
+.bf-reading-grid .bf-stage-pane,
+.bf-pattern-detail .bf-stage-pane {
+  position: static; top: auto; right: auto; width: auto; max-width: none;
+}
+.bf-pattern-detail { margin-top: 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* v1.16: collapsed-card recap — reflection sits with its inputs */
+.resolved-recap {
+  margin-top: 16px; padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.resolved-recap-eyebrow {
+  font-family: var(--serif); font-style: italic;
+  font-size: 12px; color: var(--dim); letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+.resolved-recap-row {
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 4px 0 4px 10px; margin-bottom: 2px;
+  border-left: 2px solid transparent;
+}
+.resolved-recap-row--before { border-left-color: rgba(106,223,217,0.5); }
+.resolved-recap-row--after  { border-left-color: rgba(194,47,205,0.5); }
+.resolved-recap-when {
+  font-family: var(--sans); font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--mid); flex: 0 0 44px;
+}
+.resolved-recap-text {
+  font-family: var(--serif); font-style: italic;
+  font-size: 13.5px; color: var(--light); line-height: 1.5;
+}
+.resolved-recap-wow {
+  margin-top: 8px; text-align: right;
+}
+.resolved-recap-wow-word {
+  font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em;
+  color: var(--gold); text-transform: uppercase;
+}
 .arc-title {
   text-align: center;
   margin-bottom: 22px;
@@ -4933,7 +5059,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.15.7';
+const VERSION = '1.16.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -6357,6 +6483,64 @@ function buildBelowHeroDetail() {
   return wrap;
 }
 
+/* v1.16: the reading's supporting cards WITHOUT a second body figure.
+   The Rising Light hero at the top is now the one body; these cards
+   (Calibration, DNA, Pattern quote, Balancing Breath) flow beneath it.
+   Markup mirrors the side-pane + cards row that used to live inside
+   buildBodyAuroraHero, in a clean responsive grid (no body-stage
+   absolute positioning). */
+function buildReadingDetail() {
+  const view = getView();
+  const wrap = el('div', { class: 'bf-reading-detail' });
+  wrap.appendChild(el('div', { class: 'bf-reading-eyebrow', text: 'Your reading' }));
+  const grid = el('div', { class: 'bf-reading-grid' });
+
+  // Calibration / Hawkins
+  const hkLevel = Number(view.hawkinsLevel) || 525;
+  const hkTarget = Number(view.hawkinsTarget) || 528;
+  const tierInfo = hawkinsTier(hkLevel);
+  const hkCard = el('div', { class: 'bf-stage-card bf-stage-hawkins reveal' });
+  hkCard.appendChild(el('div', { class: 'label', text: 'Calibration' }));
+  const hkValue = el('div', { class: 'value' });
+  hkValue.appendChild(el('strong', { text: String(hkLevel) }));
+  hkValue.appendChild(el('span', { class: 'tier-frame', text: ' · ' + tierInfo.frame + ' ' }));
+  hkValue.appendChild(el('span', { class: 'tier-name', text: tierInfo.tier }));
+  hkCard.appendChild(hkValue);
+  hkCard.appendChild(el('div', { class: 'felt', text: hkTarget + ' Hz · Miracles, within reach.' }));
+  grid.appendChild(hkCard);
+
+  // DNA helix
+  const dnaInfo = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
+  const dna = el('div', { class: 'bf-helix bf-helix--side reveal' });
+  const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
+  helixWrap.appendChild(buildHelixSVG());
+  dna.appendChild(helixWrap);
+  const dnaMeta = el('div', { class: 'bf-helix-meta' });
+  dnaMeta.appendChild(el('div', { class: 'helix-label', text: 'DNA Strand Activation' }));
+  const cnt = el('div', { class: 'helix-count' });
+  cnt.appendChild(buildHelixStat(dnaInfo.phaseLocked, 'phase-locked', 'primary'));
+  cnt.appendChild(buildHelixStat(dnaInfo.consolidating, 'consolidating', ''));
+  cnt.appendChild(buildHelixStat(dnaInfo.of, 'of 12', 'total'));
+  dnaMeta.appendChild(cnt);
+  dnaMeta.appendChild(el('div', { class: 'helix-sub', text: 'The lower pairs anchor first. The upper pairs are on their way.' }));
+  dna.appendChild(dnaMeta);
+  grid.appendChild(dna);
+
+  // Pattern (primary block) quote
+  const blockQuote = (view.primaryBlock || (USER && USER.primaryBlockQuote) || 'Hesitation in finalizing commitments.').trim();
+  const holding = el('div', { class: 'bf-stage-card bf-stage-holding reveal' });
+  holding.appendChild(el('span', { class: 'eyebrow', text: 'Pattern' }));
+  holding.appendChild(el('div', { class: 'quote', text: '"' + blockQuote.replace(/^"|"$/g, '') + '"' }));
+  holding.appendChild(el('div', { class: 'felt', text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.' }));
+  grid.appendChild(holding);
+
+  // Balancing Breath (interactive meter)
+  grid.appendChild(buildBalancingBreath());
+
+  wrap.appendChild(grid);
+  return wrap;
+}
+
 /* v1.10.0: profileType dispatcher.
    USER.profileType selects which dashboard renders:
    - 'biofield' (default if absent): legacy chakras-on-body + auric rings + DNA helix
@@ -6380,15 +6564,17 @@ function mountBiofieldDashboardInternal() {
   // is now mounted ABOVE "THE INPUT" label, outside the dashboard.
   mountSectionMasthead();
 
-  // v1.12.0: The Arc — energy-centers journey dashboard, mounted above
-  // the section masthead. Re-renders on every dashboard refresh so
-  // snapshot scrubbing, note saves, and WOW changes propagate.
+  // v1.16: The Rising Light — the single luminous body hero, mounted at
+  // the top (#arc-mount). Re-renders on every dashboard refresh so note
+  // saves and WOW changes propagate into the ember bloom.
   mountArc();
 
-  // Body-aurora hero — always visible, never gated
-  root.appendChild(buildBodyAuroraHero());
+  // v1.16 MERGE: the second body silhouette (buildBodyAuroraHero) is
+  // gone — the hero above is the one body. The reading's supporting
+  // cards flow beneath it, no duplicate figure.
+  root.appendChild(buildReadingDetail());
 
-  // Below-hero detail block — timeline + delta + chakras + helix + archetype
+  // Below-detail block — timeline + delta + archetype
   root.appendChild(buildBelowHeroDetail());
 
   // v1.9.8: composite waveform stripe removed. It was absolutely
@@ -6475,47 +6661,12 @@ function mountPatternDashboard() {
 }
 
 function buildPatternHero() {
-  // Reuses the body-stage shell from buildBodyAuroraHero — silhouette image
-  // pinned aspect-ratio, side pane sibling, no auric rings or DNA helix.
-  const wrap = el('div', { class: 'bf-body-aurora-hero bf-pattern-hero' });
-  const stage = el('div', { class: 'bf-body-stage' });
-  const bodyWrap = el('div', { class: 'bf-body-wrap' });
-
-  // Body silhouette — same asset as biofield dashboard, no chakra glow nuclei.
-  const img = document.createElement('img');
-  img.className = 'bf-body-image';
-  img.alt = '';
-  img.setAttribute('aria-hidden', 'true');
-  img.src = 'assets/body-aurora.webp';
-  img.addEventListener('error', () => { img.style.display = 'none'; bodyWrap.classList.add('bf-body-wrap--no-image'); });
-  bodyWrap.appendChild(img);
-
-  // Quiet halo — single soft ring instead of the 9-ring auric system.
-  const halo = el('div', { class: 'bf-pattern-halo', 'aria-hidden': 'true' });
-  bodyWrap.appendChild(halo);
-
-  // 3 somatic dots (chest, throat, back) — same .bf-chakra-spot markup as
-  // legacy so pulseChakra(slug) works without code changes. Region values
-  // come from USER.somaticLocations.
-  const locs = (USER && Array.isArray(USER.somaticLocations)) ? USER.somaticLocations : [];
-  locs.forEach(loc => {
-    const dot = el('div', {
-      class: 'bf-chakra-spot bf-somatic-spot',
-      dataset: { id: loc.id, region: loc.region || loc.id, state: loc.state || '' },
-      style: 'top:' + (loc.yPct || 30) + '%;'
-    });
-    const label = el('div', { class: 'bf-somatic-label' });
-    label.appendChild(el('span', { class: 'bf-somatic-label-name', text: loc.label }));
-    if (loc.note) label.appendChild(el('span', { class: 'bf-somatic-label-note', text: loc.note }));
-    dot.appendChild(label);
-    bodyWrap.appendChild(dot);
-  });
-
-  stage.appendChild(bodyWrap);
-  stage.appendChild(buildPatternSidePane());
-  wrap.appendChild(stage);
-
-  // Below the stage: hero quote card (the coach's reframe)
+  // v1.16 MERGE: the Rising Light hero at the top is now the one somatic
+  // body (3 embers from somaticLocations). This builds only the
+  // supporting detail — the 4-stage calibration ladder + coach framing +
+  // hero quote — in a flowing container, no duplicate silhouette.
+  const wrap = el('div', { class: 'bf-pattern-detail' });
+  wrap.appendChild(buildPatternSidePane());
   wrap.appendChild(buildPatternHeroQuote());
   return wrap;
 }
@@ -6739,6 +6890,7 @@ function arcSummarize() {
   const mode = (USER && USER.profileType) || 'biofield';
   const notes = getNotes();
   const wow = getWow();
+  const sessionRefl = getSessionReflections();  // v1.16: for per-center deepened flag
   const snapshots = (mode === 'pattern') ? {} : getSnapshots();
   const currentStageIdx = (mode === 'pattern')
     ? Math.max(0, ARC_STAGE_KEYS.indexOf((USER && USER.currentStage) || 'ground'))
@@ -6820,8 +6972,8 @@ function arcSummarize() {
   });
 
   const centersList = (mode === 'pattern')
-    ? ((USER && USER.somaticLocations) || []).map(l => ({ id: l.id, label: l.label, baselineState: l.state, baselineNote: l.note }))
-    : ((USER && USER.chakraStates) || []).map(c => ({ id: c.id, label: c.label, baselineState: c.state, baselineNote: c.note }));
+    ? ((USER && USER.somaticLocations) || []).map(l => ({ id: l.id, label: l.label, baselineState: l.state, baselineNote: l.note, yPct: l.yPct }))
+    : ((USER && USER.chakraStates) || []).map(c => ({ id: c.id, label: c.label, baselineState: c.state, baselineNote: c.note, yPct: c.yPct }));
 
   centersList.forEach(c => {
     // latest state (from latest captured snapshot in biofield; from currentStage in pattern)
@@ -6883,16 +7035,51 @@ function arcSummarize() {
       }
     }
 
+    // v1.16: light block — drives the Rising Light hero ember for this
+    // center. charge = how tended; peak = any WOW>=5; deepened = any
+    // deepText. All from real session data, never re-scans.
+    const doneCount = sessionsHere.filter(x => x.done).length;
+    const totalCount = sessionsHere.length;
+    const peakHere = sessionsHere.some(x => x.peak);
+    const deepenedHere = sessionsHere.some(x => {
+      const r = sessionRefl[x.slug];
+      return r && r.deepText;
+    });
+    const light = {
+      charge: totalCount ? doneCount / totalCount : 0,
+      done: doneCount,
+      total: totalCount,
+      peak: peakHere,
+      deepened: deepenedHere,
+      tint: arcStateTint(latestState),
+      yPct: (typeof c.yPct === 'number') ? c.yPct : 50
+    };
+
     centers.push({
       id: c.id, label: c.label,
       state: latestState,
+      yPct: light.yPct,
       pips,
       sessions: sessionsHere,
       quote,
       summary: composeCenterSummary(c, latestState, sessionsHere, mode),
-      weekBadge
+      weekBadge,
+      light
     });
   });
+
+  // v1.16: waterline = the highest tended center (smallest yPct with any
+  // session done). The spine light climbs to here; the caption names it.
+  let waterline = null;
+  const tended = centers.filter(c => c.light.done > 0);
+  if (tended.length) {
+    const top = tended.reduce((a, b) => (a.yPct <= b.yPct ? a : b));
+    waterline = { yPct: top.yPct, label: top.label, id: top.id };
+  }
+  const totalDone = centers.reduce((n, c) => n + c.light.done, 0);
+  const totalSessions = centers.reduce((n, c) => n + c.light.total, 0);
+  const lightStage = totalDone === 0 ? 'seed'
+    : (totalSessions > 0 && totalDone >= totalSessions ? 'whole' : 'rising');
 
   return {
     mode,
@@ -6901,30 +7088,39 @@ function arcSummarize() {
       displayName: (USER && USER.displayName) || '',
       period: (USER && USER.period) || ''
     },
-    axis, system, centers
+    axis, system, centers,
+    waterline, totalDone, totalSessions, lightStage
   };
 }
 
+/* v1.16: the Rising Light story caption — names where the light has
+   climbed (the waterline center), in the portal's gathering-voice.
+   Name never grade; absence is presence; "still becoming" never closes. */
+function composeArcLightCaption(s) {
+  const wl = s.waterline;
+  const label = wl ? wl.label.toLowerCase() : null;
+  if (s.mode === 'pattern') {
+    if (s.lightStage === 'seed') return 'the body is learning that this room is not the kitchen. nothing has been asked of you yet.';
+    if (s.lightStage === 'whole') return 'the body has been tended through every stage. it has learned a new ending.';
+    return label
+      ? 'you have been tending yourself, gently. the ' + label + ' is where the work has reached.'
+      : 'the ground is being met. the light is low in the body still, patient.';
+  }
+  if (s.lightStage === 'seed') return 'the arc begins. your centers are already lit — nothing above has been asked of you yet.';
+  if (s.lightStage === 'whole') return 'the whole column is lit, root to crown, one session at a time. a month of your body, tended.';
+  if (!label) return 'the ground has been met. the light is low in the body still, patient, gathering.';
+  return 'you have been tending yourself from the ground up. the light has reached the ' + label + '.';
+}
+
+/* Legacy headline kept for back-compat with system.headline; no longer
+   rendered in the hero (the caption above replaces it). */
 function composeSystemHeadline(mode, axis, system) {
   const captured = axis.points.filter(p => p.captured).length;
   if (mode === 'pattern') {
-    if (captured <= 1) return 'the ground · the body learning that this room is not the kitchen · still becoming.';
-    if (captured >= 4) return 'the ground · letting down · finding the voice · staying present.';
-    const stagesSoFar = axis.points.filter(p => p.captured).map(p => p.shortLabel);
-    return stagesSoFar.join(' · ') + ' · still becoming.';
+    if (captured <= 1) return 'the body, learning.';
+    return 'the body, tended.';
   }
-  if (captured <= 1) {
-    const base = system.snapshots[0];
-    if (!base || base.ghost) return 'the arc begins. nothing is asked of you here.';
-    const auric = (typeof base.auricMeters === 'number') ? base.auricMeters.toFixed(1) + 'm' : null;
-    const tier = base.hawkinsTier || null;
-    const bits = ['from the baseline'];
-    if (auric) bits.push(auric);
-    if (tier) bits.push(tier);
-    return bits.join(' · ') + ' · still becoming.';
-  }
-  if (captured >= 5) return 'the arc · baseline to here.';
-  return 'from the baseline · to here · still becoming.';
+  return captured >= 5 ? 'the arc · baseline to here.' : 'from the baseline · still becoming.';
 }
 
 function composeCenterSummary(center, latestState, sessions, mode) {
@@ -7061,94 +7257,167 @@ function mountArrivalWhisper() {
   if (collapse) collapse.setAttribute('open', '');
 }
 
+let arcIgnited = false;  // entrance choreography plays once per page load
+
 function mountArc() {
   const root = document.getElementById('arc-mount');
   if (!root) return;
   while (root.firstChild) root.removeChild(root.firstChild);
   const s = arcSummarize();
-  root.appendChild(buildArcTitle(s));
-  root.appendChild(buildArcSystem(s));
+  root.appendChild(buildRisingLightHero(s));
   root.appendChild(buildArcStrips(s));
 }
 
-function buildArcTitle(s) {
-  const wrap = el('div', { class: 'arc-title' });
-  wrap.appendChild(el('div', { class: 'arc-eyebrow', text: 'THE ARC' }));
-  const subBits = s.mode === 'pattern' ? '30 days · the body learning' : '30 days · walking';
-  wrap.appendChild(el('div', { class: 'arc-sub', text: subBits }));
-  return wrap;
-}
+/* ============================================================
+   v1.16: "The Rising Light" — the single luminous body hero.
+   One responsive SVG light-layer over the body-aurora figure. Each
+   chakra (or somatic location) is a volumetric ember that blooms as its
+   sessions are tended; a gold thread climbs the spine to the highest
+   tended center (the waterline). WOW peaks turn gold; deepenings gain a
+   halo ring. Breath + shimmer on the master clock; ground→crown
+   ignition once on load. Reuses assets/dashboard/body-aurora.webp and
+   arcStateTint(). Replaces buildArcSystem + the mini-silhouette strip.
+   ============================================================ */
+const SVGNS = 'http://www.w3.org/2000/svg';
 
-function buildArcSystem(s) {
-  const wrap = el('div', { class: 'arc-system' });
-  const row = el('div', { class: 'arc-system-row' });
-  s.axis.points.forEach((p, i) => {
-    const col = el('div', { class: 'arc-snap-col' + (p.current ? ' is-current' : '') + (p.captured ? '' : ' is-ghost') });
-    if (s.mode === 'pattern') {
-      col.appendChild(el('div', { class: 'arc-snap-stage', text: p.shortLabel }));
-    }
-    col.appendChild(buildArcMiniSilhouette(s.system.snapshots[i], s.mode));
-    if (s.mode === 'pattern') {
-      // no auric/hawkins
-    } else {
-      const cap = el('div', { class: 'arc-snap-cap' });
-      const snap = s.system.snapshots[i];
-      if (snap && !snap.ghost) {
-        if (typeof snap.auricMeters === 'number') {
-          cap.appendChild(el('div', { class: 'arc-snap-auric', text: snap.auricMeters.toFixed(1) + ' m' }));
-        }
-        if (snap.hawkinsTier) {
-          cap.appendChild(el('div', { class: 'arc-snap-tier', text: snap.hawkinsTier }));
-        } else if (typeof snap.hawkinsLevel === 'number') {
-          cap.appendChild(el('div', { class: 'arc-snap-tier', text: String(snap.hawkinsLevel) }));
-        }
-      } else {
-        cap.appendChild(el('div', { class: 'arc-snap-auric arc-snap-dim', text: '—' }));
-      }
-      col.appendChild(cap);
-      col.appendChild(el('div', { class: 'arc-snap-label', text: p.label }));
-    }
-    if (p.current) col.appendChild(el('div', { class: 'arc-breath-dot' }));
-    row.appendChild(col);
-    if (i < s.axis.points.length - 1) {
-      const dashed = !s.system.snapshots[i+1] || s.system.snapshots[i+1].ghost || s.system.snapshots[i].ghost;
-      row.appendChild(el('div', { class: 'arc-connector' + (dashed ? ' is-dashed' : '') }));
-    }
+function buildRisingLightHero(s) {
+  const wrap = el('div', { class: 'arc-rising' });
+  wrap.appendChild(el('div', { class: 'arc-rising-eyebrow', text: 'THE ARC' }));
+
+  const figure = el('div', { class: 'arc-rising-figure' });
+
+  // Soft body backdrop (reused asset). aria-hidden; the story is the light.
+  const img = el('img', {
+    class: 'arc-rising-body', src: 'assets/dashboard/body-aurora.webp',
+    alt: '', 'aria-hidden': 'true', loading: 'eager', decoding: 'async'
   });
-  wrap.appendChild(row);
-  wrap.appendChild(el('div', { class: 'arc-system-headline', text: s.system.headline }));
-  return wrap;
-}
+  img.addEventListener('error', () => { img.style.display = 'none'; });
+  figure.appendChild(img);
 
-function buildArcMiniSilhouette(snap, mode) {
-  // Minimal body outline + colored dots at each center's yPct.
-  const SVG = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(SVG, 'svg');
-  svg.setAttribute('class', 'arc-mini');
-  svg.setAttribute('viewBox', '0 0 40 80');
-  // Body silhouette: head circle + tapered torso + legs hint.
-  const body = document.createElementNS(SVG, 'path');
-  body.setAttribute('class', 'arc-mini-body');
-  body.setAttribute('d', 'M20 4 a5 5 0 1 1 0.01 0 M15 14 L25 14 L29 32 L26 52 L23 75 L17 75 L14 52 L11 32 Z');
-  body.setAttribute('fill', 'rgba(255,255,255,0.04)');
-  body.setAttribute('stroke', 'rgba(255,255,255,0.28)');
-  body.setAttribute('stroke-width', '0.6');
-  svg.appendChild(body);
-  if (snap && !snap.ghost) {
-    const states = mode === 'pattern' ? (snap.somaticStates || []) : (snap.chakraStates || []);
-    states.forEach(st => {
-      const yPct = (typeof st.yPct === 'number') ? st.yPct : 50;
-      const cy = 6 + (yPct / 100) * 70;
-      const dot = document.createElementNS(SVG, 'circle');
-      dot.setAttribute('cx', '20');
-      dot.setAttribute('cy', String(cy));
-      dot.setAttribute('r', '1.8');
-      dot.setAttribute('fill', arcStateTint(st.state));
-      dot.setAttribute('opacity', '0.92');
-      svg.appendChild(dot);
-    });
+  // SVG light-layer: viewBox matches the image native aspect so embers
+  // track the figure at every width with no JS positioning.
+  const svg = document.createElementNS(SVGNS, 'svg');
+  svg.setAttribute('class', 'arc-rising-light');
+  svg.setAttribute('viewBox', '0 0 703 1024');
+  svg.setAttribute('aria-hidden', 'true');
+
+  // --- defs: one warm volumetric glow filter (static, never animated) ---
+  // Built with DOM methods (no innerHTML) per the project's DOM-safe rule.
+  const defs = document.createElementNS(SVGNS, 'defs');
+  const filt = document.createElementNS(SVGNS, 'filter');
+  filt.setAttribute('id', 'arc-ember-glow');
+  filt.setAttribute('x', '-80%'); filt.setAttribute('y', '-80%');
+  filt.setAttribute('width', '260%'); filt.setAttribute('height', '260%');
+  [['5','b1'],['12','b2'],['22','b3']].forEach(([sd, res]) => {
+    const fb = document.createElementNS(SVGNS, 'feGaussianBlur');
+    fb.setAttribute('in', 'SourceAlpha');
+    fb.setAttribute('stdDeviation', sd);
+    fb.setAttribute('result', res);
+    filt.appendChild(fb);
+  });
+  const merge = document.createElementNS(SVGNS, 'feMerge');
+  ['b3','b2','b1','SourceGraphic'].forEach(inp => {
+    const mn = document.createElementNS(SVGNS, 'feMergeNode');
+    mn.setAttribute('in', inp);
+    merge.appendChild(mn);
+  });
+  filt.appendChild(merge);
+  defs.appendChild(filt);
+  svg.appendChild(defs);
+
+  const CX = 253;                 // figure spine ≈ 36% of 703
+  const toCy = (yPct) => (yPct / 100) * 1024;
+  const centers = s.centers || [];
+  if (!centers.length) { figure.appendChild(svg); wrap.appendChild(figure); return wrap; }
+
+  const ys = centers.map(c => c.yPct);
+  const topY = toCy(Math.min(...ys));      // highest center (crown)
+  const botY = toCy(Math.max(...ys));      // lowest center (root)
+
+  // --- spine: faint full channel + bright lit reach to the waterline ---
+  const faint = document.createElementNS(SVGNS, 'line');
+  faint.setAttribute('class', 'arc-spine-faint');
+  faint.setAttribute('x1', CX); faint.setAttribute('y1', botY);
+  faint.setAttribute('x2', CX); faint.setAttribute('y2', topY);
+  svg.appendChild(faint);
+
+  if (s.waterline) {
+    const litTop = toCy(s.waterline.yPct);
+    const lit = document.createElementNS(SVGNS, 'line');
+    lit.setAttribute('class', 'arc-spine-lit');
+    lit.setAttribute('x1', CX); lit.setAttribute('y1', botY);
+    lit.setAttribute('x2', CX); lit.setAttribute('y2', litTop);
+    lit.setAttribute('filter', 'url(#arc-ember-glow)');
+    svg.appendChild(lit);
   }
-  return svg;
+
+  // --- embers, drawn root→crown so DOM order = ignition order ---
+  const ordered = centers.slice().sort((a, b) => b.yPct - a.yPct); // root first
+  ordered.forEach((c, i) => {
+    const cy = toCy(c.yPct);
+    const L = c.light || { charge: 0, tint: arcStateTint(c.state) };
+    const charge = Math.max(0, Math.min(1, L.charge || 0));
+    const tint = L.peak ? '#FFD764' : (L.tint || arcStateTint(c.state));
+    const R = 16 + charge * 16;                 // 16 (untended) → 32 (full)
+    const baseOp = (0.30 + 0.55 * charge).toFixed(3);
+
+    const g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('class', 'arc-ember' + (L.peak ? ' is-peak' : '') + (charge > 0 ? '' : ' is-dormant'));
+    g.style.setProperty('--emb', baseOp);
+    g.style.setProperty('--igd', (i * 0.06).toFixed(2) + 's'); // 60ms stagger up
+
+    // deepening halo ring
+    if (L.deepened) {
+      const ring = document.createElementNS(SVGNS, 'circle');
+      ring.setAttribute('class', 'arc-ember-ring');
+      ring.setAttribute('cx', CX); ring.setAttribute('cy', cy);
+      ring.setAttribute('r', R + 10);
+      g.appendChild(ring);
+    }
+    // haze (colored glow)
+    const haze = document.createElementNS(SVGNS, 'circle');
+    haze.setAttribute('cx', CX); haze.setAttribute('cy', cy);
+    haze.setAttribute('r', R);
+    haze.setAttribute('fill', tint);
+    haze.setAttribute('filter', 'url(#arc-ember-glow)');
+    g.appendChild(haze);
+    // hot core
+    const core = document.createElementNS(SVGNS, 'circle');
+    core.setAttribute('class', 'arc-ember-core');
+    core.setAttribute('cx', CX); core.setAttribute('cy', cy);
+    core.setAttribute('r', (R * 0.42).toFixed(1));
+    core.setAttribute('fill', '#fff');
+    core.setAttribute('opacity', (0.35 + 0.5 * charge).toFixed(3));
+    g.appendChild(core);
+
+    svg.appendChild(g);
+  });
+
+  figure.appendChild(svg);
+  wrap.appendChild(figure);
+
+  // Caption — the story of where the light has climbed.
+  wrap.appendChild(el('div', { class: 'arc-rising-caption', text: composeArcLightCaption(s) }));
+
+  // Origin line — where you started (biofield only).
+  if (s.mode !== 'pattern') {
+    const base = (s.system && s.system.snapshots && s.system.snapshots[0]) || {};
+    const bits = [];
+    if (typeof base.auricMeters === 'number') bits.push('from ' + base.auricMeters.toFixed(1) + 'm');
+    if (base.hawkinsTier) bits.push(base.hawkinsTier);
+    const dna = USER && USER.dna;
+    if (dna && dna.phaseLocked && dna.of) bits.push(dna.phaseLocked + ' of ' + dna.of + ' strands');
+    if (bits.length) wrap.appendChild(el('div', { class: 'arc-rising-origin', text: bits.join(' · ') }));
+  }
+
+  // Entrance ignition, once per page load.
+  if (!arcIgnited) {
+    arcIgnited = true;
+    wrap.classList.add('igniting');
+    setTimeout(() => wrap.classList.remove('igniting'), 1800);
+  }
+
+  return wrap;
 }
 
 /* v1.15.2: Arc strips v2 — collapsible drawer, compact rows, no week
@@ -9254,11 +9523,60 @@ async function resolveSession(slug) {
 function collapseCardToReflection(card, slug) {
   const stored = getSessionReflections()[slug];
   if (!stored) return;
+  const deepened = !!stored.deepText;
   const reflEl = card.querySelector('.resolved-reflection .resolved-text');
   if (reflEl) reflEl.textContent = humanize(stored.deepText || stored.text || '');
-  card.classList.toggle('deepened', !!stored.deepText);
+  // v1.16: eyebrow whispers the distinction; recap stays identical.
+  const eyebrow = card.querySelector('.resolved-reflection .resolved-eyebrow');
+  if (eyebrow) eyebrow.textContent = deepened ? 'Reflection · sat with a second time' : 'Reflection · resolved from your notes';
+  card.classList.toggle('deepened', deepened);
   card.classList.add('collapsed-reflected');
   card.classList.remove('dirty');
+  renderReflectionRecap(card, slug);
+}
+
+/* v1.16: the reflection sits WITH its inputs. A read-only echo of the
+   user's own Before/After lines + WOW word, beneath the reflection, so a
+   reflected/deepened card never looks like it lost its ratings. The
+   editable .notes block stays hidden (this is quotation, not the form). */
+function renderReflectionRecap(card, slug) {
+  const refl = card.querySelector('.resolved-reflection');
+  if (!refl) return;
+  const old = refl.querySelector('.resolved-recap');
+  if (old) old.remove();
+
+  const notes = getNotes();
+  const before = (notes[slug + '__before'] || '').trim();
+  const after = (notes[slug + '__after'] || '').trim();
+  const w = getWow()[slug];
+  const wl = WOW_LABELS[w];
+  if (!before && !after && !wl) return;
+
+  const clip = (t) => {
+    const s = t.replace(/\s+/g, ' ').trim();
+    return s.length <= 80 ? s : s.slice(0, 80).replace(/\s\S*$/, '') + '…';
+  };
+
+  const recap = el('div', { class: 'resolved-recap' });
+  recap.appendChild(el('div', { class: 'resolved-recap-eyebrow', text: 'from your own words' }));
+  if (before) {
+    const r = el('div', { class: 'resolved-recap-row resolved-recap-row--before' });
+    r.appendChild(el('span', { class: 'resolved-recap-when', text: 'Before' }));
+    r.appendChild(el('span', { class: 'resolved-recap-text', text: '“' + clip(before) + '”' }));
+    recap.appendChild(r);
+  }
+  if (after) {
+    const r = el('div', { class: 'resolved-recap-row resolved-recap-row--after' });
+    r.appendChild(el('span', { class: 'resolved-recap-when', text: 'After' }));
+    r.appendChild(el('span', { class: 'resolved-recap-text', text: '“' + clip(after) + '”' }));
+    recap.appendChild(r);
+  }
+  if (wl) {
+    const r = el('div', { class: 'resolved-recap-wow' });
+    r.appendChild(el('span', { class: 'resolved-recap-wow-word', text: wl.short }));
+    recap.appendChild(r);
+  }
+  refl.appendChild(recap);
 }
 
 function editSessionNotes(slug) {
