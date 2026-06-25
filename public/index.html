@@ -4158,7 +4158,7 @@ section#reflect.reflected .section-title em {
    v1.17: THE JOURNEY — top-of-page summary (where you started →
    what's moved), album-art rail, moments that moved you.
    ============================================================ */
-.journey { animation: journey-fade 0.7s ease both; }
+.journey--first { animation: journey-fade 0.7s ease both; }
 @keyframes journey-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .journey-eyebrow {
   font-family: var(--sans); font-size: 11px; letter-spacing: 0.34em;
@@ -4286,14 +4286,89 @@ section#reflect.reflected .section-title em {
   font-family: var(--serif); font-style: italic;
   font-size: 14px; line-height: 1.5; color: var(--mid);
 }
+/* v1.18: the Living Journey — change over time */
+.journey-traj, .journey-invite { margin: 8px 0 4px; }
+.journey-traj-delta {
+  text-align: center; margin: 0 auto 18px; max-width: 52ch;
+}
+.journey-traj-delta-label {
+  font-family: var(--sans); font-size: 10px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 8px;
+}
+.journey-traj-delta-line {
+  font-family: var(--serif); font-size: clamp(15px, 2vw, 19px);
+  color: var(--teal); line-height: 1.4;
+}
+.journey-traj-viz {
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(16px, 4vw, 40px); flex-wrap: wrap; margin-bottom: 8px;
+}
+.journey-ascent { flex: 1 1 420px; min-width: 0; max-width: 640px; }
+.journey-ascent-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.journey-ascent-tier { stroke: rgba(255,255,255,0.07); stroke-width: 1; stroke-dasharray: 3 5; }
+.journey-ascent-tier-label {
+  font-family: var(--sans); font-size: 9px; letter-spacing: 0.16em;
+  text-transform: uppercase; fill: var(--dim);
+}
+.journey-ascent-line {
+  fill: none; stroke: var(--gold); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1200; stroke-dashoffset: 1200;
+}
+.journey--first .journey-ascent-line { animation: journey-draw 1.5s cubic-bezier(0.23,1,0.32,1) 0.2s forwards; }
+.journey:not(.journey--first) .journey-ascent-line { stroke-dashoffset: 0; }
+@keyframes journey-draw { to { stroke-dashoffset: 0; } }
+.journey-ascent-node { fill: var(--gold); }
+.journey-ascent-node.is-current {
+  fill: #FFF4D6;
+  transform-box: fill-box; transform-origin: center;
+  transform: scale(calc(1 + 0.10 * var(--breath-pulse, 0.5)));
+}
+.journey-ascent-val { font-family: var(--sans); font-size: 11px; font-weight: 500; fill: var(--light); }
+.journey-ascent-date { font-family: var(--sans); font-size: 9.5px; letter-spacing: 0.06em; fill: var(--mid); }
+.journey-field { flex: 0 0 auto; text-align: center; }
+.journey-field-svg { width: clamp(120px, 26vw, 150px); height: auto; display: block; margin: 0 auto; overflow: visible; }
+.journey-field-cur { fill: rgba(106,223,217,0.10); stroke: var(--teal); stroke-width: 1.5; transition: r 600ms cubic-bezier(0.23,1,0.32,1); }
+.journey-field-base { fill: none; stroke: rgba(255,255,255,0.22); stroke-width: 1; stroke-dasharray: 2 4; transition: r 600ms cubic-bezier(0.23,1,0.32,1); }
+.journey-field-core { fill: var(--teal); }
+.journey-field-cap { margin-top: 6px; line-height: 1.25; }
+.journey-field-now { display: block; font-family: var(--serif); font-size: 22px; color: var(--light); }
+.journey-field-lbl { display: block; font-family: var(--sans); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
+.journey-field-from { display: block; font-family: var(--serif); font-style: italic; font-size: 12.5px; color: var(--mid); margin-top: 2px; }
+.journey-active-detail { text-align: center; margin: 6px 0 2px; }
+.journey-active-when { font-family: var(--sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-right: 10px; }
+.journey-active-bits { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--mid); }
+.journey-traj-scrub-label { text-align: center; font-family: var(--sans); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 14px 0 8px; }
+.journey-scrub { display: flex; justify-content: center; gap: clamp(20px, 6vw, 54px); flex-wrap: wrap; }
+.journey-scrub-dot { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px; }
+.journey-scrub-mark { width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); transition: all 0.25s ease; }
+.journey-scrub-dot.is-active .journey-scrub-mark { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 12px rgba(255,215,100,0.6); }
+.journey-scrub-dot:hover .journey-scrub-mark { border-color: var(--gold); }
+.journey-scrub-date { font-family: var(--sans); font-size: 10px; letter-spacing: 0.06em; color: var(--mid); }
+.journey-scrub-dot.is-active .journey-scrub-date { color: var(--light); }
+/* invitation / empty state */
+.journey-invite { text-align: center; }
+.journey-invite-svg { width: clamp(220px, 60vw, 320px); height: auto; display: block; margin: 4px auto 14px; opacity: 0.85; }
+.journey-invite-ghost-line { stroke: rgba(255,215,100,0.3); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.journey-invite-start { fill: var(--gold); }
+.journey-invite-ghost { fill: none; stroke: rgba(255,215,100,0.5); stroke-width: 1.5; stroke-dasharray: 2 3; }
+.journey-invite-ghost-label { font-family: var(--sans); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; fill: var(--dim); }
+.journey-invite-copy { font-family: var(--serif); font-style: italic; font-size: clamp(14px, 2vw, 17px); color: var(--mid); max-width: 46ch; margin: 0 auto 16px; line-height: 1.5; }
+.journey-invite-form { max-width: 440px; margin: 0 auto; text-align: left; }
+.journey-invite-summary { font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); cursor: pointer; text-align: center; padding: 8px; }
+.journey-invite-ta { width: 100%; margin: 10px 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--light); font-family: var(--sans); font-size: 14px; padding: 12px; resize: vertical; }
+.journey-invite-save { display: block; margin: 0 auto; }
 @media (max-width: 640px) {
   .journey-band { grid-template-columns: 1fr; gap: 10px; text-align: center; }
   .journey-started, .journey-now { text-align: center; }
   .journey-arrow { transform: rotate(90deg); justify-self: center; }
   .journey-thumb { width: 40px; height: 40px; }
+  .journey-traj-viz { flex-direction: column; gap: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .journey { animation: none; }
+  .journey--first { animation: none; }
+  .journey--first .journey-ascent-line { animation: none; stroke-dashoffset: 0; }
+  .journey-ascent-node.is-current { transform: none; }
 }
 
 /* ============================================================
@@ -5220,7 +5295,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.17.0';
+const VERSION = '1.18.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7337,6 +7412,66 @@ function arcSummarize() {
     };
   }
 
+  // v1.18: trajectory — captured scans (baseline + later scans from the
+  // Architect), ordered by ts, for the Living Journey's Ascent curve +
+  // field-growth + scan scrubber. Each node carries the plotted fields.
+  const trajectory = [];
+  if (mode !== 'pattern') {
+    Object.keys(snapshots).forEach(k => {
+      const sn = snapshots[k];
+      if (!sn) return;
+      const wk = parseInt(k, 10);
+      trajectory.push({
+        week: wk,
+        ts: sn.ts || 0,
+        isBaseline: wk === 0,
+        auric: (typeof sn.auricMeters === 'number') ? sn.auricMeters : null,
+        hawkins: (typeof sn.hawkinsLevel === 'number') ? sn.hawkinsLevel : null,
+        hawkinsTier: (typeof sn.hawkinsLevel === 'number') ? hawkinsTier(sn.hawkinsLevel).tier : null,
+        dna: sn.dna || null,
+        chakraStates: sn.chakraStates || null
+      });
+    });
+    trajectory.sort((a, b) => {
+      if (a.isBaseline !== b.isBaseline) return a.isBaseline ? -1 : 1;
+      const at = a.ts || 0, bt = b.ts || 0;
+      if (at && bt && at !== bt) return at - bt;
+      return a.week - b.week;
+    });
+  }
+  const scanCount = trajectory.length;
+
+  // movement (never grade) between two scan nodes
+  const labelMap = {};
+  centersList.forEach(c => { labelMap[c.id] = c.label; });
+  function diffNodes(a, b) {
+    const out = { auricDelta: null, hawkinsDelta: null, tierFrom: a.hawkinsTier, tierTo: b.hawkinsTier, tierChanged: false, dnaDelta: null, chakraShifts: [] };
+    if (typeof a.auric === 'number' && typeof b.auric === 'number') out.auricDelta = +(b.auric - a.auric).toFixed(2);
+    if (typeof a.hawkins === 'number' && typeof b.hawkins === 'number') out.hawkinsDelta = b.hawkins - a.hawkins;
+    out.tierChanged = !!(a.hawkinsTier && b.hawkinsTier && a.hawkinsTier !== b.hawkinsTier);
+    if (a.dna && b.dna && typeof a.dna.phaseLocked === 'number' && typeof b.dna.phaseLocked === 'number') out.dnaDelta = b.dna.phaseLocked - a.dna.phaseLocked;
+    if (Array.isArray(a.chakraStates) && Array.isArray(b.chakraStates)) {
+      const aMap = {}; a.chakraStates.forEach(c => { aMap[c.id] = c.state; });
+      b.chakraStates.forEach(c => {
+        const from = aMap[c.id], to = c.state;
+        if (from == null || to == null || from === to) return;
+        const fo = STATE_ORDINAL[from] != null ? STATE_ORDINAL[from] : 2;
+        const to2 = STATE_ORDINAL[to] != null ? STATE_ORDINAL[to] : 2;
+        const d = to2 - fo;
+        out.chakraShifts.push({ id: c.id, label: labelMap[c.id] || c.id, from, to, dir: d > 0 ? 1 : (d < 0 ? -1 : 0), mag: Math.abs(d) });
+      });
+      out.chakraShifts.sort((x, y) => y.mag - x.mag);
+    }
+    return out;
+  }
+  let scanDelta = null;
+  if (scanCount >= 2) {
+    const latest = trajectory[scanCount - 1];
+    const prev = trajectory[scanCount - 2];
+    const base = trajectory[0];
+    scanDelta = { latest, prev, base, vsBaseline: diffNodes(base, latest), vsPrev: diffNodes(prev, latest) };
+  }
+
   return {
     mode,
     user: {
@@ -7347,7 +7482,8 @@ function arcSummarize() {
     axis, system, centers,
     waterline, totalDone, totalSessions, lightStage,
     path, moments, baseline,
-    metCount, peakCount, deepenedCount, pathTotal: path.length
+    metCount, peakCount, deepenedCount, pathTotal: path.length,
+    trajectory, scanCount, scanDelta
   };
 }
 
@@ -7602,8 +7738,235 @@ function buildJourneyMoment(m) {
   return row;
 }
 
+/* ============================================================
+   v1.18: "The Living Journey" — change over time, interactively.
+   The Ascent (Hawkins across scans), field growth, a date scrubber,
+   and a movement-voice "what moved since your last scan". All from
+   arcSummarize().trajectory / scanDelta. Name never grade — a drop
+   reads as "drew inward", never failure.
+   ============================================================ */
+function journeyScanDate(node) {
+  if (!node) return 'scan';
+  if (node.isBaseline) return 'start';
+  if (!node.ts) return 'scan';
+  try { return new Date(node.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+  catch { return 'scan'; }
+}
+
+/* movement-voice delta. which = 'vsBaseline' | 'vsPrev'. */
+function composeScanDelta(s, which) {
+  if (!s.scanDelta) return [];
+  const d = s.scanDelta[which || 'vsPrev'];
+  if (!d) return [];
+  const lines = [];
+  if (d.tierChanged && d.tierFrom && d.tierTo) {
+    lines.push('you rose from ' + d.tierFrom + ' toward ' + d.tierTo);
+  } else if (typeof d.hawkinsDelta === 'number' && d.hawkinsDelta !== 0) {
+    lines.push(d.hawkinsDelta > 0
+      ? 'your calibration climbed, still resting in ' + (d.tierTo || '').toLowerCase()
+      : 'your calibration drew inward this season, gathering');
+  }
+  if (typeof d.auricDelta === 'number' && Math.abs(d.auricDelta) >= 0.1) {
+    lines.push(d.auricDelta > 0
+      ? 'your field reached further, by ' + d.auricDelta.toFixed(1) + ' m'
+      : 'your field drew inward, by ' + Math.abs(d.auricDelta).toFixed(1) + ' m');
+  }
+  const shift = (d.chakraShifts || [])[0];
+  if (shift) {
+    lines.push(shift.dir >= 0
+      ? 'the ' + shift.label.toLowerCase() + ', once ' + shift.from + ', has ' + (shift.to === 'clear' ? 'cleared' : 'opened toward ' + shift.to)
+      : 'the ' + shift.label.toLowerCase() + ' has grown quieter');
+  }
+  if (typeof d.dnaDelta === 'number' && d.dnaDelta > 0) {
+    lines.push(d.dnaDelta + (d.dnaDelta === 1 ? ' more strand has' : ' more strands have') + ' phase-locked');
+  }
+  return lines;
+}
+
+/* a small per-svg glow filter (colored source so glow takes stroke hue) */
+function journeyGlowDefs(id) {
+  const defs = svg('defs');
+  const f = svg('filter', { id: id, x: '-60%', y: '-60%', width: '220%', height: '220%' });
+  [['2.5', 'b1'], ['6', 'b2']].forEach(([sd, res]) => f.appendChild(svg('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: sd, result: res })));
+  const m = svg('feMerge');
+  ['b2', 'b1', 'SourceGraphic'].forEach(i => m.appendChild(svg('feMergeNode', { in: i })));
+  f.appendChild(m); defs.appendChild(f); return defs;
+}
+
+/* The Ascent — Hawkins calibration as a luminous line climbing through
+   the named consciousness tiers (Reason · Love · Joy · Peace). Not a
+   gridded chart; soft tier zones + a glowing line + dated nodes. */
+function buildJourneyAscent(s) {
+  const traj = s.trajectory.filter(n => typeof n.hawkins === 'number');
+  const wrap = el('div', { class: 'journey-ascent' });
+  if (traj.length < 1) return wrap;
+  const vals = traj.map(n => n.hawkins);
+  let lo = Math.min.apply(null, vals) - 40;
+  let hi = Math.max.apply(null, vals) + 40;
+  if (hi - lo < 80) { hi += 20; lo -= 20; }
+  const W = 640, H = 210, padX = 34, padTop = 26, padBot = 42;
+  const xAt = i => padX + (traj.length === 1 ? (W - 2 * padX) / 2 : (i / (traj.length - 1)) * (W - 2 * padX));
+  const yAt = v => padTop + (1 - (v - lo) / (hi - lo)) * (H - padTop - padBot);
+  const sv = svg('svg', { class: 'journey-ascent-svg', viewBox: '0 0 ' + W + ' ' + H });
+  sv.appendChild(journeyGlowDefs('journey-ascent-glow'));
+  // named tier zones within the domain
+  HAWKINS_TIERS.forEach(t => {
+    if (t.v < lo || t.v > hi) return;
+    const yy = yAt(t.v);
+    sv.appendChild(svg('line', { class: 'journey-ascent-tier', x1: padX, x2: W - padX, y1: yy.toFixed(1), y2: yy.toFixed(1) }));
+    sv.appendChild(svg('text', { class: 'journey-ascent-tier-label', x: (padX + 2).toFixed(1), y: (yy - 5).toFixed(1), text: t.name.toLowerCase() }));
+  });
+  // the climbing line
+  if (traj.length >= 2) {
+    const pts = traj.map((n, i) => xAt(i).toFixed(1) + ',' + yAt(n.hawkins).toFixed(1)).join(' ');
+    sv.appendChild(svg('polyline', { class: 'journey-ascent-line', points: pts, filter: 'url(#journey-ascent-glow)' }));
+  }
+  // nodes + value + date
+  traj.forEach((n, i) => {
+    const cx = xAt(i), cy = yAt(n.hawkins);
+    const isLast = i === traj.length - 1;
+    sv.appendChild(svg('circle', { class: 'journey-ascent-node' + (isLast ? ' is-current' : ''), cx: cx.toFixed(1), cy: cy.toFixed(1), r: isLast ? '5.5' : '3.5', filter: 'url(#journey-ascent-glow)' }));
+    sv.appendChild(svg('text', { class: 'journey-ascent-val', x: cx.toFixed(1), y: (cy - 11).toFixed(1), 'text-anchor': 'middle', text: String(n.hawkins) }));
+    sv.appendChild(svg('text', { class: 'journey-ascent-date', x: cx.toFixed(1), y: (H - 12).toFixed(1), 'text-anchor': 'middle', text: journeyScanDate(n) }));
+  });
+  wrap.appendChild(sv);
+  return wrap;
+}
+
+/* Field growth — auric extent as concentric rings: baseline (faint
+   dashed) vs current (glowing), the reach between them shaded. */
+function buildJourneyField(s) {
+  const base = s.scanDelta ? s.scanDelta.base : null;
+  const latest = s.scanDelta ? s.scanDelta.latest : (s.trajectory[s.trajectory.length - 1]);
+  if (!latest || typeof latest.auric !== 'number') return null;
+  const b = (base && typeof base.auric === 'number') ? base.auric : latest.auric;
+  const cur = latest.auric;
+  const wrap = el('div', { class: 'journey-field' });
+  const sz = 150, c = sz / 2, maxR = c - 10;
+  const maxVal = Math.max(b, cur) || 1;
+  const rBase = (b / maxVal) * maxR;
+  const rCur = (cur / maxVal) * maxR;
+  const sv = svg('svg', { class: 'journey-field-svg', viewBox: '0 0 ' + sz + ' ' + sz });
+  sv.appendChild(journeyGlowDefs('journey-field-glow'));
+  sv.appendChild(svg('circle', { class: 'journey-field-cur', cx: c, cy: c, r: rCur.toFixed(1), filter: 'url(#journey-field-glow)' }));
+  sv.appendChild(svg('circle', { class: 'journey-field-base', cx: c, cy: c, r: rBase.toFixed(1) }));
+  sv.appendChild(svg('circle', { class: 'journey-field-core', cx: c, cy: c, r: '2.5' }));
+  wrap.appendChild(sv);
+  const cap = el('div', { class: 'journey-field-cap' });
+  cap.appendChild(el('span', { class: 'journey-field-now', text: cur.toFixed(1) + 'm' }));
+  cap.appendChild(el('span', { class: 'journey-field-lbl', text: 'your field' }));
+  if (Math.abs(cur - b) >= 0.1) cap.appendChild(el('span', { class: 'journey-field-from', text: 'from ' + b.toFixed(1) + 'm' }));
+  wrap.appendChild(cap);
+  return wrap;
+}
+
+/* The scan scrubber — dated dots; tap to move through time (morphs the
+   restored body below + re-highlights). */
+function buildJourneyScrubber(s) {
+  if (s.scanCount < 2) return null;
+  const wrap = el('div', { class: 'journey-scrub' });
+  const active = getActiveSnapshotWeek();
+  s.trajectory.forEach(n => {
+    const dot = el('button', { class: 'journey-scrub-dot' + (n.week === active ? ' is-active' : ''), type: 'button', 'aria-label': 'View scan ' + journeyScanDate(n) });
+    dot.appendChild(el('span', { class: 'journey-scrub-mark' }));
+    dot.appendChild(el('span', { class: 'journey-scrub-date', text: journeyScanDate(n) }));
+    dot.addEventListener('click', () => {
+      setActiveSnapshot(n.week);   // morph the restored body below
+      mountArc();                   // re-render the Journey (active highlight + detail)
+    });
+    wrap.appendChild(dot);
+  });
+  return wrap;
+}
+
+/* The active-scan detail line — reflects the currently scrubbed scan. */
+function buildJourneyActiveDetail(s) {
+  const active = getActiveSnapshotWeek();
+  const n = s.trajectory.find(x => x.week === active) || s.trajectory[s.trajectory.length - 1];
+  if (!n) return null;
+  const bits = [];
+  if (typeof n.auric === 'number') bits.push('field ' + n.auric.toFixed(1) + 'm');
+  if (n.hawkinsTier) bits.push(n.hawkinsTier.toLowerCase());
+  const wrap = el('div', { class: 'journey-active-detail' });
+  wrap.appendChild(el('span', { class: 'journey-active-when', text: n.isBaseline ? 'your starting scan' : 'scan · ' + journeyScanDate(n) }));
+  if (bits.length) wrap.appendChild(el('span', { class: 'journey-active-bits', text: bits.join(' · ') }));
+  return wrap;
+}
+
+function buildJourneyTrajectory(s) {
+  const wrap = el('div', { class: 'journey-traj' });
+  wrap.appendChild(el('div', { class: 'journey-sub', text: 'your field over time' }));
+
+  const moved = composeScanDelta(s, 'vsPrev');
+  if (moved.length) {
+    const md = el('div', { class: 'journey-traj-delta' });
+    md.appendChild(el('div', { class: 'journey-traj-delta-label', text: 'since your last scan' }));
+    moved.forEach(line => md.appendChild(el('div', { class: 'journey-traj-delta-line', text: line })));
+    wrap.appendChild(md);
+  }
+
+  const viz = el('div', { class: 'journey-traj-viz' });
+  viz.appendChild(buildJourneyAscent(s));
+  const field = buildJourneyField(s);
+  if (field) viz.appendChild(field);
+  wrap.appendChild(viz);
+
+  const detail = buildJourneyActiveDetail(s);
+  if (detail) wrap.appendChild(detail);
+
+  const scrub = buildJourneyScrubber(s);
+  if (scrub) {
+    wrap.appendChild(el('div', { class: 'journey-traj-scrub-label', text: 'tap a scan to move through time' }));
+    wrap.appendChild(scrub);
+  }
+  return wrap;
+}
+
+/* Add a new scan from the Journey — writes the next free scan slot, then
+   morphs to it. Reuses the working saveWeekField/snapshot path. */
+function addJourneyScan(text) {
+  const v = (text || '').trim();
+  if (!v) return;
+  const wf = getWeekFields();
+  let slot = null;
+  for (let w = 1; w <= 4; w++) { if (!wf[String(w)] || !wf[String(w)].text) { slot = w; break; } }
+  if (slot == null) slot = 4;  // v1 cap: 5 scans (baseline + 4); overwrite last
+  saveWeekField(slot, v);
+  setActiveSnapshot(slot);
+  mountArc();
+}
+
+/* Empty / single-scan invitation + ghost preview of the trend to come. */
+function buildJourneyInvite(s) {
+  const wrap = el('div', { class: 'journey-invite' });
+  wrap.appendChild(el('div', { class: 'journey-sub', text: 'your field over time' }));
+  // ghost preview — a faint start node + dashed rising line to a ghost node
+  const W = 320, H = 96;
+  const sv = svg('svg', { class: 'journey-invite-svg', viewBox: '0 0 ' + W + ' ' + H });
+  sv.appendChild(svg('line', { class: 'journey-invite-ghost-line', x1: '40', y1: (H - 26).toFixed(0), x2: (W - 40).toFixed(0), y2: '30' }));
+  sv.appendChild(svg('circle', { class: 'journey-invite-start', cx: '40', cy: (H - 26).toFixed(0), r: '5' }));
+  sv.appendChild(svg('circle', { class: 'journey-invite-ghost', cx: (W - 40).toFixed(0), cy: '30', r: '6' }));
+  sv.appendChild(svg('text', { class: 'journey-ascent-date', x: '40', y: (H - 8).toFixed(0), 'text-anchor': 'middle', text: 'start' }));
+  sv.appendChild(svg('text', { class: 'journey-invite-ghost-label', x: (W - 40).toFixed(0), y: '18', 'text-anchor': 'middle', text: 'next scan' }));
+  wrap.appendChild(sv);
+  wrap.appendChild(el('div', { class: 'journey-invite-copy', text: 'when you scan your field again, its movement appears here — how far it reaches, how your calibration climbs.' }));
+
+  const det = el('details', { class: 'journey-invite-form' });
+  const sum = el('summary', { class: 'journey-invite-summary', text: 'Add a new field scan' });
+  det.appendChild(sum);
+  const ta = el('textarea', { class: 'journey-invite-ta', rows: '6', placeholder: 'Paste your new field scan from the Architect.', 'aria-label': 'New field scan' });
+  det.appendChild(ta);
+  const btn = el('button', { class: 'btn btn-primary journey-invite-save', type: 'button', text: 'Save scan' });
+  btn.addEventListener('click', () => addJourneyScan(ta.value));
+  det.appendChild(btn);
+  wrap.appendChild(det);
+  return wrap;
+}
+
 function buildJourneySummary(s) {
-  const wrap = el('div', { class: 'journey' + (s.lightStage === 'seed' ? ' journey--seed' : '') });
+  const first = !window.__journeyMountedOnce;
+  window.__journeyMountedOnce = true;
+  const wrap = el('div', { class: 'journey' + (first ? ' journey--first' : '') + (s.lightStage === 'seed' ? ' journey--seed' : '') });
 
   wrap.appendChild(el('div', { class: 'journey-eyebrow', text: 'YOUR JOURNEY SO FAR' }));
   wrap.appendChild(el('div', { class: 'journey-caption', text: composeArcLightCaption(s) }));
@@ -7637,6 +8000,11 @@ function buildJourneySummary(s) {
   band.appendChild(now);
 
   wrap.appendChild(band);
+
+  // --- v1.18: the field over time (interactive change-over-time) ---
+  if (s.mode !== 'pattern') {
+    wrap.appendChild(s.scanCount >= 2 ? buildJourneyTrajectory(s) : buildJourneyInvite(s));
+  }
 
   // --- The path so far: album-art rail ---
   if (s.path && s.path.length) {
@@ -8857,12 +9225,18 @@ function buildSnapshot(weekN, text, ts, source) {
   const parsed = parseInput(text || '') || {};
   const frames = parsed.frames || {};
 
-  // Aura meters: prefer the structured USER_DATA field when present
-  // (v1.11.3: structured fields are authoritative; the regex parser
-  // misreads ranges like "9-12 meters" — it grabs the second number).
+  // Aura meters. Baseline (week 0): the structured USER_DATA field is
+  // authoritative (v1.11.3 — the regex misreads ranges like "9-12 m").
+  // Later scans (weekN > 0): read the meters from the scan text so the
+  // field-over-time can actually MOVE; fall back to baseline if absent.
   let auricMeters;
-  if (typeof baseline.auricMeters === 'number') {
+  if (weekN === 0 && typeof baseline.auricMeters === 'number') {
     auricMeters = baseline.auricMeters;
+  } else if (weekN > 0) {
+    auricMeters = (typeof baseline.auricMeters === 'number') ? baseline.auricMeters : 13.4;
+    const oricB = (frames.oric && frames.oric.body) || '';
+    const amB = (oricB + ' ' + ((frames.archetype && frames.archetype.body) || '')).match(/\b(\d+(?:\.\d+)?)\s*m(?:eters?)?\b/i);
+    if (amB) auricMeters = parseFloat(amB[1]);
   } else {
     auricMeters = 13.4;
     const oric = (frames.oric && frames.oric.body) || '';
@@ -9513,21 +9887,21 @@ function buildSessionReadingCapture(slug) {
   // rationale, rather than a single faded "optional" line.
   const det = el('details');
   const label = el('summary', { class: 'srcap-summary' });
-  const eyebrow = el('div', { class: 'srcap-eyebrow', text: 'Optional · refresh your reading' });
-  const title = el('div', { class: 'srcap-title', text: 'Got a fresh scan after this session?' });
+  const eyebrow = el('div', { class: 'srcap-eyebrow', text: 'Optional · a new field scan' });
+  const title = el('div', { class: 'srcap-title', text: 'Got a fresh scan from the Architect?' });
   label.appendChild(eyebrow);
   label.appendChild(title);
   det.appendChild(label);
   const inner = el('div', { class: 'srcap-inner' });
   inner.appendChild(el('div', {
     class: 'srcap-rationale',
-    text: 'Adding a reading here updates how the map sees you going forward. Worth doing whenever you have a new scan in hand.'
+    text: 'A new field scan updates how the map sees you and adds a point to your field-over-time. Worth doing whenever you have one in hand.'
   }));
   const ta = el('textarea', {
     class: 'srcap-textarea',
     rows: '6',
-    placeholder: 'Paste the new reading text. Or write what you noticed in your own field afterward.',
-    'aria-label': 'Biofield reading after ' + slug
+    placeholder: 'Paste your new field scan from the Architect. Or write what you noticed in your own field afterward.',
+    'aria-label': 'New field scan after ' + slug
   });
   const meta = el('div', { class: 'srcap-meta' });
   const saveBtn = el('button', { class: 'btn btn-primary srcap-save', type: 'button', text: 'Save reading' });
@@ -9564,6 +9938,20 @@ function buildSessionReadingCapture(slug) {
     const v = ta.value.trim();
     if (!v) return;
     saveSessionField(slug, v);
+    // v1.18: if the pasted text is a real field scan (not just freeform
+    // notes), also log it to the trajectory so it appears in the Living
+    // Journey's field-over-time. Re-render the (off-screen) Journey
+    // silently — no body morph/scroll from down here.
+    if (looksLikeScan(v)) {
+      const wf = getWeekFields();
+      let slot = null;
+      for (let w = 1; w <= 4; w++) { if (!wf[String(w)] || !wf[String(w)].text) { slot = w; break; } }
+      if (slot != null) {
+        saveWeekField(slot, v);
+        meta.textContent = 'Saved · logged as a new scan in your Journey';
+        try { if (typeof mountArc === 'function') mountArc(); } catch (e) { /* no-op */ }
+      }
+    }
     refresh();
   });
   clearBtn.addEventListener('click', () => {
@@ -9572,6 +9960,20 @@ function buildSessionReadingCapture(slug) {
   });
   refresh();
   return wrap;
+}
+
+/* v1.18: does this pasted text look like a structured field scan (vs
+   freeform notes)? Gates whether an after-session capture also becomes a
+   trajectory point — avoids noise nodes from plain notes. */
+function looksLikeScan(text) {
+  const t = String(text || '');
+  if (t.length < 40) return false;
+  const parsed = parseInput(t) || {};
+  if (parsed.level) return true;                                  // Hawkins level
+  if (/\b\d+(?:\.\d+)?\s*m(?:eters?)?\b/i.test(t)) return true;   // auric meters
+  if (Array.isArray(parsed.chakras) && parsed.chakras.length >= 3) return true;
+  if (/phase[- ]locked|chakra|auric|hawkins|biofield/i.test(t)) return true;
+  return false;
 }
 
 /* Per-week "capture a reading at end of week" UI. Lives at top of each phase
@@ -9585,16 +9987,16 @@ function buildWeekReadingCapture(week) {
   // softens to teal so the gold prominence cue is reserved for
   // action-pending.
   const summary = el('summary', { class: 'wrcap-summary' });
-  const eyebrow = el('div', { class: 'wrcap-eyebrow', text: 'Optional · Week ' + week + ' reading' });
+  const eyebrow = el('div', { class: 'wrcap-eyebrow', text: 'Optional · a new field scan' });
   const title = el('div', { class: 'wrcap-title' });
   title.appendChild(document.createTextNode('Update your '));
   title.appendChild(el('em', { text: 'reading' }));
   title.appendChild(document.createTextNode('.'));
   const rationale = el('div', {
     class: 'wrcap-rationale',
-    text: 'A fresh biofield scan after this week refines what the map sees. Every new reading reshapes the recommendations from this point forward.'
+    text: 'A fresh field scan from the Architect refines what the map sees, and adds a point to your field-over-time. Paste one whenever you have it.'
   });
-  const cta = el('div', { class: 'wrcap-cta', text: 'Add Week ' + week + ' reading' });
+  const cta = el('div', { class: 'wrcap-cta', text: 'Add a field scan' });
   summary.appendChild(eyebrow);
   summary.appendChild(title);
   summary.appendChild(rationale);
@@ -9605,12 +10007,12 @@ function buildWeekReadingCapture(week) {
   const ta = el('textarea', {
     class: 'wrcap-textarea',
     rows: '8',
-    placeholder: 'Paste the new reading text. Same shape as the original Input. We\'ll route reflections from this point forward through it.',
-    'aria-label': 'Biofield reading ' + week
+    placeholder: 'Paste your new field scan from the Architect. Same shape as the original Input. We\'ll route reflections from this point forward through it.',
+    'aria-label': 'New field scan'
   });
   const meta = el('div', { class: 'wrcap-meta' });
   const actions = el('div', { class: 'wrcap-actions' });
-  const saveBtn = el('button', { class: 'btn btn-primary wrcap-save', type: 'button', text: 'Save Week ' + week + ' reading' });
+  const saveBtn = el('button', { class: 'btn btn-primary wrcap-save', type: 'button', text: 'Save scan' });
   const clearBtn = el('button', { class: 'btn btn-skip wrcap-clear', type: 'button', text: 'Clear', hidden: 'true' });
   inner.appendChild(ta);
   inner.appendChild(meta);
@@ -9629,21 +10031,21 @@ function buildWeekReadingCapture(week) {
       wrap.classList.add('saved');
       eyebrow.textContent = 'Captured · ' + new Date(stored.ts).toLocaleDateString();
       while (title.firstChild) title.removeChild(title.firstChild);
-      title.appendChild(document.createTextNode('Week ' + week + ' reading saved.'));
-      rationale.textContent = 'The map is now routing reflections through this reading.';
+      title.appendChild(document.createTextNode('Scan saved.'));
+      rationale.textContent = 'The map is now routing reflections through this scan, and it is plotted in your field-over-time.';
       cta.textContent = 'Edit or replace';
     } else {
       ta.value = '';
       meta.textContent = '';
       clearBtn.hidden = true;
       wrap.classList.remove('saved');
-      eyebrow.textContent = 'Optional · Week ' + week + ' reading';
+      eyebrow.textContent = 'Optional · a new field scan';
       while (title.firstChild) title.removeChild(title.firstChild);
       title.appendChild(document.createTextNode('Update your '));
       title.appendChild(el('em', { text: 'reading' }));
       title.appendChild(document.createTextNode('.'));
-      rationale.textContent = 'A fresh biofield scan after this week refines what the map sees. Every new reading reshapes the recommendations from this point forward.';
-      cta.textContent = 'Add Week ' + week + ' reading';
+      rationale.textContent = 'A fresh field scan from the Architect refines what the map sees, and adds a point to your field-over-time. Paste one whenever you have it.';
+      cta.textContent = 'Add a field scan';
     }
   }
   saveBtn.addEventListener('click', () => {
