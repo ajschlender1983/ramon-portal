@@ -4622,13 +4622,12 @@ section#reflect.reflected .section-title em {
 .resolved-recap-body { min-width: 0; flex: 1; }
 .resolved-recap-quote {
   font-family: var(--serif); font-style: italic;
-  font-size: 14.5px; color: var(--light); line-height: 1.5;
+  font-size: 14.5px; color: var(--mid); line-height: 1.55;
 }
-.resolved-recap-full {
-  font-family: var(--serif); font-size: 13px; color: var(--mid);
-  line-height: 1.55; margin-top: 5px;
-  padding-top: 5px; border-top: 1px dotted rgba(255,255,255,0.08);
-}
+/* v1.22: the highlighted concise lead (bright) + the rest of the full
+   unedited note (readable, slightly softer). The complete input always shows. */
+.resolved-recap-lead { color: var(--light); }
+.resolved-recap-rest { color: var(--mid); }
 /* v1.19: read-only WOW rating scale */
 .resolved-recap-scale {
   display: flex; align-items: center; gap: 12px;
@@ -5460,7 +5459,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.21.0';
+const VERSION = '1.22.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -10737,15 +10736,27 @@ function renderReflectionRecap(card, slug) {
    the user's full raw note included beneath when it's longer than the
    quote (so nothing is truncated away). Read-only; this is quotation. */
 function buildRecapNote(when, text, modClass) {
+  // v1.22: ALWAYS show the full unedited input. The concise opening is
+  // highlighted (brighter) as a lead; the rest stays fully readable. No
+  // truncation, no separate "full" line that could go missing — the
+  // complete note is always present.
   const full = text.replace(/\s+/g, ' ').trim();
-  const concise = full.length <= 90 ? full : full.slice(0, 90).replace(/\s\S*$/, '') + '…';
   const row = el('div', { class: 'resolved-recap-row ' + modClass });
   row.appendChild(el('span', { class: 'resolved-recap-when', text: when }));
   const body = el('div', { class: 'resolved-recap-body' });
-  body.appendChild(el('div', { class: 'resolved-recap-quote', text: '“' + concise + '”' }));
-  if (full.length > concise.length) {
-    body.appendChild(el('div', { class: 'resolved-recap-full', text: full }));
+  const quote = el('div', { class: 'resolved-recap-quote' });
+  quote.appendChild(document.createTextNode('“'));
+  if (full.length <= 90) {
+    quote.appendChild(el('span', { class: 'resolved-recap-lead', text: full }));
+  } else {
+    // highlight the opening up to a word boundary near 90 chars
+    let cut = full.slice(0, 90).replace(/\s\S*$/, '').length;
+    if (cut < 40) cut = 90;
+    quote.appendChild(el('span', { class: 'resolved-recap-lead', text: full.slice(0, cut) }));
+    quote.appendChild(el('span', { class: 'resolved-recap-rest', text: full.slice(cut) }));
   }
+  quote.appendChild(document.createTextNode('”'));
+  body.appendChild(quote);
   row.appendChild(body);
   return row;
 }
