@@ -4309,38 +4309,75 @@ section#reflect.reflected .section-title em {
   display: flex; align-items: center; justify-content: center;
   gap: clamp(16px, 4vw, 40px); flex-wrap: wrap; margin-bottom: 8px;
 }
-.journey-ascent { flex: 1 1 420px; min-width: 0; max-width: 640px; }
-.journey-ascent-svg { width: 100%; height: auto; display: block; overflow: visible; }
-.journey-ascent-tier { stroke: rgba(255,255,255,0.07); stroke-width: 1; stroke-dasharray: 3 5; }
-.journey-ascent-tier-label {
-  font-family: var(--sans); font-size: 9px; letter-spacing: 0.16em;
-  text-transform: uppercase; fill: var(--dim);
+/* v1.20: Hawkins meter — a labeled vertical gauge that fills start → now */
+.hk-meter { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; }
+.hk-head { text-align: center; margin-bottom: 14px; }
+.hk-title { font-family: var(--sans); font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); }
+.hk-sub { font-family: var(--serif); font-style: italic; font-size: 11.5px; color: var(--dim); margin-top: 2px; }
+.hk-body { display: flex; align-items: stretch; gap: 12px; height: 264px; padding-right: 124px; }
+.hk-labels { position: relative; width: 96px; }
+.hk-tier { position: absolute; right: 0; transform: translateY(50%); display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.hk-tier::after { content: ''; position: absolute; right: -8px; bottom: 4px; width: 5px; height: 1px; background: rgba(255,255,255,0.2); }
+.hk-tier-name { font-family: var(--sans); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); }
+.hk-tier-val { font-family: var(--sans); font-size: 9px; color: var(--dim); }
+.hk-track {
+  position: relative; width: 30px; border-radius: 16px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
 }
-.journey-ascent-line {
-  fill: none; stroke: var(--gold); stroke-width: 2.5;
-  stroke-linecap: round; stroke-linejoin: round;
-  stroke-dasharray: 1200; stroke-dashoffset: 1200;
+.hk-fill-base {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 0; border-radius: 16px;
+  background: linear-gradient(180deg, rgba(106,223,217,0.45), rgba(123,111,168,0.4));
+  transition: height 0.85s cubic-bezier(0.23,1,0.32,1);
 }
-.journey--first .journey-ascent-line { animation: journey-draw 1.5s cubic-bezier(0.23,1,0.32,1) 0.2s forwards; }
-.journey:not(.journey--first) .journey-ascent-line { stroke-dashoffset: 0; }
-@keyframes journey-draw { to { stroke-dashoffset: 0; } }
-.journey-ascent-node { fill: var(--gold); }
-.journey-ascent-node.is-current {
-  fill: #FFF4D6;
-  transform-box: fill-box; transform-origin: center;
-  transform: scale(calc(1 + 0.10 * var(--breath-pulse, 0.5)));
+.in-view .hk-fill-base { height: var(--base-h); }
+.hk-fill-shift {
+  position: absolute; left: 0; right: 0; bottom: var(--base-h); height: 0; border-radius: 16px;
+  background: linear-gradient(180deg, var(--gold), rgba(255,196,84,0.7));
+  box-shadow: 0 0 16px rgba(255,215,100,0.55);
+  opacity: calc(0.82 + 0.18 * var(--breath-pulse, 0.5));
+  transition: height 1.05s cubic-bezier(0.23,1,0.32,1) 0.5s;
 }
-.journey-ascent-val { font-family: var(--sans); font-size: 11px; font-weight: 500; fill: var(--light); }
-.journey-ascent-date { font-family: var(--sans); font-size: 9.5px; letter-spacing: 0.06em; fill: var(--mid); }
-.journey-field { flex: 0 0 auto; text-align: center; }
-.journey-field-svg { width: clamp(120px, 26vw, 150px); height: auto; display: block; margin: 0 auto; overflow: visible; }
-.journey-field-cur { fill: rgba(106,223,217,0.10); stroke: var(--teal); stroke-width: 1.5; transition: r 600ms cubic-bezier(0.23,1,0.32,1); }
-.journey-field-base { fill: none; stroke: rgba(255,255,255,0.22); stroke-width: 1; stroke-dasharray: 2 4; transition: r 600ms cubic-bezier(0.23,1,0.32,1); }
+.in-view .hk-fill-shift { height: var(--shift-h); }
+.hk-scan-tick { position: absolute; left: -3px; right: -3px; height: 1px; background: rgba(255,255,255,0.35); transform: translateY(50%); }
+.hk-mark { position: absolute; left: 0; right: 0; transform: translateY(50%); }
+.hk-mark-line { position: absolute; left: -4px; right: -4px; height: 1px; background: rgba(255,255,255,0.45); }
+.hk-mark--start .hk-mark-line { border-top: 1px dashed rgba(255,255,255,0.5); background: none; height: 0; }
+.hk-mark-label {
+  position: absolute; left: 40px; bottom: -6px; white-space: nowrap;
+  font-family: var(--sans); font-size: 9px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--mid);
+}
+.hk-mark--now { bottom: var(--base-h); transition: bottom 1.05s cubic-bezier(0.23,1,0.32,1) 0.5s; }
+.in-view .hk-mark--now { bottom: var(--cur-h); }
+.hk-mark--now .hk-mark-dot {
+  position: absolute; left: 50%; top: 50%; width: 13px; height: 13px; border-radius: 50%;
+  transform: translate(-50%, -50%) scale(calc(1 + 0.12 * var(--breath-pulse, 0.5)));
+  background: #FFF4D6; box-shadow: 0 0 12px rgba(255,215,100,0.85);
+}
+.hk-mark-label--now { color: var(--gold); }
+.hk-shift-callout { display: flex; align-items: baseline; gap: 10px; margin-top: 16px; }
+.hk-shift-tiers {
+  font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--gold);
+  text-shadow: 0 0 calc(5px + 9px * var(--breath-pulse, 0.5)) rgba(255,215,100, calc(0.3 + 0.4 * var(--breath-pulse, 0.5)));
+}
+.hk-shift-num { font-family: var(--sans); font-size: 12px; letter-spacing: 0.08em; color: var(--teal); }
+/* Field growth — grows outward from baseline on scroll-in */
+.journey-field { flex: 0 0 auto; text-align: center; align-self: center; }
+.journey-field-svg { width: clamp(130px, 28vw, 168px); height: auto; display: block; margin: 0 auto; overflow: visible; }
+.journey-field-cur { fill: rgba(106,223,217,0.12); stroke: var(--teal); stroke-width: 1.5; r: var(--r-base); transition: r 1s cubic-bezier(0.23,1,0.32,1) 0.4s; }
+.in-view .journey-field-cur { r: var(--r-cur); }
+.journey-field-base { fill: none; stroke: rgba(255,255,255,0.3); stroke-width: 1; stroke-dasharray: 2 4; }
 .journey-field-core { fill: var(--teal); }
-.journey-field-cap { margin-top: 6px; line-height: 1.25; }
-.journey-field-now { display: block; font-family: var(--serif); font-size: 22px; color: var(--light); }
+.journey-field-cap { margin-top: 8px; line-height: 1.2; }
 .journey-field-lbl { display: block; font-family: var(--sans); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
-.journey-field-from { display: block; font-family: var(--serif); font-style: italic; font-size: 12.5px; color: var(--mid); margin-top: 2px; }
+.journey-field-now { display: block; font-family: var(--serif); font-size: 26px; color: var(--light); }
+.journey-field-shift { display: inline-flex; align-items: baseline; gap: 7px; margin-top: 4px; }
+.journey-field-from { font-family: var(--serif); font-style: italic; font-size: 12.5px; color: var(--mid); }
+.journey-field-arrow { color: var(--dim); font-size: 12px; }
+.journey-field-gain {
+  font-family: var(--sans); font-size: 12px; letter-spacing: 0.06em; color: var(--teal);
+  text-shadow: 0 0 calc(4px + 7px * var(--breath-pulse, 0.5)) rgba(106,223,217, calc(0.25 + 0.35 * var(--breath-pulse, 0.5)));
+}
 .journey-active-detail { text-align: center; margin: 6px 0 2px; }
 .journey-active-when { font-family: var(--sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-right: 10px; }
 .journey-active-bits { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--mid); }
@@ -4373,8 +4410,7 @@ section#reflect.reflected .section-title em {
 }
 @media (prefers-reduced-motion: reduce) {
   .journey--first { animation: none; }
-  .journey--first .journey-ascent-line { animation: none; stroke-dashoffset: 0; }
-  .journey-ascent-node.is-current { transform: none; }
+  .hk-fill-base, .hk-fill-shift, .hk-mark--now, .journey-field-cur { transition: none; }
 }
 
 /* ============================================================
@@ -5351,7 +5387,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.19.1';
+const VERSION = '1.20.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7852,66 +7888,107 @@ function journeyGlowDefs(id) {
 /* The Ascent — Hawkins calibration as a luminous line climbing through
    the named consciousness tiers (Reason · Love · Joy · Peace). Not a
    gridded chart; soft tier zones + a glowing line + dated nodes. */
-function buildJourneyAscent(s) {
+/* v1.20: The Hawkins meter — a clearly-labeled vertical gauge that fills
+   from where he STARTED up into his CURRENT calibration. The base level
+   fills calm; the gain (start → now) rises in gold on scroll-in, the
+   "now" cap riding up with it. The shift over time is the hero. */
+function buildJourneyHawkinsMeter(s) {
   const traj = s.trajectory.filter(n => typeof n.hawkins === 'number');
-  const wrap = el('div', { class: 'journey-ascent' });
-  if (traj.length < 1) return wrap;
+  const wrap = el('div', { class: 'hk-meter' });
+  if (!traj.length) return wrap;
+  const baseNode = traj[0];
+  const curNode = traj[traj.length - 1];
+  const baseV = baseNode.hawkins, curV = curNode.hawkins;
   const vals = traj.map(n => n.hawkins);
-  let lo = Math.min.apply(null, vals) - 40;
-  let hi = Math.max.apply(null, vals) + 40;
-  if (hi - lo < 80) { hi += 20; lo -= 20; }
-  const W = 640, H = 210, padX = 34, padTop = 26, padBot = 42;
-  const xAt = i => padX + (traj.length === 1 ? (W - 2 * padX) / 2 : (i / (traj.length - 1)) * (W - 2 * padX));
-  const yAt = v => padTop + (1 - (v - lo) / (hi - lo)) * (H - padTop - padBot);
-  const sv = svg('svg', { class: 'journey-ascent-svg', viewBox: '0 0 ' + W + ' ' + H });
-  sv.appendChild(journeyGlowDefs('journey-ascent-glow'));
-  // named tier zones within the domain
+  let lo = Math.max(200, Math.min.apply(null, vals) - 80);
+  let hi = Math.min(700, Math.max.apply(null, vals) + 60);
+  if (hi - lo < 140) { hi = Math.min(700, hi + 40); lo = Math.max(200, lo - 40); }
+  const pct = v => Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
+  const baseH = pct(baseV), curH = pct(curV), shiftH = Math.max(0, curH - baseH);
+
+  const head = el('div', { class: 'hk-head' });
+  head.appendChild(el('div', { class: 'hk-title', text: 'Hawkins Scale' }));
+  head.appendChild(el('div', { class: 'hk-sub', text: 'consciousness calibration' }));
+  wrap.appendChild(head);
+
+  const body = el('div', { class: 'hk-body' });
+  // tier labels (left)
+  const labels = el('div', { class: 'hk-labels' });
   HAWKINS_TIERS.forEach(t => {
     if (t.v < lo || t.v > hi) return;
-    const yy = yAt(t.v);
-    sv.appendChild(svg('line', { class: 'journey-ascent-tier', x1: padX, x2: W - padX, y1: yy.toFixed(1), y2: yy.toFixed(1) }));
-    sv.appendChild(svg('text', { class: 'journey-ascent-tier-label', x: (padX + 2).toFixed(1), y: (yy - 5).toFixed(1), text: t.name.toLowerCase() }));
+    const lab = el('div', { class: 'hk-tier', style: 'bottom:' + pct(t.v).toFixed(1) + '%;' });
+    lab.appendChild(el('span', { class: 'hk-tier-name', text: t.name.toLowerCase() }));
+    lab.appendChild(el('span', { class: 'hk-tier-val', text: String(t.v) }));
+    labels.appendChild(lab);
   });
-  // the climbing line
-  if (traj.length >= 2) {
-    const pts = traj.map((n, i) => xAt(i).toFixed(1) + ',' + yAt(n.hawkins).toFixed(1)).join(' ');
-    sv.appendChild(svg('polyline', { class: 'journey-ascent-line', points: pts, filter: 'url(#journey-ascent-glow)' }));
-  }
-  // nodes + value + date
+  body.appendChild(labels);
+
+  // track (center) with base + gold-shift fills + markers
+  const track = el('div', { class: 'hk-track' });
+  track.appendChild(el('div', { class: 'hk-fill-base', style: '--base-h:' + baseH.toFixed(1) + '%;' }));
+  track.appendChild(el('div', { class: 'hk-fill-shift', style: '--base-h:' + baseH.toFixed(1) + '%; --shift-h:' + shiftH.toFixed(1) + '%;' }));
+  // intermediate scan ticks
   traj.forEach((n, i) => {
-    const cx = xAt(i), cy = yAt(n.hawkins);
-    const isLast = i === traj.length - 1;
-    sv.appendChild(svg('circle', { class: 'journey-ascent-node' + (isLast ? ' is-current' : ''), cx: cx.toFixed(1), cy: cy.toFixed(1), r: isLast ? '5.5' : '3.5', filter: 'url(#journey-ascent-glow)' }));
-    sv.appendChild(svg('text', { class: 'journey-ascent-val', x: cx.toFixed(1), y: (cy - 11).toFixed(1), 'text-anchor': 'middle', text: String(n.hawkins) }));
-    sv.appendChild(svg('text', { class: 'journey-ascent-date', x: cx.toFixed(1), y: (H - 12).toFixed(1), 'text-anchor': 'middle', text: journeyScanDate(n) }));
+    if (i === 0 || i === traj.length - 1) return;
+    track.appendChild(el('div', { class: 'hk-scan-tick', style: 'bottom:' + pct(n.hawkins).toFixed(1) + '%;' }));
   });
-  wrap.appendChild(sv);
+  // start marker (static, at baseline)
+  const startMark = el('div', { class: 'hk-mark hk-mark--start', style: 'bottom:' + baseH.toFixed(1) + '%;' });
+  startMark.appendChild(el('span', { class: 'hk-mark-line' }));
+  startMark.appendChild(el('span', { class: 'hk-mark-label', text: 'started · ' + baseV + (baseNode.hawkinsTier ? ' · ' + baseNode.hawkinsTier.toLowerCase() : '') }));
+  track.appendChild(startMark);
+  // now marker (rides up to current on scroll-in)
+  const nowMark = el('div', { class: 'hk-mark hk-mark--now', style: '--base-h:' + baseH.toFixed(1) + '%; --cur-h:' + curH.toFixed(1) + '%;' });
+  nowMark.appendChild(el('span', { class: 'hk-mark-dot' }));
+  nowMark.appendChild(el('span', { class: 'hk-mark-label hk-mark-label--now', text: 'now · ' + curV + (curNode.hawkinsTier ? ' · ' + curNode.hawkinsTier.toLowerCase() : '') }));
+  track.appendChild(nowMark);
+  body.appendChild(track);
+  wrap.appendChild(body);
+
+  // shift callout — emphasize the gain
+  const dHk = curV - baseV;
+  const callout = el('div', { class: 'hk-shift-callout' });
+  if (baseNode.hawkinsTier && curNode.hawkinsTier && baseNode.hawkinsTier !== curNode.hawkinsTier) {
+    callout.appendChild(el('span', { class: 'hk-shift-tiers', text: baseNode.hawkinsTier + ' → ' + curNode.hawkinsTier }));
+  }
+  if (dHk !== 0) callout.appendChild(el('span', { class: 'hk-shift-num', text: (dHk > 0 ? '+' : '') + dHk }));
+  wrap.appendChild(callout);
   return wrap;
 }
 
-/* Field growth — auric extent as concentric rings: baseline (faint
-   dashed) vs current (glowing), the reach between them shaded. */
+/* Field growth — auric extent. The current reach (glowing) GROWS outward
+   from where it started (dashed) on scroll-in; the gain is shaded and
+   called out. Same shift-over-time emphasis as the Hawkins meter. */
 function buildJourneyField(s) {
   const base = s.scanDelta ? s.scanDelta.base : null;
   const latest = s.scanDelta ? s.scanDelta.latest : (s.trajectory[s.trajectory.length - 1]);
   if (!latest || typeof latest.auric !== 'number') return null;
   const b = (base && typeof base.auric === 'number') ? base.auric : latest.auric;
   const cur = latest.auric;
+  const grew = (cur - b) >= 0.1;
   const wrap = el('div', { class: 'journey-field' });
-  const sz = 150, c = sz / 2, maxR = c - 10;
+  const sz = 160, c = sz / 2, maxR = c - 12;
   const maxVal = Math.max(b, cur) || 1;
   const rBase = (b / maxVal) * maxR;
   const rCur = (cur / maxVal) * maxR;
   const sv = svg('svg', { class: 'journey-field-svg', viewBox: '0 0 ' + sz + ' ' + sz });
   sv.appendChild(journeyGlowDefs('journey-field-glow'));
-  sv.appendChild(svg('circle', { class: 'journey-field-cur', cx: c, cy: c, r: rCur.toFixed(1), filter: 'url(#journey-field-glow)' }));
+  // current reach — grows from rBase to rCur on scroll-in (CSS r var)
+  sv.appendChild(svg('circle', { class: 'journey-field-cur', cx: c, cy: c, r: rCur.toFixed(1), style: '--r-base:' + rBase.toFixed(1) + 'px; --r-cur:' + rCur.toFixed(1) + 'px;', filter: 'url(#journey-field-glow)' }));
+  // baseline ring (where it started) — dashed
   sv.appendChild(svg('circle', { class: 'journey-field-base', cx: c, cy: c, r: rBase.toFixed(1) }));
   sv.appendChild(svg('circle', { class: 'journey-field-core', cx: c, cy: c, r: '2.5' }));
   wrap.appendChild(sv);
   const cap = el('div', { class: 'journey-field-cap' });
+  cap.appendChild(el('span', { class: 'journey-field-lbl', text: 'auric field' }));
   cap.appendChild(el('span', { class: 'journey-field-now', text: cur.toFixed(1) + 'm' }));
-  cap.appendChild(el('span', { class: 'journey-field-lbl', text: 'your field' }));
-  if (Math.abs(cur - b) >= 0.1) cap.appendChild(el('span', { class: 'journey-field-from', text: 'from ' + b.toFixed(1) + 'm' }));
+  if (grew) {
+    const shift = el('div', { class: 'journey-field-shift' });
+    shift.appendChild(el('span', { class: 'journey-field-from', text: b.toFixed(1) + 'm' }));
+    shift.appendChild(el('span', { class: 'journey-field-arrow', text: '→' }));
+    shift.appendChild(el('span', { class: 'journey-field-gain', text: '+' + (cur - b).toFixed(1) + 'm' }));
+    cap.appendChild(shift);
+  }
   wrap.appendChild(cap);
   return wrap;
 }
@@ -7962,7 +8039,7 @@ function buildJourneyTrajectory(s) {
   }
 
   const viz = el('div', { class: 'journey-traj-viz' });
-  viz.appendChild(buildJourneyAscent(s));
+  viz.appendChild(buildJourneyHawkinsMeter(s));
   const field = buildJourneyField(s);
   if (field) viz.appendChild(field);
   wrap.appendChild(viz);
@@ -8002,7 +8079,7 @@ function buildJourneyInvite(s) {
   sv.appendChild(svg('line', { class: 'journey-invite-ghost-line', x1: '40', y1: (H - 26).toFixed(0), x2: (W - 40).toFixed(0), y2: '30' }));
   sv.appendChild(svg('circle', { class: 'journey-invite-start', cx: '40', cy: (H - 26).toFixed(0), r: '5' }));
   sv.appendChild(svg('circle', { class: 'journey-invite-ghost', cx: (W - 40).toFixed(0), cy: '30', r: '6' }));
-  sv.appendChild(svg('text', { class: 'journey-ascent-date', x: '40', y: (H - 8).toFixed(0), 'text-anchor': 'middle', text: 'start' }));
+  sv.appendChild(svg('text', { class: 'journey-invite-ghost-label', x: '40', y: (H - 8).toFixed(0), 'text-anchor': 'middle', text: 'start' }));
   sv.appendChild(svg('text', { class: 'journey-invite-ghost-label', x: (W - 40).toFixed(0), y: '18', 'text-anchor': 'middle', text: 'next scan' }));
   wrap.appendChild(sv);
   wrap.appendChild(el('div', { class: 'journey-invite-copy', text: 'when you scan your field again, its movement appears here — how far it reaches, how your calibration climbs.' }));
@@ -8090,6 +8167,32 @@ function mountArc() {
   // the moments that moved you. Replaces the Rising Light glow body (the
   // interactive chakra body is back in the biofield reading section).
   root.appendChild(buildJourneySummary(s));
+  // v1.20: light the change-over-time meters up when they scroll into
+  // view (first mount only — re-renders from scrub show full immediately).
+  armJourneyTrajReveal(root);
+}
+
+/* v1.20: when the trajectory scrolls into view, add .in-view to fire the
+   meter fill + field growth animations. First mount uses an observer;
+   later re-renders (scrub) reveal instantly so they don't replay. */
+function armJourneyTrajReveal(root) {
+  const traj = root.querySelector('.journey-traj');
+  if (!traj) return;
+  if (window.__trajRevealedOnce || reducedMotion() || !('IntersectionObserver' in window)) {
+    traj.classList.add('in-view');
+    window.__trajRevealedOnce = true;
+    return;
+  }
+  const io = new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in-view');
+        window.__trajRevealedOnce = true;
+        obs.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  io.observe(traj);
 }
 
 /* ============================================================
