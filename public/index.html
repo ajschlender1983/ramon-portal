@@ -4280,8 +4280,14 @@ section#reflect.reflected .section-title em {
 .journey-moment-wow {
   font-family: var(--sans); font-size: 10px; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--teal);
+  /* v1.19.1: pulse on the master breath clock */
+  opacity: calc(0.62 + 0.38 * var(--breath-pulse, 0.5));
+  text-shadow: 0 0 calc(4px + 8px * var(--breath-pulse, 0.5)) rgba(106,223,217, calc(0.22 + 0.38 * var(--breath-pulse, 0.5)));
 }
-.journey-moment-wow.is-wow { color: var(--gold); letter-spacing: 0.1em; }
+.journey-moment-wow.is-wow {
+  color: var(--gold); letter-spacing: 0.1em;
+  text-shadow: 0 0 calc(5px + 10px * var(--breath-pulse, 0.5)) rgba(255,215,100, calc(0.3 + 0.5 * var(--breath-pulse, 0.5)));
+}
 .journey-moment-words {
   font-family: var(--serif); font-style: italic;
   font-size: 14px; line-height: 1.5; color: var(--mid);
@@ -4541,8 +4547,29 @@ section#reflect.reflected .section-title em {
 .resolved-recap-scale-word {
   font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--teal); margin-left: auto;
+  /* v1.19.1: pulse on the master breath clock */
+  opacity: calc(0.62 + 0.38 * var(--breath-pulse, 0.5));
+  text-shadow: 0 0 calc(5px + 9px * var(--breath-pulse, 0.5)) rgba(106,223,217, calc(0.25 + 0.4 * var(--breath-pulse, 0.5)));
 }
-.resolved-recap-scale-word.is-wow { color: var(--gold); }
+.resolved-recap-scale-word.is-wow {
+  color: var(--gold);
+  text-shadow: 0 0 calc(6px + 11px * var(--breath-pulse, 0.5)) rgba(255,215,100, calc(0.3 + 0.5 * var(--breath-pulse, 0.5)));
+}
+/* v1.19.1: the pips fill on, staggered, when the recap mounts */
+@keyframes recap-pip-in {
+  from { opacity: 0; transform: scale(0.25); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.resolved-recap-pip { animation: recap-pip-in 0.42s cubic-bezier(0.34,1.56,0.64,1) both; }
+.resolved-recap-pip:nth-child(1) { animation-delay: 0.06s; }
+.resolved-recap-pip:nth-child(2) { animation-delay: 0.14s; }
+.resolved-recap-pip:nth-child(3) { animation-delay: 0.22s; }
+.resolved-recap-pip:nth-child(4) { animation-delay: 0.30s; }
+.resolved-recap-pip:nth-child(5) { animation-delay: 0.38s; }
+.resolved-recap-pip:nth-child(6) { animation-delay: 0.46s; }
+@media (prefers-reduced-motion: reduce) {
+  .resolved-recap-pip { animation: none; }
+}
 .arc-title {
   text-align: center;
   margin-bottom: 22px;
@@ -5324,7 +5351,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.19.0';
+const VERSION = '1.19.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
