@@ -4493,8 +4493,8 @@ section#reflect.reflected .section-title em {
   margin-bottom: 8px;
 }
 .resolved-recap-row {
-  display: flex; gap: 10px; align-items: baseline;
-  padding: 4px 0 4px 10px; margin-bottom: 2px;
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 6px 0 6px 10px; margin-bottom: 2px;
   border-left: 2px solid transparent;
 }
 .resolved-recap-row--before { border-left-color: rgba(106,223,217,0.5); }
@@ -4502,18 +4502,47 @@ section#reflect.reflected .section-title em {
 .resolved-recap-when {
   font-family: var(--sans); font-size: 10px; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--mid); flex: 0 0 44px;
+  padding-top: 2px;
 }
-.resolved-recap-text {
+.resolved-recap-body { min-width: 0; flex: 1; }
+.resolved-recap-quote {
   font-family: var(--serif); font-style: italic;
-  font-size: 13.5px; color: var(--light); line-height: 1.5;
+  font-size: 14.5px; color: var(--light); line-height: 1.5;
 }
-.resolved-recap-wow {
-  margin-top: 8px; text-align: right;
+.resolved-recap-full {
+  font-family: var(--serif); font-size: 13px; color: var(--mid);
+  line-height: 1.55; margin-top: 5px;
+  padding-top: 5px; border-top: 1px dotted rgba(255,255,255,0.08);
 }
-.resolved-recap-wow-word {
+/* v1.19: read-only WOW rating scale */
+.resolved-recap-scale {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.resolved-recap-scale-label {
+  font-family: var(--sans); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--dim);
+}
+.resolved-recap-pips { display: flex; align-items: center; gap: 6px; }
+.resolved-recap-pip {
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.22);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 8px; line-height: 1; color: transparent;
+}
+.resolved-recap-pip.is-filled { background: var(--teal); border-color: var(--teal); }
+.resolved-recap-pip.is-wow { width: 13px; height: 13px; }
+.resolved-recap-pip.is-wow.is-filled { background: var(--gold); border-color: var(--gold); color: #2a1f00; }
+.resolved-recap-pip.is-current {
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.18), 0 0 8px rgba(106,223,217,0.5);
+}
+.resolved-recap-pip.is-wow.is-current { box-shadow: 0 0 0 2px rgba(255,215,100,0.3), 0 0 10px rgba(255,215,100,0.6); }
+.resolved-recap-scale-word {
   font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em;
-  color: var(--gold); text-transform: uppercase;
+  text-transform: uppercase; color: var(--teal); margin-left: auto;
 }
+.resolved-recap-scale-word.is-wow { color: var(--gold); }
 .arc-title {
   text-align: center;
   margin-bottom: 22px;
@@ -5295,7 +5324,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.18.0';
+const VERSION = '1.19.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -10399,31 +10428,51 @@ function renderReflectionRecap(card, slug) {
   const wl = WOW_LABELS[w];
   if (!before && !after && !wl) return;
 
-  const clip = (t) => {
-    const s = t.replace(/\s+/g, ' ').trim();
-    return s.length <= 80 ? s : s.slice(0, 80).replace(/\s\S*$/, '') + '…';
-  };
-
   const recap = el('div', { class: 'resolved-recap' });
   recap.appendChild(el('div', { class: 'resolved-recap-eyebrow', text: 'from your own words' }));
-  if (before) {
-    const r = el('div', { class: 'resolved-recap-row resolved-recap-row--before' });
-    r.appendChild(el('span', { class: 'resolved-recap-when', text: 'Before' }));
-    r.appendChild(el('span', { class: 'resolved-recap-text', text: '“' + clip(before) + '”' }));
-    recap.appendChild(r);
-  }
-  if (after) {
-    const r = el('div', { class: 'resolved-recap-row resolved-recap-row--after' });
-    r.appendChild(el('span', { class: 'resolved-recap-when', text: 'After' }));
-    r.appendChild(el('span', { class: 'resolved-recap-text', text: '“' + clip(after) + '”' }));
-    recap.appendChild(r);
-  }
-  if (wl) {
-    const r = el('div', { class: 'resolved-recap-wow' });
-    r.appendChild(el('span', { class: 'resolved-recap-wow-word', text: wl.short }));
-    recap.appendChild(r);
-  }
+  if (before) recap.appendChild(buildRecapNote('Before', before, 'resolved-recap-row--before'));
+  if (after) recap.appendChild(buildRecapNote('After', after, 'resolved-recap-row--after'));
+  if (wl) recap.appendChild(buildRecapWowScale(w, wl));
   refl.appendChild(recap);
+}
+
+/* v1.19: a single Before/After row — the concise quote highlighted, with
+   the user's full raw note included beneath when it's longer than the
+   quote (so nothing is truncated away). Read-only; this is quotation. */
+function buildRecapNote(when, text, modClass) {
+  const full = text.replace(/\s+/g, ' ').trim();
+  const concise = full.length <= 90 ? full : full.slice(0, 90).replace(/\s\S*$/, '') + '…';
+  const row = el('div', { class: 'resolved-recap-row ' + modClass });
+  row.appendChild(el('span', { class: 'resolved-recap-when', text: when }));
+  const body = el('div', { class: 'resolved-recap-body' });
+  body.appendChild(el('div', { class: 'resolved-recap-quote', text: '“' + concise + '”' }));
+  if (full.length > concise.length) {
+    body.appendChild(el('div', { class: 'resolved-recap-full', text: full }));
+  }
+  row.appendChild(body);
+  return row;
+}
+
+/* v1.19: the WOW rating shown as the full 1→✨WOW scale, read-only, with
+   the user's level lit and named — the recognizable rating, not just a
+   word. WOW (6) is the categorical gold position. */
+function buildRecapWowScale(w, wl) {
+  const wrap = el('div', { class: 'resolved-recap-scale' });
+  wrap.appendChild(el('span', { class: 'resolved-recap-scale-label', text: 'Felt rating' }));
+  const pips = el('div', { class: 'resolved-recap-pips', role: 'img', 'aria-label': 'Rated ' + (wl ? wl.short : w) });
+  for (let i = 1; i <= 6; i++) {
+    const pip = el('span', {
+      class: 'resolved-recap-pip'
+        + (i <= w ? ' is-filled' : '')
+        + (i === w ? ' is-current' : '')
+        + (i === 6 ? ' is-wow' : '')
+    });
+    if (i === 6) pip.textContent = '✨';
+    pips.appendChild(pip);
+  }
+  wrap.appendChild(pips);
+  wrap.appendChild(el('span', { class: 'resolved-recap-scale-word' + (w >= 6 ? ' is-wow' : ''), text: wl ? wl.short : '' }));
+  return wrap;
 }
 
 function editSessionNotes(slug) {
