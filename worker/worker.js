@@ -231,13 +231,26 @@ export default {
         return json({ reflection: text }, 200, cors);
       }
       if (url.pathname === '/deepen') {
-        const passes = await deepenChain(env, payload);
-        const deepText = passes[3];
-        if (payload && payload.userSlug && payload.slug) {
-          await persistReflectionToKV(env, payload.userSlug, payload.slug,
-            { deepText, deepenedAt: Date.now() });
-        }
-        return json({ deepReflection: deepText, passes }, 200, cors);
+        // v1.31.5: run the 25-80s chain + KV persist as ONE unit kept alive by
+        // ctx.waitUntil. Root cause of "says 20s, nothing happens": on mobile,
+        // locking the screen / switching apps mid-wait aborts the client fetch,
+        // and without waitUntil Cloudflare tore the worker down before
+        // persistReflectionToKV ran — so the client's poll-KV recovery found
+        // nothing. waitUntil guarantees the result lands in KV regardless of
+        // whether the client is still connected; the poll then always finds it.
+        const work = (async () => {
+          const deepText = await deepenChain(env, payload);
+          if (payload && payload.userSlug && payload.slug) {
+            await persistReflectionToKV(env, payload.userSlug, payload.slug,
+              { deepText, deepenedAt: Date.now() });
+          }
+          return deepText;
+        })();
+        // Don't let a rejection surface as an unhandled waitUntil rejection.
+        ctx.waitUntil(work.catch(err =>
+          console.log('deepen work failed: ' + String(err && err.message || err))));
+        const deepText = await work;
+        return json({ deepReflection: deepText }, 200, cors);
       }
       if (url.pathname === '/expand') {
         const userData = await expandIntake(env, payload);
@@ -525,6 +538,14 @@ async function reflectOne(env, payload) {
 
 /* ============================================================ Deepen — chained 4-pass */
 
+/* v1.31.5: returns the best-available deepened reflection as a STRING.
+   Pass 1 (strategic-resolve draft) is the core and is required — callClaude
+   already retries it once. Passes 2-4 are EBI POLISH: each only improves the
+   draft, so if one fails (Anthropic overload/timeout), we keep the best draft
+   so far instead of throwing away a perfectly good deepened reflection and
+   sinking the whole /deepen (the "says 20s, nothing happens" bug — one flaky
+   call in a 4-call chain used to fail everything AND skip the KV persist that
+   the client's poll-recovery depends on). */
 async function deepenChain(env, payload) {
   const baseUser = buildReflectUser(payload) + '\n\nPRIOR REFLECTION (the one we are deepening):\n' + (payload.priorReflection || '');
 
@@ -534,30 +555,29 @@ async function deepenChain(env, payload) {
     max_tokens: 1400,
     messages: [{ role: 'user', content: baseUser }]
   });
-  const pass1Draft = extractDeepenDraft(pass1Raw);
+  let draft = extractDeepenDraft(pass1Raw);
 
-  // Pass 2 — EBI structure
-  const pass2 = await callClaude(env, {
-    system: DEEPEN_EBI_STRUCTURE_SYSTEM(payload.userName),
-    max_tokens: 900,
-    messages: [{ role: 'user', content: 'Current draft:\n\n' + pass1Draft }]
-  });
-
-  // Pass 3 — EBI resonance
-  const pass3 = await callClaude(env, {
-    system: DEEPEN_EBI_RESONANCE_SYSTEM(payload.userName),
-    max_tokens: 900,
-    messages: [{ role: 'user', content: 'Current draft:\n\n' + pass2 }]
-  });
-
-  // Pass 4 — EBI honesty (final)
-  const pass4 = await callClaude(env, {
-    system: DEEPEN_EBI_HONESTY_SYSTEM(payload.userName),
-    max_tokens: 900,
-    messages: [{ role: 'user', content: 'Current draft:\n\n' + pass3 }]
-  });
-
-  return [pass1Raw, pass2, pass3, pass4];
+  // Passes 2-4 — EBI refinement (structure, resonance, honesty). Best-effort:
+  // a failed pass keeps the prior draft rather than throwing.
+  const ebi = [
+    DEEPEN_EBI_STRUCTURE_SYSTEM,
+    DEEPEN_EBI_RESONANCE_SYSTEM,
+    DEEPEN_EBI_HONESTY_SYSTEM
+  ];
+  for (const sysFn of ebi) {
+    try {
+      const next = await callClaude(env, {
+        system: sysFn(payload.userName),
+        max_tokens: 900,
+        messages: [{ role: 'user', content: 'Current draft:\n\n' + draft }]
+      });
+      if (next && next.trim()) draft = next;
+    } catch (e) {
+      console.log('deepen EBI pass failed, keeping best draft: ' + String(e && e.message || e));
+      break;
+    }
+  }
+  return draft;
 }
 
 function extractDeepenDraft(raw) {
