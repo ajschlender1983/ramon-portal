@@ -4415,9 +4415,26 @@ section#reflect.reflected .section-title em {
   font-family: var(--sans); font-size: 12px; letter-spacing: 0.06em; color: var(--teal);
   text-shadow: 0 0 calc(4px + 7px * var(--breath-pulse, 0.5)) rgba(106,223,217, calc(0.25 + 0.35 * var(--breath-pulse, 0.5)));
 }
-.journey-active-detail { text-align: center; margin: 6px 0 2px; }
-.journey-active-when { font-family: var(--sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin-right: 10px; }
-.journey-active-bits { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--mid); }
+.journey-active-detail { text-align: center; margin: 20px 0 6px; }
+.journey-active-when {
+  font-family: var(--sans); font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 8px;
+}
+.journey-active-readout { display: inline-flex; align-items: baseline; gap: 11px; }
+.journey-active-metric-lbl {
+  font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--mid);
+}
+.journey-active-metric-val {
+  font-family: var(--serif); font-size: clamp(24px, 3.6vw, 32px);
+  color: var(--light); line-height: 1;
+}
+.journey-active-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--dim); align-self: center; }
+.journey-active-tier {
+  font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.8vw, 25px);
+  color: var(--teal);
+  text-shadow: 0 0 calc(5px + 9px * var(--breath-pulse, 0.5)) rgba(106,223,217, calc(0.25 + 0.4 * var(--breath-pulse, 0.5)));
+}
 .journey-traj-scrub-label { text-align: center; font-family: var(--sans); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 14px 0 8px; }
 .journey-scrub { display: flex; justify-content: center; gap: clamp(20px, 6vw, 54px); flex-wrap: wrap; }
 .journey-scrub-dot { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px; }
@@ -5459,7 +5476,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.23.0';
+const VERSION = '1.24.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8196,12 +8213,19 @@ function buildJourneyActiveDetail(s) {
   const active = getActiveSnapshotWeek();
   const n = s.trajectory.find(x => x.week === active) || s.trajectory[s.trajectory.length - 1];
   if (!n) return null;
-  const bits = [];
-  if (typeof n.auric === 'number') bits.push('field ' + n.auric.toFixed(1) + 'm');
-  if (n.hawkinsTier) bits.push(n.hawkinsTier.toLowerCase());
   const wrap = el('div', { class: 'journey-active-detail' });
-  wrap.appendChild(el('span', { class: 'journey-active-when', text: n.isBaseline ? 'your starting scan' : 'scan · ' + journeyScanDate(n) }));
-  if (bits.length) wrap.appendChild(el('span', { class: 'journey-active-bits', text: bits.join(' · ') }));
+  wrap.appendChild(el('div', { class: 'journey-active-when', text: n.isBaseline ? 'your starting scan' : 'scan · ' + journeyScanDate(n) }));
+  // v1.24: the metrics are a prominent focal readout, not a caption
+  const readout = el('div', { class: 'journey-active-readout' });
+  if (typeof n.auric === 'number') {
+    readout.appendChild(el('span', { class: 'journey-active-metric-lbl', text: 'field' }));
+    readout.appendChild(el('span', { class: 'journey-active-metric-val', text: n.auric.toFixed(1) + 'm' }));
+  }
+  if (n.hawkinsTier) {
+    if (typeof n.auric === 'number') readout.appendChild(el('span', { class: 'journey-active-dot' }));
+    readout.appendChild(el('span', { class: 'journey-active-tier', text: n.hawkinsTier.toLowerCase() }));
+  }
+  wrap.appendChild(readout);
   return wrap;
 }
 
