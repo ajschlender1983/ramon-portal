@@ -789,10 +789,45 @@ async function readState(env, slugInput) {
   }
 }
 
+/* v1.31.2 (durability audit): backstop against pathological array growth
+   in a merged value. Real usage is tiny (16 sessions, a handful of scans,
+   a few dozen field-history entries), so this never triggers in practice;
+   it only bounds a malformed/hostile client from inflating a value toward
+   the 4MB record cap via repeated array unions. */
+const MAX_ARRAY_UNION = 1000;
+
+/* v1.31.2: recursive deep merge for a single state value. Was a shallow
+   Object.assign at the object level, which CLOBBERED nested objects: if
+   device A holds sessionReflections[slug] = {text, deepText} and device B
+   pushes sessionReflections[slug] = {text} (no deepText, because that
+   device never generated it), the shallow assign replaced the whole slug
+   entry and dropped deepText. Recursing one level per nested object fixes
+   that while staying identical for flat maps (notes/wow/reflections: their
+   values are scalars, so recursion bottoms out at "incoming wins" exactly
+   as before). Arrays union (capped); scalars/type-mismatch: incoming wins. */
+function deepMergeServer(e, i) {
+  if (Array.isArray(e) && Array.isArray(i)) {
+    const seen = new Set(i.map(x => JSON.stringify(x)));
+    const merged = i.concat(e.filter(x => !seen.has(JSON.stringify(x))));
+    return merged.length > MAX_ARRAY_UNION ? merged.slice(0, MAX_ARRAY_UNION) : merged;
+  }
+  if (e && i && typeof e === 'object' && typeof i === 'object'
+      && !Array.isArray(e) && !Array.isArray(i)) {
+    const out = {};
+    for (const k of new Set([...Object.keys(e), ...Object.keys(i)])) {
+      if (!(k in i)) out[k] = e[k];
+      else if (!(k in e)) out[k] = i[k];
+      else out[k] = deepMergeServer(e[k], i[k]);
+    }
+    return out;
+  }
+  return i;
+}
+
 /* v1.15.3: server-side deep merge for state values. Mirrors the client
-   mergeStateValues: JSON objects merge by sub-key (incoming wins
-   conflicts, existing-only sub-keys survive), arrays union, plain
-   strings incoming-wins. */
+   mergeStateValues: JSON objects merge by sub-key (existing-only sub-keys
+   survive, nested objects recurse), arrays union, plain strings
+   incoming-wins. */
 function mergeStateValueServer(existingVal, incomingVal) {
   let e = undefined, i = undefined, eOk = false, iOk = false;
   try { e = JSON.parse(existingVal); eOk = true; } catch {}
@@ -803,15 +838,7 @@ function mergeStateValueServer(existingVal, incomingVal) {
      plain strings (field.v1 etc.): incoming wins, as before. */
   if (eOk && !iOk) return existingVal;
   if (!eOk) return incomingVal;
-  if (Array.isArray(e) && Array.isArray(i)) {
-    const seen = new Set(i.map(x => JSON.stringify(x)));
-    return JSON.stringify(i.concat(e.filter(x => !seen.has(JSON.stringify(x)))));
-  }
-  if (e && i && typeof e === 'object' && typeof i === 'object'
-      && !Array.isArray(e) && !Array.isArray(i)) {
-    return JSON.stringify(Object.assign({}, e, i));
-  }
-  return incomingVal;
+  return JSON.stringify(deepMergeServer(e, i));
 }
 
 async function writeState(env, payload) {

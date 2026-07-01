@@ -3575,6 +3575,32 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .note-block--after  .note-when { color: rgba(194,47,205,0.85); }
 .note-header .saved { font-size: 9px; color: var(--green); letter-spacing: 0.16em; opacity: 0; transition: opacity .3s; }
 .note-header .saved.visible { opacity: 1; }
+
+/* v1.31.2: honest cloud-sync indicator. Fixed, unobtrusive, bottom-left.
+   Invisible at idle; a faint "Saving…/Synced" for normal flow; a calm amber
+   line only when sync is genuinely failing. */
+.sync-pill {
+  position: fixed; left: 14px; bottom: 14px; z-index: 60;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 11px; border-radius: 999px;
+  background: rgba(12,10,20,0.72); border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  font-size: 10px; letter-spacing: 0.06em; color: rgba(233,229,244,0.82);
+  opacity: 0; transform: translateY(4px); pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease;
+}
+.sync-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(150,140,170,0.6); flex: none; }
+.sync-pill[data-state="syncing"], .sync-pill[data-state="synced"], .sync-pill[data-state="error"] { opacity: 1; transform: translateY(0); }
+.sync-pill[data-state="idle"] { opacity: 0; transform: translateY(4px); }
+.sync-pill[data-state="syncing"] .sync-pill-dot { background: var(--teal); animation: sync-dot-pulse 1.1s ease-in-out infinite; }
+.sync-pill[data-state="synced"] .sync-pill-dot { background: var(--green); }
+.sync-pill[data-state="error"] { border-color: rgba(230,170,90,0.35); color: rgba(240,205,150,0.92); }
+.sync-pill[data-state="error"] .sync-pill-dot { background: rgb(230,170,90); }
+@keyframes sync-dot-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .sync-pill { transition: opacity .2s; }
+  .sync-pill[data-state="syncing"] .sync-pill-dot { animation: none; }
+}
 .note-prompt {
   font-family: var(--serif); font-style: italic; font-weight: 400;
   font-size: 16px; line-height: 1.5;
@@ -5454,6 +5480,28 @@ const CloudSync = (function () {
   let pushTimer = null;
   let lastPushedJSON = '';
 
+  // v1.31.2 (durability audit): honest cloud-sync status. Before this, a
+  // failed push was swallowed and the UI's local "Saved" tag was the only
+  // signal — telling the user their data was safe in the cloud when it may
+  // only have been on the device. Now we track real sync state and expose
+  // it. failCount gates the visible error so a single blip that recovers on
+  // the immediate retry never alarms anyone.
+  let syncStatus = 'idle';   // 'idle' | 'syncing' | 'synced' | 'error'
+  let failCount = 0;
+  let retryTimer = null;
+  let retryDelay = 4000;
+  const syncListeners = [];
+  function setSyncStatus(s) {
+    if (s === syncStatus) return;
+    syncStatus = s;
+    for (const fn of syncListeners) { try { fn(s); } catch {} }
+  }
+  function onSyncChange(fn) {
+    if (typeof fn !== 'function') return;
+    syncListeners.push(fn);
+    try { fn(syncStatus); } catch {}
+  }
+
   function isSyncedKey(key) {
     if (!slug) return false;
     if (!key.startsWith(slug + '.')) return false;
@@ -5532,17 +5580,48 @@ const CloudSync = (function () {
   async function pushNow(state) {
     if (!slug) return;
     const body = JSON.stringify(state || snapshotStateFromLS());
-    if (body === lastPushedJSON) return; // no-op if unchanged
+    if (body === lastPushedJSON) { setSyncStatus('synced'); return; }
+    setSyncStatus(failCount === 0 ? 'syncing' : syncStatus);
     try {
       const resp = await fetch(RESOLVE_STATE, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ slug, state: JSON.parse(body) })
       });
-      if (resp.ok) lastPushedJSON = body;
+      if (resp.ok) {
+        lastPushedJSON = body;
+        failCount = 0;
+        retryDelay = 4000;
+        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+        setSyncStatus('synced');
+        return;
+      }
+      // Non-retryable client errors (413 too-large, 400 bad payload): retrying
+      // the same body won't help. Mark error, don't hammer. Server/rate errors
+      // (5xx, 429) and network failures fall through to backoff retry.
+      if (resp.status === 413 || resp.status === 400) {
+        failCount++;
+        setSyncStatus('error');
+        return;
+      }
+      throw new Error('HTTP ' + resp.status);
     } catch (err) {
-      // swallow; retry next change
+      failCount++;
+      // One blip → still "syncing" (about to retry); sustained failure → "error".
+      setSyncStatus(failCount >= 2 ? 'error' : 'syncing');
+      scheduleRetry();
     }
+  }
+
+  function scheduleRetry() {
+    if (retryTimer || !active) return;
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      const snap = snapshotStateFromLS();
+      if (JSON.stringify(snap) === lastPushedJSON) { setSyncStatus('synced'); return; }
+      retryDelay = Math.min(retryDelay * 2, 60000);
+      pushNow(snap);
+    }, retryDelay);
   }
 
   function schedulePush() {
@@ -5603,12 +5682,56 @@ const CloudSync = (function () {
   // flows (bfcache restore, swipe-to-close). Belt-and-suspenders.
   window.addEventListener('pagehide', flushOnHide);
 
-  return { rehydrate, pushNow };
+  return { rehydrate, pushNow, onSyncChange };
+})();
+
+/* v1.31.2 (durability audit): a quiet, honest sync indicator. Hidden in the
+   normal case (idle/synced). Shows a brief "saving…" only if a push is
+   in-flight long enough to matter, and a calm persistent line if sync is
+   actually failing — so "Saved" locally never masquerades as "safe in the
+   cloud." Fully additive; touches nothing in the data path. */
+(function mountSyncIndicator() {
+  if (typeof document === 'undefined') return;
+  const pill = document.createElement('div');
+  pill.className = 'sync-pill';
+  pill.setAttribute('data-state', 'idle');
+  pill.setAttribute('role', 'status');
+  pill.setAttribute('aria-live', 'polite');
+  const dot = document.createElement('span');
+  dot.className = 'sync-pill-dot';
+  const label = document.createElement('span');
+  label.className = 'sync-pill-label';
+  pill.appendChild(dot);
+  pill.appendChild(label);
+  let mounted = false;
+  let hideTimer = null;
+  function ensureMounted() {
+    if (mounted || !document.body) return;
+    document.body.appendChild(pill);
+    mounted = true;
+  }
+  CloudSync.onSyncChange(function (s) {
+    ensureMounted();
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    if (s === 'error') {
+      pill.setAttribute('data-state', 'error');
+      label.textContent = 'Saved on this device · syncing when reconnected';
+    } else if (s === 'syncing') {
+      pill.setAttribute('data-state', 'syncing');
+      label.textContent = 'Saving…';
+    } else if (s === 'synced') {
+      pill.setAttribute('data-state', 'synced');
+      label.textContent = 'Synced';
+      hideTimer = setTimeout(() => { pill.setAttribute('data-state', 'idle'); }, 1600);
+    } else {
+      pill.setAttribute('data-state', 'idle');
+    }
+  });
 })();
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.31.1';
+const VERSION = '1.31.2';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
