@@ -5597,7 +5597,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.29.0';
+const VERSION = '1.29.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -9224,7 +9224,7 @@ function renderSessionCard(slug, s) {
   // that have no notes yet and aren't reflected — a clear cue to begin.
   const cta = el('button', { class: 'session-cta', type: 'button', 'aria-label': 'Begin ' + s.heading });
   cta.appendChild(el('span', { class: 'session-cta-dot', 'aria-hidden': 'true' }));
-  cta.appendChild(el('span', { text: 'Not started · begin this session' }));
+  cta.appendChild(el('span', { text: 'Begin this session' }));
   cta.appendChild(el('span', { class: 'session-cta-arrow', 'aria-hidden': 'true', text: '→' }));
   cta.addEventListener('click', (e) => {
     e.stopPropagation();
