@@ -3135,6 +3135,35 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   color: var(--light); margin-bottom: 4px;
 }
 .session-subtitle { font-style: italic; font-size: 14px; color: var(--teal); margin-bottom: 12px; }
+/* v1.29: "not started" call-to-action — shown only on untouched sessions
+   (no notes, not reflected, collapsed). A clear cue to begin. */
+.session-cta { display: none; }
+.session-card:not(.has-note):not(.collapsed-reflected):not(.expanded) .session-cta {
+  display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+  margin-top: 4px; padding: 7px 15px; border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,215,100,0.14), rgba(255,215,100,0.05));
+  border: 1px solid rgba(255,215,100,0.32); color: var(--gold);
+  font-family: var(--sans); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; cursor: pointer;
+  transition: background .25s, border-color .25s;
+}
+.session-card .session-cta:hover {
+  background: linear-gradient(180deg, rgba(255,215,100,0.22), rgba(255,215,100,0.09));
+  border-color: rgba(255,215,100,0.5);
+}
+.session-cta-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--gold);
+  box-shadow: 0 0 8px rgba(255,215,100,0.85);
+  animation: cta-pulse 2.4s ease-in-out infinite;
+}
+@keyframes cta-pulse { 0%,100% { opacity: 0.5; transform: scale(0.82); } 50% { opacity: 1; transform: scale(1.18); } }
+.session-cta-arrow { transition: transform .2s ease; }
+.session-card .session-cta:hover .session-cta-arrow { transform: translateX(3px); }
+/* subtle accent on untouched collapsed cards to draw the eye */
+.session-card:not(.has-note):not(.collapsed-reflected):not(.expanded) {
+  border-color: rgba(255,215,100,0.18);
+}
+@media (prefers-reduced-motion: reduce) { .session-cta-dot { animation: none; } }
 .artist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 12px; color: var(--mid); letter-spacing: 0.02em; }
 .artist-row .artist-avatar {
   width: 30px; height: 30px; border-radius: 50%;
@@ -3200,6 +3229,14 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
   color: var(--teal); margin-bottom: 8px; opacity: 0.85;
 }
+/* v1.29: album-art thumbnail beside the reflection eyebrow (done sessions) */
+.resolved-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.resolved-head .resolved-eyebrow { margin-bottom: 0; }
+.resolved-thumb {
+  width: 46px; height: 46px; border-radius: 10px; overflow: hidden; flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+}
+.resolved-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .resolved-actions {
   display: none;
   gap: 10px;
@@ -5560,7 +5597,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.28.1';
+const VERSION = '1.29.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -9183,6 +9220,18 @@ function renderSessionCard(slug, s) {
     head.appendChild(artistRow);
   }
 
+  // v1.29: "not started" call-to-action. Shown (via CSS) only on cards
+  // that have no notes yet and aren't reflected — a clear cue to begin.
+  const cta = el('button', { class: 'session-cta', type: 'button', 'aria-label': 'Begin ' + s.heading });
+  cta.appendChild(el('span', { class: 'session-cta-dot', 'aria-hidden': 'true' }));
+  cta.appendChild(el('span', { text: 'Not started · begin this session' }));
+  cta.appendChild(el('span', { class: 'session-cta-arrow', 'aria-hidden': 'true', text: '→' }));
+  cta.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!card.classList.contains('expanded')) toggleSessionExpand(slug);
+  });
+  head.appendChild(cta);
+
   // Chevron toggle in the head; pulses on hover to suggest the affordance.
   const toggle = el('button', {
     class: 'session-toggle',
@@ -9277,7 +9326,18 @@ function renderSessionCard(slug, s) {
 
   // Resolved reflection block (hidden by default, shown when card is collapsed-reflected)
   const refl = el('div', { class: 'resolved-reflection' });
-  refl.appendChild(el('span', { class: 'resolved-eyebrow', text: 'Reflection · resolved from your notes' }));
+  // v1.29: a small album-art thumbnail rides with the reflection (the big
+  // hero art is hidden when the card collapses to its reflection).
+  const rhead = el('div', { class: 'resolved-head' });
+  if (s.art) {
+    const rthumb = el('div', { class: 'resolved-thumb' });
+    const rimg = el('img', { src: s.art, alt: '', loading: 'lazy' });
+    rimg.addEventListener('error', () => { rthumb.style.display = 'none'; });
+    rthumb.appendChild(rimg);
+    rhead.appendChild(rthumb);
+  }
+  rhead.appendChild(el('span', { class: 'resolved-eyebrow', text: 'Reflection · resolved from your notes' }));
+  refl.appendChild(rhead);
   refl.appendChild(el('span', { class: 'resolved-text' }));
   body.appendChild(refl);
 
