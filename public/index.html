@@ -3414,6 +3414,16 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   0%, 100% { transform: scale(0.72); opacity: 0.55; }
   50%      { transform: scale(1.18); opacity: 1; }
 }
+/* v1.31.6: elapsed readout centered in the ring — counts up (never a
+   countdown), a concrete "this is progressing" signal during the long wait. */
+.deepen-elapsed {
+  position: absolute; inset: 0; margin: auto;
+  width: 40px; height: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em; color: rgba(22,16,30,0.82);
+  z-index: 2; pointer-events: none;
+}
 .deepen-breath-cue {
   font-family: var(--serif); font-style: italic;
   font-size: 12px; color: var(--dim);
@@ -5388,7 +5398,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.31.4';
+const VERSION = '1.31.6';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -10216,6 +10226,8 @@ function mountDeepenWait(card, slug) {
   svg.appendChild(track); svg.appendChild(fill);
   ring.appendChild(svg);
   ring.appendChild(el('div', { class: 'ring-core' }));
+  const elapsedEl = el('div', { class: 'deepen-elapsed', text: '' });
+  ring.appendChild(elapsedEl);
   wait.appendChild(ring);
   wait.appendChild(el('div', { class: 'deepen-breath-cue', text: 'breathe with this while you wait' }));
 
@@ -10227,13 +10239,20 @@ function mountDeepenWait(card, slug) {
 
   refl.appendChild(wait);
 
-  // Animate the ring toward ~92% over ~22s; completion snaps it to full.
-  const EST_MS = 22000;
+  // v1.31.6: asymptotic fill so the ring NEVER looks frozen. The deepen runs
+  // 25-80s (4 chained Claude calls); the old linear fill hit 92% at 22s then
+  // sat stuck for the rest of the wait, which read as "nothing is happening".
+  // pct = 1 - e^(-t/TAU) eases toward ~97% and keeps creeping forever, so
+  // there's always visible motion; complete() snaps it to 100%. A small
+  // elapsed readout (counting up, never a countdown) gives a concrete signal.
+  const TAU = 26000;
   const t0 = Date.now();
   const ringTimer = setInterval(() => {
-    const pct = Math.min(0.92, (Date.now() - t0) / EST_MS);
+    const elapsed = Date.now() - t0;
+    const pct = Math.min(0.97, 1 - Math.exp(-elapsed / TAU));
     fill.setAttribute('stroke-dashoffset', String(C * (1 - pct)));
-  }, 400);
+    elapsedEl.textContent = Math.round(elapsed / 1000) + 's';
+  }, 250);
 
   // Rotate carousel lines every ~5s.
   const lines = buildDeepenCarouselLines(slug);
@@ -10247,7 +10266,7 @@ function mountDeepenWait(card, slug) {
 
   return {
     el: wait,
-    complete() { fill.setAttribute('stroke-dashoffset', '0'); },
+    complete() { clearInterval(ringTimer); fill.setAttribute('stroke-dashoffset', '0'); elapsedEl.textContent = ''; },
     destroy() { clearInterval(ringTimer); clearInterval(carTimer); if (wait.parentNode) wait.parentNode.removeChild(wait); }
   };
 }
