@@ -174,7 +174,7 @@ body.compounded::before {
 
 main { position: relative; z-index: 2; }
 .section {
-  padding: clamp(56px, 9vw, 112px) clamp(20px, 6vw, 96px);
+  padding: clamp(36px, 5.5vw, 68px) clamp(20px, 6vw, 96px);
   max-width: 1240px; margin: 0 auto;
   position: relative;
 }
@@ -2502,16 +2502,6 @@ main { position: relative; z-index: 2; }
   letter-spacing: 0.04em;
   margin-bottom: 18px;
   opacity: 0.85;
-}
-
-.principle-whisper {
-  text-align: center;
-  font-family: var(--serif); font-style: italic; font-size: 12px;
-  color: var(--mid); opacity: 0.78;
-  letter-spacing: 0.04em; line-height: 1.55;
-  padding: 24px clamp(16px, 4vw, 64px);
-  position: relative; z-index: 2;
-  background: linear-gradient(180deg, transparent, rgba(31,24,36,0.5), transparent);
 }
 
 /* Mesh-blob ambient drift (CSS-only, complements the canvas) */
@@ -5295,8 +5285,6 @@ window.__userDataPromise = (function() {
 </header>
 
 <hr class="gradient-divider">
-<div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
-
 <section class="section reveal" id="input">
   <!-- v1.28: the entire first-reading block — masthead, the original
        reading, and the interactive chakra body — collapses behind one
@@ -5333,8 +5321,6 @@ window.__userDataPromise = (function() {
 </section>
 
 <hr class="gradient-divider">
-<div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
-
 <section class="section reveal" id="map">
   <div class="section-label">Your Recommendations · 4 Weeks · 16 Sessions</div>
   <h2 class="section-title" data-map-title-mount>Based on your biofield reading, <em>these are your session recommendations</em>.</h2>
@@ -5361,8 +5347,6 @@ window.__userDataPromise = (function() {
 </section>
 
 <hr class="gradient-divider">
-<div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
-
 <!-- v1.9.27: Example reflections — preview what a real reflection
      looks like for this user, before they've written their own notes.
      The Generate button picks a random session, synthesizes plausible
@@ -5382,8 +5366,6 @@ window.__userDataPromise = (function() {
 </section>
 
 <hr class="gradient-divider">
-<div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
-
 <section class="section reveal" id="reflect">
   <div class="section-label">Reflection</div>
   <h2 class="section-title">When you're ready, ask for a <em>reflection</em>.</h2>
@@ -5731,7 +5713,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.31.2';
+const VERSION = '1.31.3';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
