@@ -4785,16 +4785,21 @@ section#reflect.reflected .section-title em {
 .resolved-recap-pip {
   width: 11px; height: 11px; border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.22);
+  background: transparent;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 8px; line-height: 1; color: transparent;
+  /* v1.31: start empty; fill in on scroll (see .in-view rules below) */
+  transition: background .45s ease, border-color .45s ease, box-shadow .45s ease, transform .45s cubic-bezier(0.34,1.56,0.64,1);
 }
-.resolved-recap-pip.is-filled { background: var(--teal); border-color: var(--teal); }
 .resolved-recap-pip.is-wow { width: 13px; height: 13px; }
-.resolved-recap-pip.is-wow.is-filled { background: var(--gold); border-color: var(--gold); color: #2a1f00; }
-.resolved-recap-pip.is-current {
+/* filled / current / wow appearance applies only once the scale scrolls
+   into view, so the rating animates from zero on scroll */
+.resolved-recap-scale.in-view .resolved-recap-pip.is-filled { background: var(--teal); border-color: var(--teal); }
+.resolved-recap-scale.in-view .resolved-recap-pip.is-wow.is-filled { background: var(--gold); border-color: var(--gold); color: #2a1f00; }
+.resolved-recap-scale.in-view .resolved-recap-pip.is-current {
   box-shadow: 0 0 0 2px rgba(255,255,255,0.18), 0 0 8px rgba(106,223,217,0.5);
 }
-.resolved-recap-pip.is-wow.is-current { box-shadow: 0 0 0 2px rgba(255,215,100,0.3), 0 0 10px rgba(255,215,100,0.6); }
+.resolved-recap-scale.in-view .resolved-recap-pip.is-wow.is-current { box-shadow: 0 0 0 2px rgba(255,215,100,0.3), 0 0 10px rgba(255,215,100,0.6); }
 .resolved-recap-scale-word {
   font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--teal); margin-left: auto;
@@ -4806,20 +4811,18 @@ section#reflect.reflected .section-title em {
   color: var(--gold);
   text-shadow: 0 0 calc(6px + 11px * var(--breath-pulse, 0.5)) rgba(255,215,100, calc(0.3 + 0.5 * var(--breath-pulse, 0.5)));
 }
-/* v1.19.1: the pips fill on, staggered, when the recap mounts */
-@keyframes recap-pip-in {
-  from { opacity: 0; transform: scale(0.25); }
-  to   { opacity: 1; transform: scale(1); }
-}
-.resolved-recap-pip { animation: recap-pip-in 0.42s cubic-bezier(0.34,1.56,0.64,1) both; }
-.resolved-recap-pip:nth-child(1) { animation-delay: 0.06s; }
-.resolved-recap-pip:nth-child(2) { animation-delay: 0.14s; }
-.resolved-recap-pip:nth-child(3) { animation-delay: 0.22s; }
-.resolved-recap-pip:nth-child(4) { animation-delay: 0.30s; }
-.resolved-recap-pip:nth-child(5) { animation-delay: 0.38s; }
-.resolved-recap-pip:nth-child(6) { animation-delay: 0.46s; }
+/* v1.31: on scroll-into-view, the filled pips light up from zero, staggered
+   left-to-right, and the current pip pops. */
+.resolved-recap-scale.in-view .resolved-recap-pips .resolved-recap-pip:nth-child(1) { transition-delay: 0.05s; }
+.resolved-recap-scale.in-view .resolved-recap-pips .resolved-recap-pip:nth-child(2) { transition-delay: 0.13s; }
+.resolved-recap-scale.in-view .resolved-recap-pips .resolved-recap-pip:nth-child(3) { transition-delay: 0.21s; }
+.resolved-recap-scale.in-view .resolved-recap-pips .resolved-recap-pip:nth-child(4) { transition-delay: 0.29s; }
+.resolved-recap-scale.in-view .resolved-recap-pips .resolved-recap-pip:nth-child(5) { transition-delay: 0.37s; }
+.resolved-recap-scale.in-view .resolved-recap-pips .resolved-recap-pip:nth-child(6) { transition-delay: 0.45s; }
+.resolved-recap-scale.in-view .resolved-recap-pip.is-current { transform: scale(1.16); }
 @media (prefers-reduced-motion: reduce) {
-  .resolved-recap-pip { animation: none; }
+  .resolved-recap-pip { transition: none; }
+  .resolved-recap-scale.in-view .resolved-recap-pip.is-current { transform: none; }
 }
 .arc-title {
   text-align: center;
@@ -5605,7 +5608,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.30.0';
+const VERSION = '1.31.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -10973,7 +10976,22 @@ function buildRecapWowScale(w, wl) {
   }
   wrap.appendChild(pips);
   wrap.appendChild(el('span', { class: 'resolved-recap-scale-word' + (w >= 6 ? ' is-wow' : ''), text: wl ? wl.short : '' }));
+  // v1.31: fill the pips from zero when the scale scrolls into view
+  revealFeltRating(wrap);
   return wrap;
+}
+
+/* v1.31: add .in-view when the felt-rating scale enters the viewport, so
+   the pips animate from zero on scroll. Observing a detached node is fine —
+   it fires once the node is attached and intersecting. */
+function revealFeltRating(scaleEl) {
+  if (reducedMotion() || !('IntersectionObserver' in window)) { scaleEl.classList.add('in-view'); return; }
+  const io = new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in-view'); obs.disconnect(); }
+    });
+  }, { threshold: 0.55 });
+  io.observe(scaleEl);
 }
 
 function editSessionNotes(slug) {
