@@ -5443,7 +5443,7 @@ function mergeStateValues(localVal, serverVal) {
 const CloudSync = (function () {
   const SYNC_DEBOUNCE_MS = 1200;
   const SYNCED_LS_SUFFIXES = [
-    '.notes.v1', '.wow.v1', '.field.v1', '.field.history.v1',
+    '.notes.v1', '.wow.v1', '.field.v1', '.field.v1.ts', '.field.history.v1',
     '.reflections.v1', '.state.v1', '.sessionReflections.v1',
     '.weekFields.v1', '.sessionFields.v1', '.expanded.v1',
     '.activeSnapshot.v1', '.snapshots.v1', '.dashOpen.v1', '.examples.v1'
@@ -5608,7 +5608,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.31.0';
+const VERSION = '1.31.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the

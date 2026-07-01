@@ -755,7 +755,12 @@ function clampInt(v, lo, hi, d) {
    a few KB; 256 KB is generous and prevents accidental blow-ups). */
 
 const SLUG_RE = /^[A-Za-z0-9_-]{1,80}$/;
-const MAX_STATE_BYTES = 256 * 1024;
+// v1.31.1 (durability audit): was 256KB — far below the KV 25MB value limit,
+// and the client SWALLOWS the resulting 413 (pushNow/beacon never surface it),
+// so an engaged user whose accumulating reflections/snapshots crossed 256KB
+// would silently stop syncing forever. Raised to 4MB (huge headroom for text;
+// still well under the KV ceiling). Pair with the server-side array-union cap.
+const MAX_STATE_BYTES = 4 * 1024 * 1024;
 
 function validateSlug(slug) {
   const s = String(slug || '').trim();
