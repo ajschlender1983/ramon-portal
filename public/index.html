@@ -2532,7 +2532,7 @@ main { position: relative; z-index: 2; }
    visual primary; this pill opens the source words. */
 /* v1.27: "View my first reading" — the whole first-reading block (masthead,
    original reading, chakra body) collapses behind one prominent button. */
-.first-reading-collapse { margin: 8px 0 4px; text-align: center; }
+.first-reading-collapse { margin: 4px 0 34px; text-align: center; }
 .fr-summary {
   cursor: pointer; list-style: none;
   display: inline-flex; align-items: center; gap: 12px;
@@ -5224,14 +5224,11 @@ window.__userDataPromise = (function() {
 <div class="principle-whisper" aria-hidden="true">we reflect what you share. we don't conclude anything for you.</div>
 
 <section class="section reveal" id="input">
-  <!-- v1.17: The Journey summary — where you started, what's moved, with
-       album-art thumbnails. Filled by mountArc() -> buildJourneySummary(). -->
-  <div class="arc-dashboard" id="arc-mount"></div>
-
-  <!-- v1.27: the entire first-reading block — masthead, the original
+  <!-- v1.28: the entire first-reading block — masthead, the original
        reading, and the interactive chakra body — collapses behind one
-       "View my first reading" button. The Journey above is the primary
-       view; the first reading is available on demand. -->
+       "View my first reading" button, placed right below the header
+       (above the Journey). Kept inside #input so the expanded content
+       keeps the section's layout context. -->
   <details class="first-reading-collapse">
     <summary class="fr-summary">
       <span class="fr-summary-icon" aria-hidden="true"></span>
@@ -5255,6 +5252,10 @@ window.__userDataPromise = (function() {
       <div class="biofield-dashboard" id="biofield-dashboard"></div>
     </div>
   </details>
+
+  <!-- v1.17: The Journey summary — where you started, what's moved, with
+       album-art thumbnails. Filled by mountArc() -> buildJourneySummary(). -->
+  <div class="arc-dashboard" id="arc-mount"></div>
 </section>
 
 <hr class="gradient-divider">
@@ -5559,7 +5560,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.28.0';
+const VERSION = '1.28.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
