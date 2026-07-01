@@ -4283,6 +4283,14 @@ section#reflect.reflected .section-title em {
   color: var(--gold); text-transform: uppercase; opacity: 0.85;
   text-align: center; margin-bottom: 10px;
 }
+/* v1.30: major Journey section headings as real display type */
+.journey-heading {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(30px, 5vw, 50px); line-height: 1.02;
+  letter-spacing: 0.005em; color: var(--light);
+  text-align: center; margin: 14px auto 16px; max-width: 20ch;
+}
+.journey-heading + .journey-caption { margin-top: 4px; }
 .journey-caption {
   font-family: var(--serif); font-style: italic;
   font-size: clamp(16px, 2.4vw, 21px); line-height: 1.45;
@@ -5597,7 +5605,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.29.1';
+const VERSION = '1.30.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8356,7 +8364,7 @@ function buildJourneyActiveDetail(s) {
 
 function buildJourneyTrajectory(s) {
   const wrap = el('div', { class: 'journey-traj' });
-  wrap.appendChild(el('div', { class: 'journey-sub', text: 'your field over time' }));
+  wrap.appendChild(el('div', { class: 'journey-heading', text: 'Your field over time' }));
 
   const moved = composeScanDelta(s, 'vsPrev');
   if (moved.length) {
@@ -8400,7 +8408,7 @@ function addJourneyScan(text) {
 /* Empty / single-scan invitation + ghost preview of the trend to come. */
 function buildJourneyInvite(s) {
   const wrap = el('div', { class: 'journey-invite' });
-  wrap.appendChild(el('div', { class: 'journey-sub', text: 'your field over time' }));
+  wrap.appendChild(el('div', { class: 'journey-heading', text: 'Your field over time' }));
   // ghost preview — a faint start node + dashed rising line to a ghost node
   const W = 320, H = 96;
   const sv = svg('svg', { class: 'journey-invite-svg', viewBox: '0 0 ' + W + ' ' + H });
@@ -8429,7 +8437,7 @@ function buildJourneySummary(s) {
   window.__journeyMountedOnce = true;
   const wrap = el('div', { class: 'journey' + (first ? ' journey--first' : '') + (s.lightStage === 'seed' ? ' journey--seed' : '') });
 
-  wrap.appendChild(el('div', { class: 'journey-eyebrow', text: 'YOUR JOURNEY SO FAR' }));
+  wrap.appendChild(el('div', { class: 'journey-heading', text: 'Your journey so far' }));
   wrap.appendChild(el('div', { class: 'journey-caption', text: composeArcLightCaption(s) }));
 
   // --- From → Now band ---
