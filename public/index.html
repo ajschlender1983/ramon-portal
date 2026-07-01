@@ -259,28 +259,12 @@ main { position: relative; z-index: 2; }
   text-shadow: 0 1px 24px rgba(0,0,0,0.55);
 }
 @media (prefers-reduced-motion: reduce) { .hero-photo img { animation: none; } }
-.hero-title {
-  font-family: var(--serif); font-weight: 300;
-  font-size: clamp(44px, 9vw, 96px);
-  line-height: 0.96; letter-spacing: -0.02em; color: var(--light);
-  margin-bottom: 28px; max-width: 1000px;
-  position: relative; z-index: 2;
-}
-.hero-title em { font-style: italic; }
 .hero-lede {
   font-size: clamp(15px, 1.6vw, 20px); color: var(--mid);
   max-width: 680px; line-height: 1.7;
   position: relative; z-index: 2;
 }
 .hero-lede strong { color: var(--light); font-weight: 500; }
-.hero-principle-1 {
-  font-family: var(--serif); font-style: italic; font-weight: 400;
-  font-size: clamp(15px, 1.6vw, 18px); line-height: 1.55;
-  color: var(--mid); max-width: 720px;
-  margin: 16px 0 28px;
-  position: relative; z-index: 2;
-}
-.hero-principle-1 em { font-style: italic; color: var(--teal); }
 
 .hero-constellation {
   position: absolute;
@@ -2003,18 +1987,6 @@ main { position: relative; z-index: 2; }
 }
 .bf-avatar-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* RIGHT COLUMN: Hawkins arc + DNA helix + archetype */
-.bf-readout {
-  display: flex; flex-direction: column; gap: 24px;
-  min-width: 0;
-}
-.bf-section-aside {
-  font-family: var(--serif); font-style: italic; font-size: 14px;
-  color: var(--mid); line-height: 1.55;
-  padding: 6px 0 6px 14px;
-  border-left: 1px solid rgba(255,255,255,0.10);
-}
-
 /* HAWKINS arc (horizontal, local visibility) */
 /* The horizontal Hawkins arc styles were removed in v1.3.0; see
    .bf-ladder-* rules above for the vertical ladder + Solfeggio scale. */
@@ -2552,43 +2524,6 @@ main { position: relative; z-index: 2; }
 .first-reading-collapse[open] .fr-body { display: block; animation: fr-open .5s cubic-bezier(0.23,1,0.32,1); }
 @keyframes fr-open { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .first-reading-collapse[open] .fr-body { animation: none; } }
-
-.input-collapse {
-  margin: 12px 0 8px;
-}
-.input-collapse-summary {
-  cursor: pointer;
-  list-style: none;
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 12px 18px;
-  background: rgba(106,223,217,0.05);
-  border: 1px solid rgba(106,223,217,0.18);
-  border-radius: 999px;
-  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--teal);
-  transition: background .25s, border-color .25s;
-}
-.input-collapse-summary:hover {
-  background: rgba(106,223,217,0.10);
-  border-color: rgba(106,223,217,0.32);
-}
-.input-collapse-summary::-webkit-details-marker { display: none; }
-.input-collapse-icon {
-  display: inline-block; width: 10px; height: 10px;
-  border-right: 1.4px solid currentColor;
-  border-bottom: 1.4px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform .25s cubic-bezier(.2,.8,.2,1);
-  margin-left: 2px;
-}
-.input-collapse[open] .input-collapse-icon { transform: rotate(-135deg); }
-.input-collapse[open] .input-collapse-text::after {
-  content: ' (open)';
-  opacity: 0.55;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  font-size: 11px;
-}
 .input-panel-wrap {
   position: relative;
   margin-top: 32px;
@@ -2654,11 +2589,6 @@ body.input-focused #particleCanvas { opacity: 0.6; transition: opacity 600ms eas
 @keyframes input-conic-rotate {
   to { --input-angle: 360deg; }
 }
-
-.field-panel-head { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: end; margin-bottom: 24px; position: relative; z-index: 1; }
-.field-panel-head h3 { font-family: var(--serif); font-weight: 300; font-size: clamp(22px, 2.6vw, 30px); color: var(--light); }
-.field-panel-head .field-note { font-size: 12px; color: var(--mid); font-style: italic; max-width: 360px; line-height: 1.6; }
-.field-panel-head .field-note em { color: var(--teal); font-style: normal; }
 textarea.field-input {
   width: 100%; min-height: 240px;
   background: rgba(11,8,15,0.55);
@@ -2676,7 +2606,6 @@ textarea.field-input:focus {
   background: rgba(11,8,15,0.7);
 }
 textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
-.field-actions { display: flex; gap: 12px; margin-top: 14px; align-items: center; flex-wrap: wrap; position: relative; z-index: 1; }
 .btn {
   font-family: var(--sans); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
   padding: 12px 22px; border-radius: 999px; cursor: pointer;
@@ -2693,7 +2622,6 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   border-color: rgba(106,223,217,0.55); color: var(--light);
   box-shadow: 0 0 24px rgba(106,223,217,0.18);
 }
-.field-meta { font-size: 11px; color: var(--dim); letter-spacing: 0.08em; }
 
 .aurora-ring-overlay {
   position: fixed;
@@ -2810,12 +2738,6 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
 .quadrant .prefix { font-size: 10.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-top: 2px; opacity: 0.92; }
 .parsed-honesty-footer { margin-top: 18px; font-size: 11.5px; color: var(--mid); font-style: italic; line-height: 1.5; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
 .quadrant .empty { font-size: 12px; color: var(--dim); font-style: italic; }
-.read-value-large {
-  font-family: var(--serif); font-weight: 300;
-  font-size: 36px; line-height: 1; color: var(--gold);
-  text-shadow: 0 0 20px rgba(255,215,100,0.25);
-}
-.read-block-text { font-size: 13.5px; color: var(--light); line-height: 1.55; opacity: 0.92; }
 .parsed-raw {
   margin-top: 22px;
   background: rgba(11,8,15,0.4);
@@ -3520,16 +3442,6 @@ textarea.field-input::placeholder { color: var(--dim); font-style: italic; }
   .deepen-carousel-line { transition: none; }
 }
 
-.session-spotify {
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--mid); display: inline-flex; align-items: center; gap: 6px;
-  margin-bottom: 16px;
-  text-decoration: none;
-  transition: color .25s;
-}
-.session-spotify:hover { color: var(--green); }
-.session-spotify::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(99,224,132,0.4); }
-
 .notes { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 /* Stack Before/After vertically below 1024px so the note blocks always have
    enough width for the prompt + textarea without horizontal overflow. The
@@ -3963,86 +3875,6 @@ textarea.note-input::placeholder { color: var(--dim); font-style: italic; }
 .session-why--held .session-why-label {
   color: var(--gold);
 }
-/* Old reserve-* classes are no longer used by the new layout but kept
-   for backward compat. */
-
-.reserve-item {
-  background: rgba(31,24,36,0.45);
-  border: 1px dashed var(--glass-border);
-  border-radius: 14px;
-  padding: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  transition: border-color .25s, background .25s, transform .25s, box-shadow .25s;
-}
-.reserve-item:hover {
-  border-color: rgba(106,223,217,0.32);
-  border-style: solid;
-  background: rgba(31,24,36,0.65);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px -16px rgba(86,76,112,0.5);
-}
-.reserve-item:focus-visible { outline: 1px solid rgba(106,223,217,0.55); outline-offset: 2px; }
-.reserve-art {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 14px 14px 0 0;
-  background: linear-gradient(135deg, rgba(123,111,168,0.45), rgba(31,24,36,0.85));
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  position: relative; overflow: hidden;
-}
-.reserve-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* Chakra-tinted gradient fallback shows when no `art` is provided */
-.reserve-art[data-chakra="crown"]    { background: linear-gradient(135deg, rgba(220,200,255,0.55), rgba(40,28,60,0.85)); }
-.reserve-art[data-chakra="third-eye"]{ background: linear-gradient(135deg, rgba(123,111,168,0.55), rgba(28,24,52,0.85)); }
-.reserve-art[data-chakra="throat"]   { background: linear-gradient(135deg, rgba(106,223,217,0.50), rgba(18,40,46,0.85)); }
-.reserve-art[data-chakra="heart"]    { background: linear-gradient(135deg, rgba(120,210,140,0.50), rgba(20,40,28,0.85)); }
-.reserve-art[data-chakra="solar"]    { background: linear-gradient(135deg, rgba(255,215,100,0.55), rgba(50,38,18,0.85)); }
-.reserve-art[data-chakra="sacral"]   { background: linear-gradient(135deg, rgba(240,147,94,0.55), rgba(48,26,18,0.85)); }
-.reserve-art[data-chakra="root"]     { background: linear-gradient(135deg, rgba(220,90,90,0.50), rgba(40,18,18,0.85)); }
-.reserve-art::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.16), transparent 60%);
-}
-.reserve-meta { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.reserve-name {
-  color: var(--light); font-weight: 500;
-  font-size: 14px;
-  font-family: var(--serif);
-  letter-spacing: 0.01em;
-}
-.reserve-artist { color: var(--dim); font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; }
-.reserve-toggle {
-  align-self: flex-end;
-  background: transparent; border: none;
-  color: var(--mid);
-  width: 24px; height: 24px;
-  display: inline-flex; align-items: center; justify-content: center;
-  cursor: pointer; padding: 0;
-  margin-top: -28px; /* tuck up against the artist line */
-  pointer-events: none; /* card itself is clickable; toggle is just a glyph */
-  transition: transform .25s cubic-bezier(.2,.8,.2,1), color .25s;
-}
-.reserve-toggle::before {
-  content: '▾';
-  font-size: 14px;
-  display: inline-block;
-  transition: transform .25s cubic-bezier(.2,.8,.2,1);
-}
-.reserve-item.expanded .reserve-toggle::before { transform: rotate(180deg); }
-.reserve-expand {
-  display: none;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding: 14px 16px;
-  font-size: 12px; color: var(--mid); line-height: 1.55;
-  font-style: italic;
-}
-.reserve-item.expanded .reserve-expand {
-  display: block;
-  animation: reserve-expand-in 280ms cubic-bezier(.2,.8,.2,1);
-}
 @keyframes reserve-expand-in {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -4294,11 +4126,6 @@ section#reflect.reflected .section-title em {
    ============================================================ */
 .journey--first { animation: journey-fade 0.7s ease both; }
 @keyframes journey-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.journey-eyebrow {
-  font-family: var(--sans); font-size: 11px; letter-spacing: 0.34em;
-  color: var(--gold); text-transform: uppercase; opacity: 0.85;
-  text-align: center; margin-bottom: 10px;
-}
 /* v1.30: major Journey section headings as real display type */
 .journey-heading {
   font-family: var(--serif); font-weight: 400;
@@ -4840,132 +4667,9 @@ section#reflect.reflected .section-title em {
   .resolved-recap-pip { transition: none; }
   .resolved-recap-scale.in-view .resolved-recap-pip.is-current { transform: none; }
 }
-.arc-title {
-  text-align: center;
-  margin-bottom: 22px;
-}
-.arc-eyebrow {
-  font-family: var(--sans);
-  font-size: 11px;
-  letter-spacing: 0.28em;
-  color: var(--gold);
-  text-transform: uppercase;
-}
-.arc-sub {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 14px;
-  color: var(--mid);
-  margin-top: 4px;
-  letter-spacing: 0.04em;
-}
-
-/* ---- System Journey ---- */
-.arc-system {
-  margin-bottom: 28px;
-}
-.arc-system-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 0;
-  padding: 8px 0 14px;
-}
-.arc-snap-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 78px;
-  position: relative;
-}
-.arc-snap-col.is-ghost { opacity: 0.42; }
-.arc-snap-stage {
-  font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  color: var(--mid);
-  text-transform: lowercase;
-  margin-bottom: 2px;
-}
-.arc-snap-col.is-current .arc-snap-stage { color: var(--gold); }
-.arc-mini {
-  width: 56px;
-  height: 96px;
-  display: block;
-}
-.arc-snap-col.is-current .arc-mini-body {
-  stroke: rgba(255,215,100,0.55);
-}
-.arc-snap-cap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  margin-top: 2px;
-}
-.arc-snap-auric {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 13px;
-  color: var(--light);
-  letter-spacing: 0.02em;
-}
-.arc-snap-tier {
-  font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  color: var(--mid);
-  text-transform: lowercase;
-}
-.arc-snap-dim { color: var(--dim); }
-.arc-snap-label {
-  font-family: var(--sans);
-  font-size: 9px;
-  letter-spacing: 0.22em;
-  color: var(--dim);
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-.arc-breath-dot {
-  width: 7px; height: 7px;
-  margin-top: 6px;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 14px rgba(255,215,100,0.65);
-  opacity: calc(0.55 + 0.45 * var(--breath-pulse, 0.5));
-  transform: scale(calc(0.85 + 0.3 * var(--breath-pulse, 0.5)));
-  transition: opacity 0.2s linear, transform 0.2s linear;
-}
-.arc-connector {
-  flex: 0 1 36px;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255,215,100,0.5), rgba(255,215,100,0.18));
-  align-self: center;
-  margin-bottom: 30px;
-}
 .arc-connector.is-dashed {
   background: none;
   border-top: 1px dashed rgba(255,215,100,0.22);
-}
-.arc-system-headline {
-  text-align: center;
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 16px;
-  color: var(--light);
-  letter-spacing: 0.02em;
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-
-/* ---- Per-Center Strips ---- */
-.arc-strips {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 8px;
 }
 .arc-strip {
   padding: 12px 14px;
@@ -5120,21 +4824,6 @@ section#reflect.reflected .section-title em {
   color: var(--mid); text-transform: uppercase;
   transition: color 0.25s ease;
 }
-.arc-strips-toggle:hover { color: var(--light); }
-.arc-strips-toggle-icon {
-  width: 7px; height: 7px;
-  border-right: 1px solid currentColor;
-  border-bottom: 1px solid currentColor;
-  transform: rotate(45deg);
-  transition: transform 0.3s ease;
-  margin-top: -3px;
-}
-.arc-strips-drawer.open ~ .arc-strips-toggle .arc-strips-toggle-icon,
-.arc-strips-toggle[aria-expanded="true"] .arc-strips-toggle-icon {
-  transform: rotate(-135deg); margin-top: 3px;
-}
-.arc-strips-drawer { display: none; }
-.arc-strips-drawer.open { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
 .arc-strip-v2 {
   display: flex; flex-direction: column; gap: 8px;
   padding: 10px 12px;
@@ -5162,24 +4851,10 @@ section#reflect.reflected .section-title em {
 
 @media (max-width: 720px) {
   .arc-dashboard { padding: 22px 14px 18px; margin: 0 -8px 24px; border-radius: 12px; }
-  .arc-system-row {
-    overflow-x: auto;
-    justify-content: flex-start;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 6px;
-  }
-  .arc-snap-col { min-width: 64px; }
-  .arc-mini { width: 44px; height: 76px; }
-  .arc-connector { flex: 0 0 18px; margin-bottom: 24px; }
-  .arc-snap-auric { font-size: 12px; }
-  .arc-system-headline { font-size: 14px; }
   .arc-strip-head { gap: 8px; }
   .arc-strip-week { margin-left: 0; width: 100%; }
   .arc-strip-label { font-size: 10px; }
   .arc-strip-state { font-size: 13px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .arc-breath-dot { animation: none !important; opacity: 0.8; transform: none; transition: none; }
 }
 </style>
 </head>
@@ -5713,7 +5388,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.31.3';
+const VERSION = '1.31.4';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -6117,172 +5792,6 @@ function mountAurora() {
 function mountParticles() {
   return;
 }
-function _legacyMountParticlesNotUsed() {
-  const canvas = document.getElementById('particleCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let w, h;
-  let particles = [];
-  let targetCount = 60;
-  let goldWeight = 0.05;
-  const mouse = { x: -9999, y: -9999, active: false };
-
-  function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-  }
-  window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; });
-  window.addEventListener('mouseleave', () => { mouse.active = false; });
-
-  function makeParticle() {
-    const r = Math.random();
-    let color;
-    const gw = goldWeight;
-    if (r < gw) color = [255,215,100];
-    else if (r < gw + (1 - gw) * 0.55) color = [123,111,168];
-    else if (r < gw + (1 - gw) * 0.80) color = [106,223,217];
-    else color = [194,47,205];
-    return {
-      x: Math.random() * w,
-      y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.24,
-      vy: -(Math.random() * 0.16 + 0.04),
-      r: 0.6 + Math.random() * 1.8,
-      a: 0.18 + Math.random() * 0.24,
-      color
-    };
-  }
-
-  function init() {
-    particles = [];
-    for (let i = 0; i < targetCount; i++) particles.push(makeParticle());
-  }
-
-  function notifyState(state, eng) {
-    targetCount = 60 + Math.round(eng / 0.22 * 50);
-    goldWeight = 0.05 + (state.weeksCompleted / 4) * 0.37; // up to 0.42
-    while (particles.length < targetCount) particles.push(makeParticle());
-    while (particles.length > targetCount) particles.pop();
-  }
-
-  function spawnFromCard(slug) {
-    const card = document.querySelector('.session-card[data-slug="' + slug + '"]');
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    for (let i = 0; i < 6; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      particles.push({
-        x: cx, y: cy,
-        vx: Math.cos(angle) * (0.6 + Math.random() * 0.4),
-        vy: Math.sin(angle) * (0.6 + Math.random() * 0.4),
-        r: 1.2 + Math.random() * 1.4,
-        a: 0.5,
-        color: [255,215,100],
-        ttl: 1800,
-        born: performance.now()
-      });
-    }
-  }
-
-  function getInputCenter() {
-    const panel = document.querySelector('.field-panel');
-    if (!panel) return null;
-    const rect = panel.getBoundingClientRect();
-    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-  }
-
-  let running = true;
-  const REPULSE_RADIUS = 120;
-  const CONNECT_DIST = 120;
-  function draw(now) {
-    if (!running) return;
-    ctx.clearRect(0, 0, w, h);
-    const inputC = getInputCenter();
-
-    // Update positions + render points
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      if (inputC) {
-        const dx = inputC.x - p.x;
-        const dy = inputC.y - p.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 200 && dist > 4) {
-          p.vx += (dx / dist) * 0.003;
-          p.vy += (dy / dist) * 0.003;
-          p.vx += (-dy / dist) * 0.012;
-          p.vy += ( dx / dist) * 0.012;
-        }
-      }
-      // Cursor repulsion
-      if (mouse.active) {
-        const mdx = p.x - mouse.x;
-        const mdy = p.y - mouse.y;
-        const mdist = Math.hypot(mdx, mdy);
-        if (mdist > 0 && mdist < REPULSE_RADIUS) {
-          const force = (REPULSE_RADIUS - mdist) / REPULSE_RADIUS;
-          p.vx += (mdx / mdist) * force * 0.6;
-          p.vy += (mdy / mdist) * force * 0.6;
-        }
-      }
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vx *= 0.985;
-      p.vy *= 0.985;
-      if (p.ttl !== undefined) {
-        const age = now - p.born;
-        if (age > p.ttl) { particles.splice(i, 1); continue; }
-        p.a = 0.5 * (1 - age / p.ttl);
-      } else {
-        if (p.x < -20) p.x = w + 20;
-        if (p.x > w + 20) p.x = -20;
-        if (p.y < -20) p.y = h + 20;
-        if (p.y > h + 20) p.y = -20;
-      }
-      ctx.fillStyle = 'rgba(' + p.color.join(',') + ',' + p.a.toFixed(2) + ')';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Connection lines between nearby particles (per OPUS brand spec, max 120px)
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i < particles.length; i++) {
-      const a = particles[i];
-      if (a.ttl !== undefined) continue;
-      for (let j = i + 1; j < particles.length; j++) {
-        const b = particles[j];
-        if (b.ttl !== undefined) continue;
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < CONNECT_DIST) {
-          const alpha = (1 - dist / CONNECT_DIST) * 0.16 * Math.min(a.a, b.a);
-          ctx.strokeStyle = 'rgba(123,111,168,' + alpha.toFixed(3) + ')';
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-      }
-    }
-
-    requestAnimationFrame(draw);
-  }
-
-  resize();
-  init();
-  requestAnimationFrame(draw);
-  window.addEventListener('resize', resize);
-  document.addEventListener('visibilitychange', () => {
-    running = !document.hidden;
-    if (running) requestAnimationFrame(draw);
-  });
-
-  window.__particles = { notifyState, spawnFromCard };
-}
-
 /* ============================================================
    BIOFIELD DASHBOARD v2 RENDERERS
    ============================================================ */
@@ -6605,10 +6114,6 @@ const HAWKINS_TICKS = [
 /* v1.9.14: function buildSolfeggioScale() deleted (orphan — not called anywhere). */
 
 /* v1.9.14: function buildWaveformSVG() deleted (orphan — not called anywhere). */
-function isDashboardOpen() { return true; }
-function openDashboard() { mountBiofieldDashboard(); }
-function closeDashboard() { mountBiofieldDashboard(); }
-
 /* Portrait helpers. v1.7.0 adds onerror fallback to a soft initial-circle
    so a missing slug-derived JPG no longer breaks the hero tile silently. */
 function buildPortraitImg(extraClass) {
@@ -7146,58 +6651,6 @@ function buildBelowHeroDetail() {
    Markup mirrors the side-pane + cards row that used to live inside
    buildBodyAuroraHero, in a clean responsive grid (no body-stage
    absolute positioning). */
-function buildReadingDetail() {
-  const view = getView();
-  const wrap = el('div', { class: 'bf-reading-detail' });
-  wrap.appendChild(el('div', { class: 'bf-reading-eyebrow', text: 'Your reading' }));
-  const grid = el('div', { class: 'bf-reading-grid' });
-
-  // Calibration / Hawkins
-  const hkLevel = Number(view.hawkinsLevel) || 525;
-  const hkTarget = Number(view.hawkinsTarget) || 528;
-  const tierInfo = hawkinsTier(hkLevel);
-  const hkCard = el('div', { class: 'bf-stage-card bf-stage-hawkins reveal' });
-  hkCard.appendChild(el('div', { class: 'label', text: 'Calibration' }));
-  const hkValue = el('div', { class: 'value' });
-  hkValue.appendChild(el('strong', { text: String(hkLevel) }));
-  hkValue.appendChild(el('span', { class: 'tier-frame', text: ' · ' + tierInfo.frame + ' ' }));
-  hkValue.appendChild(el('span', { class: 'tier-name', text: tierInfo.tier }));
-  hkCard.appendChild(hkValue);
-  hkCard.appendChild(el('div', { class: 'felt', text: hkTarget + ' Hz · Miracles, within reach.' }));
-  grid.appendChild(hkCard);
-
-  // DNA helix
-  const dnaInfo = view.dna || { phaseLocked: 9, consolidating: 3, of: 12 };
-  const dna = el('div', { class: 'bf-helix bf-helix--side reveal' });
-  const helixWrap = el('div', { class: 'bf-helix-svg-wrap' });
-  helixWrap.appendChild(buildHelixSVG());
-  dna.appendChild(helixWrap);
-  const dnaMeta = el('div', { class: 'bf-helix-meta' });
-  dnaMeta.appendChild(el('div', { class: 'helix-label', text: 'DNA Strand Activation' }));
-  const cnt = el('div', { class: 'helix-count' });
-  cnt.appendChild(buildHelixStat(dnaInfo.phaseLocked, 'phase-locked', 'primary'));
-  cnt.appendChild(buildHelixStat(dnaInfo.consolidating, 'consolidating', ''));
-  cnt.appendChild(buildHelixStat(dnaInfo.of, 'of 12', 'total'));
-  dnaMeta.appendChild(cnt);
-  dnaMeta.appendChild(el('div', { class: 'helix-sub', text: 'The lower pairs anchor first. The upper pairs are on their way.' }));
-  dna.appendChild(dnaMeta);
-  grid.appendChild(dna);
-
-  // Pattern (primary block) quote
-  const blockQuote = (view.primaryBlock || (USER && USER.primaryBlockQuote) || 'Hesitation in finalizing commitments.').trim();
-  const holding = el('div', { class: 'bf-stage-card bf-stage-holding reveal' });
-  holding.appendChild(el('span', { class: 'eyebrow', text: 'Pattern' }));
-  holding.appendChild(el('div', { class: 'quote', text: '"' + blockQuote.replace(/^"|"$/g, '') + '"' }));
-  holding.appendChild(el('div', { class: 'felt', text: 'This is the place your body keeps returning to. We are letting you stand here, on purpose.' }));
-  grid.appendChild(holding);
-
-  // Balancing Breath (interactive meter)
-  grid.appendChild(buildBalancingBreath());
-
-  wrap.appendChild(grid);
-  return wrap;
-}
-
 /* v1.10.0: profileType dispatcher.
    USER.profileType selects which dashboard renders:
    - 'biofield' (default if absent): legacy chakras-on-body + auric rings + DNA helix
@@ -8651,369 +8104,12 @@ function armJourneyTrajReveal(root) {
    ============================================================ */
 const SVGNS = 'http://www.w3.org/2000/svg';
 
-function buildRisingLightHero(s) {
-  const wrap = el('div', { class: 'arc-rising' });
-  wrap.appendChild(el('div', { class: 'arc-rising-eyebrow', text: 'THE ARC' }));
-
-  const figure = el('div', { class: 'arc-rising-figure' });
-
-  // Soft body backdrop (reused asset). aria-hidden; the story is the light.
-  const img = el('img', {
-    class: 'arc-rising-body', src: 'assets/dashboard/body-aurora.webp',
-    alt: '', 'aria-hidden': 'true', loading: 'eager', decoding: 'async'
-  });
-  img.addEventListener('error', () => { img.style.display = 'none'; });
-  figure.appendChild(img);
-
-  // SVG light-layer: viewBox matches the image native aspect so embers
-  // track the figure at every width with no JS positioning.
-  const svg = document.createElementNS(SVGNS, 'svg');
-  svg.setAttribute('class', 'arc-rising-light');
-  svg.setAttribute('viewBox', '0 0 703 1024');
-  svg.setAttribute('aria-hidden', 'true');
-
-  // --- defs: one warm volumetric glow filter (static, never animated) ---
-  // Built with DOM methods (no innerHTML) per the project's DOM-safe rule.
-  const defs = document.createElementNS(SVGNS, 'defs');
-  const filt = document.createElementNS(SVGNS, 'filter');
-  filt.setAttribute('id', 'arc-ember-glow');
-  filt.setAttribute('x', '-80%'); filt.setAttribute('y', '-80%');
-  filt.setAttribute('width', '260%'); filt.setAttribute('height', '260%');
-  [['5','b1'],['12','b2'],['22','b3']].forEach(([sd, res]) => {
-    const fb = document.createElementNS(SVGNS, 'feGaussianBlur');
-    fb.setAttribute('in', 'SourceAlpha');
-    fb.setAttribute('stdDeviation', sd);
-    fb.setAttribute('result', res);
-    filt.appendChild(fb);
-  });
-  const merge = document.createElementNS(SVGNS, 'feMerge');
-  ['b3','b2','b1','SourceGraphic'].forEach(inp => {
-    const mn = document.createElementNS(SVGNS, 'feMergeNode');
-    mn.setAttribute('in', inp);
-    merge.appendChild(mn);
-  });
-  filt.appendChild(merge);
-  defs.appendChild(filt);
-  svg.appendChild(defs);
-
-  const CX = 253;                 // figure spine ≈ 36% of 703
-  const toCy = (yPct) => (yPct / 100) * 1024;
-  const centers = s.centers || [];
-  if (!centers.length) { figure.appendChild(svg); wrap.appendChild(figure); return wrap; }
-
-  const ys = centers.map(c => c.yPct);
-  const topY = toCy(Math.min(...ys));      // highest center (crown)
-  const botY = toCy(Math.max(...ys));      // lowest center (root)
-
-  // --- spine: faint full channel + bright lit reach to the waterline ---
-  const faint = document.createElementNS(SVGNS, 'line');
-  faint.setAttribute('class', 'arc-spine-faint');
-  faint.setAttribute('x1', CX); faint.setAttribute('y1', botY);
-  faint.setAttribute('x2', CX); faint.setAttribute('y2', topY);
-  svg.appendChild(faint);
-
-  const SEED_R = 13;  // every center's starting size — the "where it began" reference
-  if (s.waterline) {
-    const litTop = toCy(s.waterline.yPct);
-    const lit = document.createElementNS(SVGNS, 'line');
-    lit.setAttribute('class', 'arc-spine-lit');
-    lit.setAttribute('x1', CX); lit.setAttribute('y1', botY);
-    lit.setAttribute('x2', CX); lit.setAttribute('y2', litTop);
-    lit.setAttribute('filter', 'url(#arc-ember-glow)');
-    svg.appendChild(lit);
-
-    // v1.16.1 (EBI Pass 2): milestone nodes on the lit spine — each
-    // tended center is a station the light has reached; the waterline
-    // (top of the climb) is the pulsing leading edge. Makes the climb
-    // legible as discrete progress, not just a bar.
-    centers.filter(c => c.light && c.light.done > 0).forEach(c => {
-      const node = document.createElementNS(SVGNS, 'circle');
-      const isLead = s.waterline && c.id === s.waterline.id;
-      node.setAttribute('class', 'arc-spine-node' + (isLead ? ' is-lead' : ''));
-      node.setAttribute('cx', CX); node.setAttribute('cy', toCy(c.yPct));
-      node.setAttribute('r', isLead ? 7 : 4);
-      svg.appendChild(node);
-    });
-  }
-
-  // --- embers, drawn root→crown so DOM order = ignition order ---
-  // v1.16.1 (EBI Pass 1): three clearly-stepped tiers so dormant /
-  // tended / fully-tended read at a glance, plus a peak spark and a
-  // seed-ring (EBI Pass 2) showing how far each ember has grown.
-  const ordered = centers.slice().sort((a, b) => b.yPct - a.yPct); // root first
-  ordered.forEach((c, i) => {
-    const cy = toCy(c.yPct);
-    const L = c.light || { charge: 0, done: 0, total: 0, tint: arcStateTint(c.state) };
-    const done = L.done || 0, total = L.total || 0;
-    const tier = done === 0 ? 'dormant' : (total > 0 && done >= total ? 'full' : 'partial');
-    const tint = L.peak ? '#FFD764' : (L.tint || arcStateTint(c.state));
-
-    // Stepped geometry — perceptible jumps, not a smooth ramp.
-    const R = tier === 'dormant' ? SEED_R : (tier === 'full' ? 32 : 24) + (L.peak ? 3 : 0);
-    const baseOp = tier === 'dormant' ? 0.20 : (tier === 'full' ? 0.92 : 0.62);
-
-    const g = document.createElementNS(SVGNS, 'g');
-    g.setAttribute('class', 'arc-ember arc-ember--' + tier + (L.peak ? ' is-peak' : ''));
-    g.style.setProperty('--emb', baseOp.toFixed(3));
-    g.style.setProperty('--igd', (i * 0.06).toFixed(2) + 's'); // 60ms stagger up
-
-    // SEED RING (Pass 2): faint static marker at the starting size. The
-    // gap between this and the bloom = how far this center has come.
-    const seed = document.createElementNS(SVGNS, 'circle');
-    seed.setAttribute('class', 'arc-ember-seed');
-    seed.setAttribute('cx', CX); seed.setAttribute('cy', cy);
-    seed.setAttribute('r', SEED_R);
-    g.appendChild(seed);
-
-    // deepening halo ring
-    if (L.deepened) {
-      const ring = document.createElementNS(SVGNS, 'circle');
-      ring.setAttribute('class', 'arc-ember-ring');
-      ring.setAttribute('cx', CX); ring.setAttribute('cy', cy);
-      ring.setAttribute('r', R + 11);
-      g.appendChild(ring);
-    }
-    // haze (colored glow)
-    const haze = document.createElementNS(SVGNS, 'circle');
-    haze.setAttribute('class', 'arc-ember-haze');
-    haze.setAttribute('cx', CX); haze.setAttribute('cy', cy);
-    haze.setAttribute('r', R);
-    haze.setAttribute('fill', tint);
-    haze.setAttribute('filter', 'url(#arc-ember-glow)');
-    g.appendChild(haze);
-    // hot core — only once tended (dormant centers stay a cool coal)
-    if (tier !== 'dormant') {
-      const core = document.createElementNS(SVGNS, 'circle');
-      core.setAttribute('class', 'arc-ember-core');
-      core.setAttribute('cx', CX); core.setAttribute('cy', cy);
-      core.setAttribute('r', (R * 0.4).toFixed(1));
-      core.setAttribute('fill', '#fff');
-      core.setAttribute('opacity', (tier === 'full' ? 0.9 : 0.6).toFixed(2));
-      g.appendChild(core);
-    }
-    // peak spark (Pass 1): a small sacred 4-point gleam on WOW centers
-    if (L.peak) {
-      const spark = document.createElementNS(SVGNS, 'path');
-      spark.setAttribute('class', 'arc-ember-spark');
-      const sx = CX, sy = cy, a = R * 1.15, b = R * 0.32;
-      spark.setAttribute('d',
-        'M' + sx + ' ' + (sy - a) +
-        'Q' + (sx + b) + ' ' + (sy - b) + ' ' + (sx + a) + ' ' + sy +
-        'Q' + (sx + b) + ' ' + (sy + b) + ' ' + sx + ' ' + (sy + a) +
-        'Q' + (sx - b) + ' ' + (sy + b) + ' ' + (sx - a) + ' ' + sy +
-        'Q' + (sx - b) + ' ' + (sy - b) + ' ' + sx + ' ' + (sy - a) + 'Z');
-      spark.setAttribute('fill', '#FFF4D6');
-      g.appendChild(spark);
-    }
-
-    svg.appendChild(g);
-  });
-
-  figure.appendChild(svg);
-  wrap.appendChild(figure);
-
-  // Caption — the story of where the light has climbed.
-  wrap.appendChild(el('div', { class: 'arc-rising-caption', text: composeArcLightCaption(s) }));
-
-  // Origin line — where you started (biofield only).
-  if (s.mode !== 'pattern') {
-    const base = (s.system && s.system.snapshots && s.system.snapshots[0]) || {};
-    const bits = [];
-    if (typeof base.auricMeters === 'number') bits.push('from ' + base.auricMeters.toFixed(1) + 'm');
-    if (base.hawkinsTier) bits.push(base.hawkinsTier);
-    const dna = USER && USER.dna;
-    if (dna && dna.phaseLocked && dna.of) bits.push(dna.phaseLocked + ' of ' + dna.of + ' strands');
-    if (bits.length) wrap.appendChild(el('div', { class: 'arc-rising-origin', text: bits.join(' · ') }));
-  }
-
-  // Entrance ignition, once per page load.
-  if (!arcIgnited) {
-    arcIgnited = true;
-    wrap.classList.add('igniting');
-    setTimeout(() => wrap.classList.remove('igniting'), 1800);
-  }
-
-  return wrap;
-}
-
 /* v1.15.2: Arc strips v2 — collapsible drawer, compact rows, no week
    badges, no empty pip tracks, no day-1 filler lines. Rolled out per
    slug (Paul first) so Adam reviews before the rest migrate. */
 /* v1.15.5: v2 rolled out to everyone after review on Paul's portal.
    Set to an array of slugs to re-gate, null = all users. */
 const ARC_V2_SLUGS = null;
-
-function arcStripsV2Enabled() {
-  if (ARC_V2_SLUGS === null) return true;
-  return !!(USER && ARC_V2_SLUGS.includes(USER.slug));
-}
-
-function buildArcStrips(s) {
-  if (arcStripsV2Enabled()) return buildArcStripsV2(s);
-  const wrap = el('div', { class: 'arc-strips' });
-  s.centers.forEach((c, i) => {
-    wrap.appendChild(buildArcStrip(c, s.axis, s.mode, i));
-  });
-  wrap.appendChild(el('div', { class: 'arc-coda', text: 'we reflect, we never conclude.' }));
-  return wrap;
-}
-
-function buildArcStripsV2(s) {
-  const wrap = el('div', { class: 'arc-strips arc-strips--v2' });
-  const lsKey = (USER && USER.slug ? USER.slug : 'anon') + '.arcStripsOpen.v1';
-  let open = false;
-  try { open = localStorage.getItem(lsKey) === '1'; } catch {}
-
-  // How much has actually happened? Drives the toggle caption.
-  const doneCount = s.centers.reduce((n, c) => n + c.sessions.filter(x => x.done).length, 0);
-  const capturedWeeks = s.axis.points.filter(p => p.captured).length;
-
-  const toggle = el('button', { class: 'arc-strips-toggle', type: 'button', 'aria-expanded': open ? 'true' : 'false' });
-  toggle.appendChild(el('span', { class: 'arc-strips-toggle-icon', 'aria-hidden': 'true' }));
-  const centersWord = s.mode === 'pattern' ? 'the three centers' : 'the seven centers';
-  const caption = doneCount > 0
-    ? centersWord + ' · ' + doneCount + ' session' + (doneCount === 1 ? '' : 's') + ' met'
-    : centersWord;
-  toggle.appendChild(el('span', { class: 'arc-strips-toggle-text', text: caption }));
-  wrap.appendChild(toggle);
-
-  const drawer = el('div', { class: 'arc-strips-drawer' + (open ? ' open' : '') });
-  s.centers.forEach(c => drawer.appendChild(buildArcStripV2(c, s.axis, capturedWeeks)));
-  drawer.appendChild(el('div', { class: 'arc-coda', text: 'we reflect, we never conclude.' }));
-  wrap.appendChild(drawer);
-
-  toggle.addEventListener('click', () => {
-    const now = drawer.classList.toggle('open');
-    toggle.setAttribute('aria-expanded', now ? 'true' : 'false');
-    try { localStorage.setItem(lsKey, now ? '1' : '0'); } catch {}
-  });
-  return wrap;
-}
-
-function buildArcStripV2(center, axis, capturedWeeks) {
-  const row = el('div', { class: 'arc-strip-v2' });
-  row.style.setProperty('--arc-state-tint', arcStateTint(center.state));
-
-  const head = el('div', { class: 'arc-strip-v2-head' });
-  head.appendChild(el('span', { class: 'arc-strip-label', text: center.label.toUpperCase() }));
-  head.appendChild(el('span', { class: 'arc-strip-state', text: center.state || '' }));
-  row.appendChild(head);
-
-  // Pip track only when the journey has more than the baseline captured;
-  // four empty circles at day one convey nothing.
-  if (capturedWeeks > 1) {
-    const track = el('div', { class: 'arc-strip-track' });
-    axis.points.forEach((p, i) => {
-      const pip = center.pips[i] || { lit: false };
-      const pipEl = el('div', { class: 'arc-pip' + (pip.lit ? ' is-lit' : ' is-open') });
-      if (pip.lit && pip.state) pipEl.style.background = arcStateTint(pip.state);
-      track.appendChild(pipEl);
-      if (i < axis.points.length - 1) {
-        const isDashed = !pip.lit || !center.pips[i+1] || !center.pips[i+1].lit;
-        track.appendChild(el('div', { class: 'arc-pip-line' + (isDashed ? ' is-dashed' : '') }));
-      }
-    });
-    row.appendChild(track);
-  }
-
-  if (center.sessions.length) {
-    const pills = el('div', { class: 'arc-strip-pills' });
-    center.sessions.forEach(sx => {
-      const pill = el('div', {
-        class: 'arc-pill' + (sx.done ? ' is-done' : '') + (sx.peak ? ' is-peak' : '')
-      });
-      pill.appendChild(el('div', { class: 'arc-pill-name', text: sx.heading }));
-      const meta = el('div', { class: 'arc-pill-meta' });
-      if (sx.peak) meta.appendChild(el('span', { class: 'arc-pill-mark', text: '\u2726 ' + sx.wow }));
-      else if (sx.done) meta.appendChild(el('span', { class: 'arc-pill-mark arc-pill-mark--soft', text: '\u2726' }));
-      if (sx.week) meta.appendChild(el('span', { class: 'arc-pill-week', text: 'wk ' + sx.week }));
-      if (meta.firstChild) pill.appendChild(meta);
-      pills.appendChild(pill);
-    });
-    row.appendChild(pills);
-  }
-
-  if (center.quote) {
-    const q = el('div', { class: 'arc-strip-quote' });
-    q.appendChild(el('span', { class: 'arc-q-text', text: '"' + center.quote.text + '"' }));
-    q.appendChild(el('span', { class: 'arc-q-attr', text: ' \u2014 your note, ' + center.quote.sessionHeading.toLowerCase() }));
-    row.appendChild(q);
-  }
-
-  // Summary only when there is activity to summarize. The day-one
-  // restatements ("the crown starts radiant") were filler.
-  const done = center.sessions.filter(x => x.done).length;
-  if (done > 0) {
-    row.appendChild(el('div', { class: 'arc-strip-summary', text: center.summary }));
-  }
-
-  return row;
-}
-
-function buildArcStrip(center, axis, mode, idx) {
-  const strip = el('div', { class: 'arc-strip arc-strip--' + center.id });
-  strip.style.setProperty('--arc-state-tint', arcStateTint(center.state));
-
-  // Header row: state word + label + week badge
-  const head = el('div', { class: 'arc-strip-head' });
-  head.appendChild(el('div', { class: 'arc-strip-label', text: center.label.toUpperCase() }));
-  head.appendChild(el('div', { class: 'arc-strip-state', text: center.state || '' }));
-  if (center.weekBadge) {
-    head.appendChild(el('div', { class: 'arc-strip-week', text: 'week ' + center.weekBadge + ' of the plan' }));
-  }
-  strip.appendChild(head);
-
-  // Pip track
-  const track = el('div', { class: 'arc-strip-track' });
-  axis.points.forEach((p, i) => {
-    const pip = center.pips[i] || { lit: false };
-    const pipEl = el('div', { class: 'arc-pip' + (pip.lit ? ' is-lit' : ' is-open') });
-    if (pip.lit && pip.state) pipEl.style.background = arcStateTint(pip.state);
-    track.appendChild(pipEl);
-    if (i < axis.points.length - 1) {
-      const isDashed = !pip.lit || !center.pips[i+1] || !center.pips[i+1].lit;
-      track.appendChild(el('div', { class: 'arc-pip-line' + (isDashed ? ' is-dashed' : '') }));
-    }
-  });
-  strip.appendChild(track);
-
-  // Session pills
-  if (center.sessions.length) {
-    const pills = el('div', { class: 'arc-strip-pills' });
-    center.sessions.forEach(sx => {
-      const pill = el('div', {
-        class: 'arc-pill' +
-          (sx.done ? ' is-done' : '') +
-          (sx.peak ? ' is-peak' : '')
-      });
-      const name = el('div', { class: 'arc-pill-name', text: sx.heading });
-      pill.appendChild(name);
-      const meta = el('div', { class: 'arc-pill-meta' });
-      if (sx.peak) meta.appendChild(el('span', { class: 'arc-pill-mark', text: '✦ ' + sx.wow }));
-      else if (sx.done) meta.appendChild(el('span', { class: 'arc-pill-mark arc-pill-mark--soft', text: '✦' }));
-      if (sx.week) meta.appendChild(el('span', { class: 'arc-pill-week', text: 'wk ' + sx.week }));
-      if (meta.firstChild) pill.appendChild(meta);
-      strip.appendChild(pill);
-      pills.appendChild(pill);
-    });
-    strip.appendChild(pills);
-  } else {
-    strip.appendChild(el('div', { class: 'arc-strip-empty', text: '(no sessions targeted this center)' }));
-  }
-
-  // Quote
-  if (center.quote) {
-    const q = el('div', { class: 'arc-strip-quote' });
-    q.appendChild(el('span', { class: 'arc-q-text', text: '"' + center.quote.text + '"' }));
-    q.appendChild(el('span', { class: 'arc-q-attr', text: ' — your note, ' + center.quote.sessionHeading.toLowerCase() }));
-    strip.appendChild(q);
-  }
-
-  // Summary line
-  strip.appendChild(el('div', { class: 'arc-strip-summary', text: center.summary }));
-
-  return strip;
-}
 
 function mountConstellation() {
   const root = document.getElementById('hero-constellation');
@@ -9239,16 +8335,6 @@ function renderParsedReading(parsed) {
 }
 
 // v1.6.2: handleChipKeyNav removed along with the .read-chip pill UI.
-
-function highlightLine(idx, on) {
-  const line = document.querySelector('.raw-line[data-line-idx="' + idx + '"]');
-  if (!line) return;
-  line.classList.toggle('highlighted', on);
-  if (on) {
-    const det = line.closest('.parsed-raw');
-    if (det && !det.open) det.open = true;
-  }
-}
 
 function runCelebration(name, opts) {
   if (reducedMotion()) return;
@@ -10830,46 +9916,6 @@ function loadField() {
   }
 }
 
-function saveField() {
-  const t = document.getElementById('biofield').value.trim();
-  if (!t) return;
-  const ts = Date.now();
-  const prev = localStorage.getItem(LS.field) || '';
-  if (prev && prev !== t) {
-    const hist = JSON.parse(localStorage.getItem(LS.fieldHistory) || '[]');
-    hist.unshift({ ts: +localStorage.getItem(LS.field + '.ts') || ts, text: prev });
-    localStorage.setItem(LS.fieldHistory, JSON.stringify(hist.slice(0, 12)));
-  }
-  localStorage.setItem(LS.field, t);
-  localStorage.setItem(LS.field + '.ts', String(ts));
-  document.getElementById('biofield-meta').textContent = 'Saved ' + new Date(ts).toLocaleString();
-  document.getElementById('clear-biofield').hidden = false;
-  renderParsedReading(parseInput(t));
-  renderFieldHistory();
-  setState({ inputSaved: true });
-  fireAuroraBump();
-  runCelebration('input-saved');
-}
-
-function clearField() {
-  if (!confirm('Clear the Input? Your past readings stay in history.')) return;
-  const cur = localStorage.getItem(LS.field) || '';
-  if (cur) {
-    const hist = JSON.parse(localStorage.getItem(LS.fieldHistory) || '[]');
-    const ts = +localStorage.getItem(LS.field + '.ts') || Date.now();
-    hist.unshift({ ts, text: cur });
-    localStorage.setItem(LS.fieldHistory, JSON.stringify(hist.slice(0, 12)));
-  }
-  localStorage.removeItem(LS.field);
-  localStorage.removeItem(LS.field + '.ts');
-  document.getElementById('biofield').value = '';
-  document.getElementById('biofield-meta').textContent = 'Not saved yet.';
-  document.getElementById('clear-biofield').hidden = true;
-  renderParsedReading(null);
-  renderFieldHistory();
-  setState({ inputSaved: false });
-}
-
 function renderFieldHistory() {
   const hist = JSON.parse(localStorage.getItem(LS.fieldHistory) || '[]');
   const wrap = document.getElementById('biofield-history');
@@ -10947,16 +9993,6 @@ function buildResolvePayload(slug) {
       sessionsWithNoteCount: (ramonState.sessionsWithNote || []).length
     },
   };
-}
-
-async function maybeResolveSession(slug) {
-  const notes = getNotes();
-  const before = (notes[slug + '__before'] || '').trim();
-  const after  = (notes[slug + '__after']  || '').trim();
-  if (!before || !after) return;
-  const existing = getSessionReflections()[slug];
-  if (existing && existing.text && !existing.dirty) return;
-  await resolveSession(slug);
 }
 
 async function resolveSession(slug) {
@@ -11857,10 +10893,6 @@ function applyUserToDOM() {
   // Pattern-mode portals (Adam's) ship pattern-coded strings here so the
   // section chrome reads "Your coaching transcript" instead of "Your Biofield
   // reading." Falls back to the static HTML when overrides are absent.
-  function setIfText(selector, text) {
-    if (!text) return;
-    document.querySelectorAll(selector).forEach(el => { el.textContent = text; });
-  }
   function setIfNode(selector, text) {
     if (!text) return;
     document.querySelectorAll(selector).forEach(el => {
