@@ -4186,6 +4186,73 @@ section#reflect.reflected .section-title em {
 /* band is internal to card A: keep the top hairline as a divider under the
    caption, drop the redundant bottom border + margin (card padding handles it) */
 .journey-card--summary .journey-band { margin-bottom: 0; border-bottom: none; }
+
+/* ===== v1.32.0: month shell (collapse Month 1 + Begin Month 2) ===== */
+.month-shell { display: block; margin: 0 auto 22px; max-width: 1240px; }
+.month-shell--one { margin-bottom: 24px; }
+.month-summary {
+  cursor: pointer; list-style: none; display: block;
+  padding: clamp(24px, 4vw, 40px) clamp(20px, 4vw, 40px);
+  transition: border-color .3s, box-shadow .3s;
+}
+.month-summary::-webkit-details-marker { display: none; }
+.month-summary:hover { border-color: rgba(255,215,100,0.28); }
+.month-face { text-align: center; }
+.month-kicker { justify-content: center; color: var(--gold); }
+.month-kicker::before { content: '✓'; width: auto; height: auto; background: none; margin-right: 2px; color: var(--gold); font-weight: 700; letter-spacing: 0; }
+.month-heading { font-size: clamp(26px, 4.2vw, 42px); margin-bottom: 20px; }
+.month-signals {
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(20px, 5vw, 54px); flex-wrap: wrap; margin: 4px auto 18px;
+}
+.month-sig { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.month-peak-dots { display: flex; gap: 8px; }
+.month-peak-dot {
+  width: 46px; height: 46px; border-radius: 12px; overflow: hidden;
+  border: 1px solid rgba(255,215,100,0.4); box-shadow: 0 0 12px rgba(255,215,100,0.18);
+  background: linear-gradient(135deg, rgba(123,111,168,0.5), rgba(31,24,36,0.6));
+}
+.month-peak-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.month-sig-label {
+  font-family: var(--sans); font-size: 9.5px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--dim);
+}
+.month-sig--arc { gap: 4px; }
+.month-arc-line { font-family: var(--serif); font-size: clamp(17px, 2.4vw, 22px); color: var(--light); letter-spacing: 0.01em; }
+.month-arc-tier { font-family: var(--sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); }
+.month-ring-count { font-family: var(--serif); font-size: clamp(19px, 2.6vw, 26px); color: var(--gold); }
+.month-body-line {
+  font-family: var(--serif); font-style: italic; font-size: clamp(14px, 2vw, 18px);
+  color: var(--mid); max-width: 44ch; margin: 0 auto 16px; line-height: 1.5;
+}
+.month-open-cue {
+  font-family: var(--sans); font-size: 10.5px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--teal); opacity: 0.85;
+}
+.month-open-cue::before { content: '⌄  '; }
+.month-shell--one[open] .month-open-cue::before { content: '⌃  '; }
+.month-shell--one[open] .month-summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; margin-bottom: 0; }
+.month-body { padding-top: 8px; }
+.month-shell--one[open] .month-body { animation: fr-open .5s cubic-bezier(0.23,1,0.32,1); }
+
+/* Begin Month 2 + month-2 intention cards (reuse .journey-card look) */
+.month-shell--two, .month-shell--two-live { text-align: center; margin: 0 auto 24px; }
+.month-shell--two .journey-kicker, .month-shell--two-live .journey-kicker { justify-content: center; }
+.month-shell--two .journey-heading, .month-shell--two-live .journey-heading { margin-bottom: 16px; }
+.month-two-intention, .month-two-rationale {
+  font-family: var(--serif); font-size: clamp(15px, 2.1vw, 19px); line-height: 1.55;
+  color: var(--light); max-width: 60ch; margin: 0 auto 14px;
+}
+.month-two-rationale { color: var(--mid); font-style: italic; }
+.month-two-sub {
+  font-family: var(--sans); font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--dim); margin: 18px auto 10px; text-align: center;
+}
+.month-begin-btn { margin: 20px auto 4px; display: inline-flex; }
+@media (max-width: 600px) {
+  .month-signals { gap: 18px; }
+  .month-peak-dot { width: 40px; height: 40px; }
+}
 /* From → Now band */
 .journey-band {
   display: grid;
@@ -5434,7 +5501,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.31.7';
+const VERSION = '1.32.0';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8054,6 +8121,161 @@ function buildJourneyInvite(s) {
 /* v1.31.7: card header — gold kicker + gradient display heading + optional
    caption. Shared by both Journey cards so the type reads as designed and
    anchored to the card, not as a generic serif floating on the background. */
+/* ============================ v1.32.0: Months ============================
+   Multi-month shell. When USER.months["2"] exists, collapse the lived month
+   into a "Month One · Complete" card and offer / show Month 2. Gated so every
+   user without a month 2 sees the page exactly as before. */
+
+/* Run fn with SESSIONS/PLAN/PROMPTS/SLUG_TO_CHAKRA + LS temporarily bound to a
+   given month, so a past month's summary can be computed while living in a
+   later one. Restores on exit. */
+function withMonth(n, fn) {
+  const M = USER && USER.months && USER.months[String(n)];
+  if (!M) return fn();
+  const sv = { S: SESSIONS, P: PLAN, PR: PROMPTS, SC: SLUG_TO_CHAKRA, L: LS };
+  SESSIONS = M.sessions; PLAN = M.plan; PROMPTS = M.prompts;
+  SLUG_TO_CHAKRA = M.slugToChakra; LS = makeLS(USER.slug, n);
+  try { return fn(); } finally {
+    SESSIONS = sv.S; PLAN = sv.P; PROMPTS = sv.PR; SLUG_TO_CHAKRA = sv.SC; LS = sv.L;
+  }
+}
+
+/* The collapsed Month-1 face: 5 weighted signals from month-1 arcSummarize.
+   Primary = the peak album-art covers; spine = the field arc; supporting =
+   sessions-met; plus a felt body line. Honored, never graded. */
+function buildMonthOneFace(s) {
+  const face = el('div', { class: 'month-face' });
+  face.appendChild(el('div', { class: 'journey-kicker month-kicker', text: 'Month One · Complete' }));
+  face.appendChild(el('div', { class: 'journey-heading month-heading', text: 'Your first thirty days' }));
+
+  const grid = el('div', { class: 'month-signals' });
+
+  // PRIMARY — the peak covers (WOW 6 / peaks), up to 3.
+  const peaks = (s.moments || []).filter(m => m && (m.wow === 6 || m.peak)).slice(0, 3);
+  if (peaks.length) {
+    const p = el('div', { class: 'month-sig month-sig--peaks' });
+    const dots = el('div', { class: 'month-peak-dots' });
+    peaks.forEach(m => {
+      const dot = el('div', { class: 'month-peak-dot', dataset: { chakra: (SLUG_TO_CHAKRA && SLUG_TO_CHAKRA[m.slug]) || 'crown' } });
+      if (m.art) { const img = document.createElement('img'); img.className = 'month-peak-img'; img.src = m.art; img.alt = ''; img.loading = 'lazy'; dot.appendChild(img); }
+      dots.appendChild(dot);
+    });
+    p.appendChild(dots);
+    p.appendChild(el('div', { class: 'month-sig-label', text: peaks.length + ' beyond words' }));
+    grid.appendChild(p);
+  }
+
+  // SPINE — the field arc + calibration tier.
+  const b = s.baseline || {}; const traj = s.trajectory || [];
+  const last = traj.length ? traj[traj.length - 1] : null;
+  const startA = (typeof b.auric === 'number') ? b.auric : null;
+  const nowA = (last && typeof last.auric === 'number') ? last.auric : startA;
+  if (startA != null) {
+    const arc = el('div', { class: 'month-sig month-sig--arc' });
+    arc.appendChild(el('div', { class: 'month-arc-line', text: 'field ' + startA.toFixed(1) + 'm → ' + (nowA != null ? nowA.toFixed(1) : startA.toFixed(1)) + 'm' }));
+    const startT = b.hawkinsTier || null;
+    const nowT = (last && last.hawkinsTier) ? last.hawkinsTier : startT;
+    if (startT) arc.appendChild(el('div', { class: 'month-arc-tier', text: startT + (nowT && nowT !== startT ? ' → ' + nowT : '') }));
+    grid.appendChild(arc);
+  }
+
+  // SUPPORTING — sessions met.
+  const met = (typeof s.metCount === 'number') ? s.metCount : (s.path || []).filter(p => p.done).length;
+  const total = s.pathTotal || (s.path || []).length || 16;
+  const ring = el('div', { class: 'month-sig month-sig--ring' });
+  ring.appendChild(el('div', { class: 'month-ring-count', text: met + ' of ' + total }));
+  ring.appendChild(el('div', { class: 'month-sig-label', text: 'sessions met' }));
+  grid.appendChild(ring);
+
+  face.appendChild(grid);
+
+  // The felt body line (last, most evocative, of composeJourneyMoved).
+  try {
+    const moved = composeJourneyMoved(s);
+    if (moved && moved.length) face.appendChild(el('div', { class: 'month-body-line', text: moved[moved.length - 1] }));
+  } catch (e) {}
+
+  face.appendChild(el('div', { class: 'month-open-cue', text: 'open my first month' }));
+  return face;
+}
+
+/* The "Begin Month 2" invitation card: intention + rationale, then the gesture. */
+function buildBeginMonthTwoCard(M2) {
+  const card = el('div', { class: 'journey-card month-shell--two' });
+  card.appendChild(el('div', { class: 'journey-kicker', text: (M2.label || 'Month Two') + ' · An Invitation' }));
+  card.appendChild(el('div', { class: 'journey-heading', text: 'Go deeper into what opened' }));
+  if (M2.intention) card.appendChild(el('div', { class: 'month-two-intention', text: M2.intention }));
+  if (M2.rationale) {
+    card.appendChild(el('div', { class: 'journey-sub month-two-sub', text: 'why this month' }));
+    card.appendChild(el('div', { class: 'month-two-rationale', text: M2.rationale }));
+  }
+  const btn = el('button', { class: 'btn btn-primary month-begin-btn', type: 'button', text: 'Begin month two' });
+  btn.addEventListener('click', beginMonthTwo);
+  card.appendChild(btn);
+  return card;
+}
+
+/* The month-2 intention hero (shown above the live month-2 plan once begun). */
+function buildMonthTwoIntentionCard(M2) {
+  const card = el('div', { class: 'journey-card month-shell--two-live' });
+  card.appendChild(el('div', { class: 'journey-kicker', text: (M2.label || 'Month Two') + ' · Your Intention' }));
+  card.appendChild(el('div', { class: 'journey-heading', text: 'Go deeper into what opened' }));
+  if (M2.intention) card.appendChild(el('div', { class: 'month-two-intention', text: M2.intention }));
+  if (M2.rationale) {
+    card.appendChild(el('div', { class: 'journey-sub month-two-sub', text: 'why this month' }));
+    card.appendChild(el('div', { class: 'month-two-rationale', text: M2.rationale }));
+  }
+  return card;
+}
+
+/* The Begin gesture: flip the living month to 2, persist (synced), reload so the
+   month binding re-resolves cleanly. */
+function beginMonthTwo() {
+  try {
+    ramonState.currentMonth = 2;
+    localStorage.setItem(LS.state, JSON.stringify(ramonState));  // .state.v1 is synced -> propagates
+    if (CloudSync && CloudSync.pushNow) { try { CloudSync.pushNow(); } catch (e) {} }
+  } catch (e) {}
+  setTimeout(() => { location.reload(); }, 180);
+}
+
+/* Restructure the page into the month shell (no-op unless a month 2 exists). */
+function initMonthShell() {
+  if (!(USER && USER.months && USER.months['2'])) return;
+  const main = document.querySelector('main');
+  const header = main && main.querySelector('header.hero');
+  if (!main || !header) return;
+  const cur = window.CURRENT_MONTH || 1;
+
+  // Everything in <main> after the hero is the current-month page content.
+  const content = [];
+  for (let n = header.nextSibling; n; ) { const next = n.nextSibling; content.push(n); n = next; }
+
+  const s1 = withMonth(1, () => arcSummarize());
+  const monthOne = el('details', { class: 'month-shell month-shell--one' });
+  const summary = document.createElement('summary');
+  summary.className = 'month-summary journey-card';
+  summary.appendChild(buildMonthOneFace(s1));
+  monthOne.appendChild(summary);
+  const body = el('div', { class: 'month-body' });
+  monthOne.appendChild(body);
+
+  if (cur === 1) {
+    // Month 1 is the live page: it becomes the expandable body of the card.
+    content.forEach(node => body.appendChild(node));
+    main.appendChild(monthOne);
+    main.appendChild(buildBeginMonthTwoCard(USER.months['2']));
+  } else {
+    // Month 2 is live (content = month-2 sections). Month-1 card is summary-only;
+    // expanding shows a month-1 Journey summary rebuilt from month-1 data.
+    const j1 = withMonth(1, () => buildJourneySummary(arcSummarize()));
+    body.appendChild(j1);
+    const first = content[0] || null;
+    main.insertBefore(monthOne, first);
+    main.insertBefore(buildMonthTwoIntentionCard(USER.months['2']), first);
+  }
+}
+
 function buildJourneyCardHead(kicker, heading, caption) {
   const head = el('div', { class: 'journey-cardhead' });
   head.appendChild(el('div', { class: 'journey-kicker', text: kicker }));
@@ -11131,6 +11353,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   mountParticles();
 
   setState({});
+
+  // v1.32.0: collapse the lived month into a card + offer/show Month 2.
+  // No-op unless USER.months["2"] exists, so all other users are unchanged.
+  try { initMonthShell(); } catch (e) { /* never break the page over the shell */ }
 
   window.addEventListener('hashchange', () => setActivePhase(readWeekFromHash(), false));
 
