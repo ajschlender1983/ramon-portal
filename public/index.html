@@ -5456,24 +5456,35 @@ let SLUG_TO_CHAKRA = {};
 let ACTIVE_VIEW = null;
 function getView() { return ACTIVE_VIEW || USER || {}; }
 
-function makeLS(slug) {
+/* v1.31.8: month-scoped LS keys. The per-month PRACTICE data (notes, wow,
+   reflections, scans, snapshots, examples) gets a `.m<N>` segment for month 2+
+   (month 1 stays the bare legacy key, byte-identical). Crucially `slug.m2.notes.v1`
+   still `.endsWith('.notes.v1')`, so it auto-passes the existing SYNCED_LS_SUFFIXES
+   allowlist AND merges server-side as a NEW top-level key — month 1 and month 2
+   never collide, nothing is orphaned, zero call-site changes, and the additive
+   merge contract holds by construction. The user-level keys (field, state,
+   history, UI flags) stay month-global. */
+function makeLS(slug, month) {
+  const mp = (month && month > 1) ? ('.m' + month) : '';  // '' for month 1, '.m2' for month 2
   return {
-    notes:              slug + '.notes.v1',
-    wow:                slug + '.wow.v1',            // v1.9.13: { <slug>: 1..6 } felt-sense rating per session
-    chakraHintSeen:     slug + '.chakraHintSeen.v1', // v1.9.17: '1' once user has tapped a chakra (hides tap-hint)
-    examples:           slug + '.examples.v1',       // v1.9.27: array of generated example reflections
+    // --- month-scoped practice data ---
+    notes:              slug + mp + '.notes.v1',
+    wow:                slug + mp + '.wow.v1',            // v1.9.13: { <slug>: 1..6 } felt-sense rating per session
+    examples:           slug + mp + '.examples.v1',       // v1.9.27: array of generated example reflections
+    reflections:        slug + mp + '.reflections.v1',
+    sessionReflections: slug + mp + '.sessionReflections.v1',
+    weekFields:         slug + mp + '.weekFields.v1',     // { 1: {text, ts}, 2: ... }
+    sessionFields:      slug + mp + '.sessionFields.v1',  // { <slug>: {text, ts} }
+    expandedSessions:   slug + mp + '.expanded.v1',       // [<slug>, <slug>, ...]
+    activeSnapshot:     slug + mp + '.activeSnapshot.v1', // currently-viewed week (0..4)
+    snapshots:          slug + mp + '.snapshots.v1',      // { '0': SnapshotV1, '1': ..., ... } (cached)
+    // --- month-global (user-level) ---
     field:              slug + '.field.v1',
     fieldHistory:       slug + '.field.history.v1',
-    reflections:        slug + '.reflections.v1',
-    state:              slug + '.state.v1',
-    sessionReflections: slug + '.sessionReflections.v1',
+    state:              slug + '.state.v1',               // holds currentMonth
+    chakraHintSeen:     slug + '.chakraHintSeen.v1',      // v1.9.17: '1' once user has tapped a chakra
     versionSeen:        slug + '.versionSeen.v1',
-    weekFields:         slug + '.weekFields.v1',     // { 1: {text, ts}, 2: ... }
-    sessionFields:      slug + '.sessionFields.v1',  // { <slug>: {text, ts} }
-    expandedSessions:   slug + '.expanded.v1',       // [<slug>, <slug>, ...]
-    activeSnapshot:     slug + '.activeSnapshot.v1', // currently-viewed week (0..4)
-    snapshots:          slug + '.snapshots.v1',      // { '0': SnapshotV1, '1': ..., ... } (cached)
-    dashOpen:           slug + '.dashOpen.v1'        // '1' if dashboard is in expanded (sidecar) state
+    dashOpen:           slug + '.dashOpen.v1'             // '1' if dashboard is in expanded (sidecar) state
   };
 }
 
@@ -5604,7 +5615,8 @@ const DEFAULT_STATE = {
   reflectionRequested: false,
   reflectionReceived: false,
   lastVisit: null,
-  sessionsWithNote: []
+  sessionsWithNote: [],
+  currentMonth: 1     // v1.31.8: which month the user is living (1 unless they Begin Month 2)
 };
 
 /* ramonState (the per-user UI state object) is populated inside the
@@ -11043,18 +11055,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   // sees them as if they had been declared up top.
   USER = userData;
   RAMON_INPUT = USER.reading;
-  SESSIONS = USER.sessions;
-  PROMPTS = USER.prompts;
-  PLAN = USER.plan;
   CHAKRA_STATES = USER.chakraStates;
-  SLUG_TO_CHAKRA = USER.slugToChakra;
-  LS = makeLS(USER.slug);
+
+  // v1.31.8: multi-month. USER.months = { "1": {...}, "2": {...} }. When it's
+  // absent, synthesize month 1 from the legacy top-level fields so every
+  // existing user (and Paul, until he Begins Month 2) is byte-for-byte
+  // unchanged. The month a user is LIVING lives in the synced .state.v1 blob
+  // as currentMonth (default 1), resolved AFTER rehydrate so a device that
+  // began Month 2 elsewhere picks it up.
+  const MONTHS = (USER.months && typeof USER.months === 'object') ? USER.months : {};
+  if (!MONTHS['1']) {
+    MONTHS['1'] = {
+      plan: USER.plan, sessions: USER.sessions, prompts: USER.prompts,
+      slugToChakra: USER.slugToChakra, heldInReserve: USER.heldInReserve,
+      intention: USER.intention || null, rationale: USER.rationale || null
+    };
+  }
+  USER.months = MONTHS;
+
+  // Preliminary bind (month 1) so field/state keys resolve for rehydrate.
+  LS = makeLS(USER.slug, 1);
   // v1.11.0: pull this slug's cloud state and rehydrate localStorage BEFORE
-  // any UI loads from LS. Server wins on read; offline / new-slug falls back
-  // to local. This is what gives the user multi-device persistence: the
-  // notes / WOW / reflections / examples they wrote on one device show up
-  // on the next one.
+  // any UI loads from LS. This also brings down currentMonth + any month-2 data.
   await CloudSync.rehydrate(USER.slug);
+
+  // Resolve the living month from rehydrated state, clamp to an existing month,
+  // monotonic (max guard) so a stale device can't drag it back to month 1.
+  let CURRENT_MONTH = 1;
+  try {
+    const st = JSON.parse(localStorage.getItem(USER.slug + '.state.v1')) || {};
+    CURRENT_MONTH = Math.max(1, parseInt(st.currentMonth, 10) || 1);
+  } catch {}
+  if (!MONTHS[String(CURRENT_MONTH)]) CURRENT_MONTH = 1;
+  window.CURRENT_MONTH = CURRENT_MONTH;
+
+  const M = MONTHS[String(CURRENT_MONTH)];
+  SESSIONS = M.sessions;
+  PROMPTS = M.prompts;
+  PLAN = M.plan;
+  SLUG_TO_CHAKRA = M.slugToChakra;
+  window.SLUG_TO_CHAKRA = SLUG_TO_CHAKRA;
+  LS = makeLS(USER.slug, CURRENT_MONTH);   // re-bind month-scoped keys
   ramonState = loadState();
   applyUserToDOM();
   mountArrivalWhisper();
