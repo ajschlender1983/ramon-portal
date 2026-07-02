@@ -5501,7 +5501,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.32.0';
+const VERSION = '1.32.1';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8140,6 +8140,34 @@ function withMonth(n, fn) {
   }
 }
 
+/* v1.32.1: sentence-case a prose string — capitalize the first letter and the
+   first letter after each sentence end (. ! ?), tolerating leading/after quotes
+   and parens. The portal's captions/intentions are authored in a lowercase
+   "gathering-voice"; this normalizes paragraph + sentence starts to standard
+   casing at the display layer, leaving mid-sentence text untouched. */
+function capSentences(t) {
+  if (!t || typeof t !== 'string') return t;
+  return t
+    .replace(/^(\s*[“"‘'(]*)([a-z])/, (m, p, c) => p + c.toUpperCase())
+    .replace(/([.!?]["”’')]?\s+[“"‘'(]*)([a-z])/g, (m, p, c) => p + c.toUpperCase());
+}
+/* Normalize prose paragraphs to standard sentence casing across the board.
+   Runs after render; only touches plain-text prose elements (no child nodes),
+   so headings, labels, and mixed-markup are left alone. Idempotent. */
+function applyProseCase(root) {
+  const sel = '.month-two-intention, .month-two-rationale, .journey-caption,'
+    + ' .journey-invite-copy, .journey-moment-words, .month-body-line,'
+    + ' .journey-traj-delta-line, .journey-moved, .hero-hello';
+  try {
+    (root || document).querySelectorAll(sel).forEach(el => {
+      if (el.children.length === 0 && el.textContent) {
+        const c = capSentences(el.textContent);
+        if (c !== el.textContent) el.textContent = c;
+      }
+    });
+  } catch (e) {}
+}
+
 /* The collapsed Month-1 face: 5 weighted signals from month-1 arcSummarize.
    Primary = the peak album-art covers; spine = the field arc; supporting =
    sessions-met; plus a felt body line. Honored, never graded. */
@@ -8360,6 +8388,7 @@ function mountArc() {
   // v1.20: light the change-over-time meters up when they scroll into
   // view (first mount only — re-renders from scrub show full immediately).
   armJourneyTrajReveal(root);
+  applyProseCase(root);   // v1.32.1: standard sentence casing on journey prose
 }
 
 /* v1.20: when the trajectory scrolls into view, add .in-view to fire the
@@ -11357,6 +11386,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // v1.32.0: collapse the lived month into a card + offer/show Month 2.
   // No-op unless USER.months["2"] exists, so all other users are unchanged.
   try { initMonthShell(); } catch (e) { /* never break the page over the shell */ }
+
+  // v1.32.1: normalize prose paragraphs to standard sentence casing.
+  applyProseCase();
 
   window.addEventListener('hashchange', () => setActivePhase(readWeekFromHash(), false));
 
