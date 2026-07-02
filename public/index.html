@@ -4453,8 +4453,6 @@ body.month-one-open .ebi-fab { bottom: 76px; }
 .hk-tier { position: absolute; right: 0; transform: translateY(50%); display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
 .hk-tier::after { content: ''; position: absolute; right: -8px; bottom: 4px; width: 5px; height: 1px; background: rgba(255,255,255,0.2); }
 .hk-tier-name { font-family: var(--sans); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
-.hk-tier.is-current .hk-tier-name { font-size: 11px; letter-spacing: 0.14em; }
-.hk-tier.is-current .hk-tier-val { color: var(--light); }
 .hk-tier-val { font-family: var(--sans); font-size: 9px; color: var(--dim); }
 .hk-track {
   position: relative; width: 30px; border-radius: 16px;
@@ -5539,7 +5537,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.32.4';
+const VERSION = '1.32.5';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7962,15 +7960,13 @@ function buildJourneyHawkinsMeter(s) {
   wrap.appendChild(head);
 
   const body = el('div', { class: 'hk-body' });
-  // tier labels (left) — the full scale as context, spectrum-colored, with the
-  // current tier the visual focus and the rest subordinate (state-in-scale).
-  const curTierName = hawkinsTier(curV).tier;
+  // tier labels (left) — as before, only the WORD gets the spectrum color
+  // (text treatment); no size/opacity hierarchy, meter visualization unchanged.
   const labels = el('div', { class: 'hk-labels' });
   HAWKINS_TIERS.forEach(t => {
     if (t.v < lo || t.v > hi) return;
-    const isCur = t.name === curTierName;
-    const lab = el('div', { class: 'hk-tier' + (isCur ? ' is-current' : ''), style: 'bottom:' + pct(t.v).toFixed(1) + '%;' });
-    const nameSpan = styleTierWord(t.name, { lower: true, current: isCur, dim: !isCur });
+    const lab = el('div', { class: 'hk-tier', style: 'bottom:' + pct(t.v).toFixed(1) + '%;' });
+    const nameSpan = styleTierWord(t.name, { lower: true });
     nameSpan.classList.add('hk-tier-name');
     lab.appendChild(nameSpan);
     lab.appendChild(el('span', { class: 'hk-tier-val', text: String(t.v) }));
@@ -7990,16 +7986,12 @@ function buildJourneyHawkinsMeter(s) {
   // start marker (static, at baseline)
   const startMark = el('div', { class: 'hk-mark hk-mark--start', style: 'bottom:' + baseH.toFixed(1) + '%;' });
   startMark.appendChild(el('span', { class: 'hk-mark-line' }));
-  const startLabel = el('span', { class: 'hk-mark-label', text: 'started · ' + baseV });
-  if (baseNode.hawkinsTier) { startLabel.appendChild(document.createTextNode(' · ')); startLabel.appendChild(styleTierWord(baseNode.hawkinsTier, { lower: true, dim: true })); }
-  startMark.appendChild(startLabel);
+  startMark.appendChild(el('span', { class: 'hk-mark-label', text: 'started · ' + baseV + (baseNode.hawkinsTier ? ' · ' + baseNode.hawkinsTier.toLowerCase() : '') }));
   track.appendChild(startMark);
   // now marker (rides up to current on scroll-in)
   const nowMark = el('div', { class: 'hk-mark hk-mark--now', style: '--base-h:' + baseH.toFixed(1) + '%; --cur-h:' + curH.toFixed(1) + '%;' });
   nowMark.appendChild(el('span', { class: 'hk-mark-dot' }));
-  const nowLabel = el('span', { class: 'hk-mark-label hk-mark-label--now', text: 'now · ' + curV });
-  if (curNode.hawkinsTier) { nowLabel.appendChild(document.createTextNode(' · ')); nowLabel.appendChild(styleTierWord(curNode.hawkinsTier, { lower: true, current: true })); }
-  nowMark.appendChild(nowLabel);
+  nowMark.appendChild(el('span', { class: 'hk-mark-label hk-mark-label--now', text: 'now · ' + curV + (curNode.hawkinsTier ? ' · ' + curNode.hawkinsTier.toLowerCase() : '') }));
   track.appendChild(nowMark);
   body.appendChild(track);
   wrap.appendChild(body);
