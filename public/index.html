@@ -4137,19 +4137,55 @@ section#reflect.reflected .section-title em {
 .journey--first { animation: journey-fade 0.7s ease both; }
 @keyframes journey-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 /* v1.30: major Journey section headings as real display type */
-.journey-heading {
-  font-family: var(--serif); font-weight: 400;
-  font-size: clamp(30px, 5vw, 50px); line-height: 1.02;
-  letter-spacing: 0.005em; color: var(--light);
-  text-align: center; margin: 14px auto 16px; max-width: 20ch;
+/* v1.31.7: the two Journey sections are now cards with a distinct, integrated
+   header — a gold kicker (flanked by hairlines) over a gradient-filled display
+   heading — instead of a generic centered serif floating on the section bg. */
+.journey-card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(48,38,68,0.58), rgba(31,24,36,0.5));
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: clamp(26px, 4vw, 44px) clamp(20px, 4vw, 40px);
+  margin: 0 auto 20px;
+  box-shadow: 0 18px 44px -18px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.05);
+  overflow: hidden;
 }
-.journey-heading + .journey-caption { margin-top: 4px; }
+/* top accent hairline ties the header to the card edge */
+.journey-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(106,223,217,0.42), rgba(194,47,205,0.34), rgba(255,215,100,0.4), transparent);
+  opacity: 0.7;
+}
+.journey-cardhead { text-align: center; margin: 0 0 22px; }
+.journey-kicker {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: var(--sans); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--gold); margin: 0 0 13px;
+}
+.journey-kicker::before, .journey-kicker::after {
+  content: ''; width: 22px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,215,100,0.55));
+}
+.journey-kicker::after { background: linear-gradient(90deg, rgba(255,215,100,0.55), transparent); }
+.journey-heading {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(28px, 4.6vw, 46px); line-height: 1.03;
+  letter-spacing: -0.012em; text-align: center;
+  margin: 0 auto; max-width: 20ch;
+  background: linear-gradient(116deg, #F5F0FF 0%, #E7DBFF 42%, #C6ADEF 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
 .journey-caption {
   font-family: var(--serif); font-style: italic;
-  font-size: clamp(16px, 2.4vw, 21px); line-height: 1.45;
+  font-size: clamp(15px, 2.3vw, 20px); line-height: 1.45;
   color: var(--light); text-align: center;
-  max-width: 60ch; margin: 0 auto 24px;
+  max-width: 54ch; margin: 10px auto 0;
 }
+/* band is internal to card A: keep the top hairline as a divider under the
+   caption, drop the redundant bottom border + margin (card padding handles it) */
+.journey-card--summary .journey-band { margin-bottom: 0; border-bottom: none; }
 /* From → Now band */
 .journey-band {
   display: grid;
@@ -4288,7 +4324,7 @@ section#reflect.reflected .section-title em {
   font-size: 14px; line-height: 1.5; color: var(--mid);
 }
 /* v1.18: the Living Journey — change over time */
-.journey-traj, .journey-invite { margin: 8px 0 4px; }
+.journey-traj, .journey-invite { margin: 0 auto 20px; }
 .journey-traj-delta {
   text-align: center; margin: 0 auto 18px; max-width: 52ch;
 }
@@ -5398,7 +5434,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.31.6';
+const VERSION = '1.31.7';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -7934,8 +7970,8 @@ function buildJourneyActiveDetail(s) {
 }
 
 function buildJourneyTrajectory(s) {
-  const wrap = el('div', { class: 'journey-traj' });
-  wrap.appendChild(el('div', { class: 'journey-heading', text: 'Your field over time' }));
+  const wrap = el('div', { class: 'journey-card journey-card--field journey-traj' });
+  wrap.appendChild(buildJourneyCardHead('The Field', 'Your field over time'));
 
   const moved = composeScanDelta(s, 'vsPrev');
   if (moved.length) {
@@ -7978,8 +8014,8 @@ function addJourneyScan(text) {
 
 /* Empty / single-scan invitation + ghost preview of the trend to come. */
 function buildJourneyInvite(s) {
-  const wrap = el('div', { class: 'journey-invite' });
-  wrap.appendChild(el('div', { class: 'journey-heading', text: 'Your field over time' }));
+  const wrap = el('div', { class: 'journey-card journey-card--field journey-invite' });
+  wrap.appendChild(buildJourneyCardHead('The Field', 'Your field over time'));
   // ghost preview — a faint start node + dashed rising line to a ghost node
   const W = 320, H = 96;
   const sv = svg('svg', { class: 'journey-invite-svg', viewBox: '0 0 ' + W + ' ' + H });
@@ -8003,13 +8039,25 @@ function buildJourneyInvite(s) {
   return wrap;
 }
 
+/* v1.31.7: card header — gold kicker + gradient display heading + optional
+   caption. Shared by both Journey cards so the type reads as designed and
+   anchored to the card, not as a generic serif floating on the background. */
+function buildJourneyCardHead(kicker, heading, caption) {
+  const head = el('div', { class: 'journey-cardhead' });
+  head.appendChild(el('div', { class: 'journey-kicker', text: kicker }));
+  head.appendChild(el('div', { class: 'journey-heading', text: heading }));
+  if (caption) head.appendChild(el('div', { class: 'journey-caption', text: caption }));
+  return head;
+}
+
 function buildJourneySummary(s) {
   const first = !window.__journeyMountedOnce;
   window.__journeyMountedOnce = true;
   const wrap = el('div', { class: 'journey' + (first ? ' journey--first' : '') + (s.lightStage === 'seed' ? ' journey--seed' : '') });
 
-  wrap.appendChild(el('div', { class: 'journey-heading', text: 'Your journey so far' }));
-  wrap.appendChild(el('div', { class: 'journey-caption', text: composeArcLightCaption(s) }));
+  // --- Card A: the summary (header + caption + From→Now band) ---
+  const cardA = el('div', { class: 'journey-card journey-card--summary' });
+  cardA.appendChild(buildJourneyCardHead('The Journey', 'Your journey so far', composeArcLightCaption(s)));
 
   // --- From → Now band ---
   const band = el('div', { class: 'journey-band' });
@@ -8039,7 +8087,8 @@ function buildJourneySummary(s) {
   });
   band.appendChild(now);
 
-  wrap.appendChild(band);
+  cardA.appendChild(band);
+  wrap.appendChild(cardA);
 
   // --- v1.18: the field over time (interactive change-over-time) ---
   if (s.mode !== 'pattern') {
