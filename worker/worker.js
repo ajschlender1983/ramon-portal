@@ -1508,8 +1508,9 @@ Rules:
 - 'welcome-to-opus' is ALWAYS the first session of week 1.
 - Week 1 grounds. Build intensity gradually; never put throat/expression work before the body has a settling week.
 - Honor what the reading says is strong (feed it) vs depleted (meet it gently).
-- "why" strings speak directly to ${name} in second person and cite their reading by paraphrase.
-- "intention" strings are in ${name}'s first-person voice.
+- SPEAK DIRECTLY TO ${name}, ALWAYS. Every "why", every week "intent", and every "responds" clause addresses ${name} in SECOND PERSON (you / your). NEVER third person: no "he/she/they", no "his/her/their", never "${name}'s field" or "${name} rose to Peace". Write "your field", "you rose to Peace". The whole portal is for ${name}, spoken to ${name}.
+- "why" strings cite their reading by paraphrase (in second person).
+- "intention" strings are ${name}'s own first-person voice (I / my).
 - Mirror, never conclude. No medical or psychological claims.
 
 ${HUMANIZER_RULES}`;
