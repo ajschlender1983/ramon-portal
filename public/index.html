@@ -5537,7 +5537,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.32.5';
+const VERSION = '1.32.6';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8415,6 +8415,18 @@ function initMonthShell() {
   document.body.appendChild(buildMonthStickyBar(monthOne, cur));
   monthOne.addEventListener('toggle', () => {
     document.body.classList.toggle('month-one-open', monthOne.open);
+    // v1.32.6: the journey/Hawkins reveal observer fires during init while the
+    // journey is briefly in the flow (before the shell collapses it), spending
+    // the ride-up so it never plays when the card is opened. Replay it on expand:
+    // reset .in-view to base, force a reflow, then re-add so the CSS transitions
+    // (fills + now-marker ride-up) run fresh. Skipped under reduced motion.
+    if (monthOne.open && !reducedMotion()) {
+      monthOne.querySelectorAll('.journey-traj').forEach(t => {
+        t.classList.remove('in-view');
+        void t.offsetWidth;
+        requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('in-view')));
+      });
+    }
   });
 }
 
