@@ -60,13 +60,14 @@ body {
 }
 body.compounded {
   background: linear-gradient(180deg, var(--void-compounded-top) 0%, var(--void-compounded-bot) 100%);
-  filter: saturate(1.08);
 }
-/* v1.9.28: when a mobile chakra callout is open, suspend the body filter so
-   position:fixed on the callout is anchored to the viewport (not to body,
-   which becomes a containing block when filter is non-`none`). The
-   saturation boost re-attaches when the callout closes. */
-body.callout-open.compounded { filter: none; }
+/* v1.32.2: the `filter: saturate(1.08)` that used to live on body.compounded
+   turned body into a containing block, so every position:fixed child (the EBI
+   fab, the sync pill, the chakra callout) anchored to the tall body and
+   scrolled away once input was saved. The saturation was imperceptible; the
+   real compounded effect is the background gradient above. Removed so fixed
+   overlays stay pinned to the viewport. (Was previously worked around only for
+   the callout via body.callout-open.compounded { filter: none }.) */
 ::selection { background: rgba(106,223,217,0.25); color: var(--light); }
 
 body::before {
@@ -4249,9 +4250,33 @@ section#reflect.reflected .section-title em {
   color: var(--dim); margin: 18px auto 10px; text-align: center;
 }
 .month-begin-btn { margin: 20px auto 4px; display: inline-flex; }
+
+/* Sticky control bar while Month 1 is expanded */
+.month-sticky-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 550;
+  display: flex; justify-content: center; align-items: center; gap: 14px;
+  padding: 14px clamp(16px, 4vw, 40px);
+  background: linear-gradient(180deg, rgba(20,14,32,0), rgba(20,14,32,0.94) 45%);
+  transform: translateY(110%); transition: transform .35s cubic-bezier(0.23,1,0.32,1);
+  pointer-events: none;
+}
+body.month-one-open .month-sticky-bar { transform: translateY(0); pointer-events: auto; }
+.month-sticky-btn {
+  font-family: var(--sans); font-size: 12px; letter-spacing: 0.12em;
+  padding: 11px 22px; border-radius: 999px; cursor: pointer;
+  transition: border-color .25s, background .25s, transform .25s, color .25s;
+}
+.month-sticky-close { background: rgba(31,22,50,0.9); border: 1px solid rgba(255,255,255,0.14); color: var(--mid); }
+.month-sticky-close:hover { border-color: rgba(255,255,255,0.32); color: var(--light); }
+.month-sticky-begin { background: linear-gradient(135deg, var(--gold), #f0c14b); border: none; color: #241a12; font-weight: 600; }
+.month-sticky-begin:hover { transform: translateY(-1px); }
+body.month-one-open .ebi-fab { bottom: 76px; }
+@media (prefers-reduced-motion: reduce) { .month-sticky-bar { transition: none; } }
 @media (max-width: 600px) {
   .month-signals { gap: 18px; }
   .month-peak-dot { width: 40px; height: 40px; }
+  .month-sticky-bar { gap: 10px; padding: 12px; }
+  .month-sticky-btn { padding: 10px 16px; font-size: 11px; letter-spacing: 0.08em; }
 }
 /* From → Now band */
 .journey-band {
@@ -5501,7 +5526,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.32.1';
+const VERSION = '1.32.2';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8267,6 +8292,35 @@ function beginMonthTwo() {
   setTimeout(() => { location.reload(); }, 180);
 }
 
+/* v1.32.2: sticky control bar, visible only while the Month-1 card is expanded,
+   so the user can collapse it or jump to Month 2 without scrolling the whole
+   month. Wired to the details' toggle event. */
+function buildMonthStickyBar(details, cur) {
+  const bar = el('div', { class: 'month-sticky-bar' });
+  const close = el('button', { class: 'month-sticky-btn month-sticky-close', type: 'button', text: 'Close Month One' });
+  close.addEventListener('click', () => {
+    details.open = false;
+    document.body.classList.remove('month-one-open');
+    try { details.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' }); } catch (e) {}
+  });
+  bar.appendChild(close);
+  if (cur === 1) {
+    const begin = el('button', { class: 'month-sticky-btn month-sticky-begin', type: 'button', text: 'Begin Month Two →' });
+    begin.addEventListener('click', beginMonthTwo);
+    bar.appendChild(begin);
+  } else {
+    const toTwo = el('button', { class: 'month-sticky-btn month-sticky-begin', type: 'button', text: 'To Month Two ↓' });
+    toTwo.addEventListener('click', () => {
+      details.open = false;
+      document.body.classList.remove('month-one-open');
+      const live = document.querySelector('.month-shell--two-live') || document.getElementById('map');
+      if (live) try { live.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' }); } catch (e) {}
+    });
+    bar.appendChild(toTwo);
+  }
+  return bar;
+}
+
 /* Restructure the page into the month shell (no-op unless a month 2 exists). */
 function initMonthShell() {
   if (!(USER && USER.months && USER.months['2'])) return;
@@ -8302,6 +8356,12 @@ function initMonthShell() {
     main.insertBefore(monthOne, first);
     main.insertBefore(buildMonthTwoIntentionCard(USER.months['2']), first);
   }
+
+  // Sticky control bar: appears while Month 1 is expanded (close / go to Month 2).
+  document.body.appendChild(buildMonthStickyBar(monthOne, cur));
+  monthOne.addEventListener('toggle', () => {
+    document.body.classList.toggle('month-one-open', monthOne.open);
+  });
 }
 
 function buildJourneyCardHead(kicker, heading, caption) {
@@ -11326,19 +11386,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Preliminary bind (month 1) so field/state keys resolve for rehydrate.
   LS = makeLS(USER.slug, 1);
+
+  // v1.32.2: capture the LOCAL currentMonth BEFORE rehydrate. Root cause of
+  // "Begin Month 2 does nothing": the client merge (mergeStateValues) is
+  // server-wins on scalar sub-keys, so a just-set local currentMonth=2 loses to
+  // the server's baked-in currentMonth=1 during rehydrate. currentMonth is
+  // monotonic (only climbs), so we take the max of the pre-rehydrate local value
+  // and the post-rehydrate merged value — the flip survives regardless of merge
+  // direction or push timing.
+  let localMonthPre = 1;
+  try {
+    const stPre = JSON.parse(localStorage.getItem(USER.slug + '.state.v1')) || {};
+    localMonthPre = Math.max(1, parseInt(stPre.currentMonth, 10) || 1);
+  } catch {}
+
   // v1.11.0: pull this slug's cloud state and rehydrate localStorage BEFORE
   // any UI loads from LS. This also brings down currentMonth + any month-2 data.
   await CloudSync.rehydrate(USER.slug);
 
-  // Resolve the living month from rehydrated state, clamp to an existing month,
-  // monotonic (max guard) so a stale device can't drag it back to month 1.
-  let CURRENT_MONTH = 1;
+  // Resolve the living month: max(local-before, server-merged), clamped to an
+  // existing month. Monotonic, so a stale device can never drag it back.
+  let CURRENT_MONTH = localMonthPre;
   try {
     const st = JSON.parse(localStorage.getItem(USER.slug + '.state.v1')) || {};
-    CURRENT_MONTH = Math.max(1, parseInt(st.currentMonth, 10) || 1);
+    CURRENT_MONTH = Math.max(CURRENT_MONTH, parseInt(st.currentMonth, 10) || 1);
   } catch {}
   if (!MONTHS[String(CURRENT_MONTH)]) CURRENT_MONTH = 1;
   window.CURRENT_MONTH = CURRENT_MONTH;
+
+  // Persist the resolved month back so ramonState + future pushes agree with the
+  // bound month (the rehydrate merge may have written a lower value).
+  try {
+    const st2 = JSON.parse(localStorage.getItem(USER.slug + '.state.v1')) || {};
+    if ((parseInt(st2.currentMonth, 10) || 1) !== CURRENT_MONTH) {
+      st2.currentMonth = CURRENT_MONTH;
+      localStorage.setItem(USER.slug + '.state.v1', JSON.stringify(st2));
+    }
+  } catch {}
 
   const M = MONTHS[String(CURRENT_MONTH)];
   SESSIONS = M.sessions;
