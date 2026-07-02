@@ -4220,7 +4220,18 @@ section#reflect.reflected .section-title em {
 }
 .month-sig--arc { gap: 4px; }
 .month-arc-line { font-family: var(--serif); font-size: clamp(17px, 2.4vw, 22px); color: var(--light); letter-spacing: 0.01em; }
-.month-arc-tier { font-family: var(--sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); }
+.month-arc-tier { font-family: var(--sans); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); display: inline-flex; align-items: baseline; gap: 6px; justify-content: center; }
+.month-arc-tier .hk-arrow { color: var(--dim); }
+
+/* v1.32.3: the Hawkins tier word — progressive spectrum color + glow, from
+   HAWKINS_STYLE via --hk-c / --hk-g. Only applied to genuine tier values. */
+.hk-word {
+  color: var(--hk-c, var(--gold));
+  font-weight: 600;
+  text-shadow: 0 0 calc(9px * var(--hk-g, 0.5)) var(--hk-c, var(--gold));
+}
+.hk-word--dim { opacity: 0.45; font-weight: 500; text-shadow: none; }
+.hk-word--current { font-weight: 700; letter-spacing: 0.02em; }
 .month-ring-count { font-family: var(--serif); font-size: clamp(19px, 2.6vw, 26px); color: var(--gold); }
 .month-body-line {
   font-family: var(--serif); font-style: italic; font-size: clamp(14px, 2vw, 18px);
@@ -4441,7 +4452,9 @@ body.month-one-open .ebi-fab { bottom: 76px; }
 .hk-labels { position: relative; width: 96px; }
 .hk-tier { position: absolute; right: 0; transform: translateY(50%); display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
 .hk-tier::after { content: ''; position: absolute; right: -8px; bottom: 4px; width: 5px; height: 1px; background: rgba(255,255,255,0.2); }
-.hk-tier-name { font-family: var(--sans); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); }
+.hk-tier-name { font-family: var(--sans); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
+.hk-tier.is-current .hk-tier-name { font-size: 11px; letter-spacing: 0.14em; }
+.hk-tier.is-current .hk-tier-val { color: var(--light); }
 .hk-tier-val { font-family: var(--sans); font-size: 9px; color: var(--dim); }
 .hk-track {
   position: relative; width: 30px; border-radius: 16px;
@@ -5526,7 +5539,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.32.2';
+const VERSION = '1.32.3';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -6308,6 +6321,36 @@ const HAWKINS_TIERS = [
   { v: 600, name: 'Peace' },
   { v: 700, name: 'Enlightenment' }
 ];
+
+/* v1.32.3: the Hawkins spectrum — a single source of truth for how each tier
+   word is colored + glows. Progressive: grounded/cool at the low end climbing
+   to radiant/luminous at the high end (see [[hawkins-scale-styling-rule]]).
+   c = color; g = glow intensity (0..1, scales the text-shadow blur). */
+const HAWKINS_STYLE = {
+  courage:       { c: '#4FA9C4', g: 0.28 },  // grounded cyan
+  acceptance:    { c: '#5FC6BE', g: 0.34 },  // aqua-teal
+  reason:        { c: '#8FB8E6', g: 0.40 },  // clear periwinkle
+  love:          { c: '#E870A6', g: 0.52 },  // heart rose
+  joy:           { c: '#FFC94D', g: 0.68 },  // radiant gold
+  peace:         { c: '#FFE39A', g: 0.85 },  // serene luminous gold
+  enlightenment: { c: '#FFF6DA', g: 1.0 }    // pure radiant white-gold
+};
+function hkStyle(name) {
+  return HAWKINS_STYLE[String(name || '').toLowerCase()] || HAWKINS_STYLE.reason;
+}
+/* Return a styled tier word span. Only ever call this on genuine tier VALUES
+   (from hawkinsTier), never on arbitrary prose — "peace" the ordinary word must
+   not get tier styling. opts.lower lowercases the label; opts.dim subordinates
+   it (used for the non-current tiers in a scale-context display). */
+function styleTierWord(name, opts) {
+  opts = opts || {};
+  const st = hkStyle(name);
+  const span = el('span', { class: 'hk-word' + (opts.dim ? ' hk-word--dim' : '') + (opts.current ? ' hk-word--current' : ''),
+    text: opts.lower ? String(name).toLowerCase() : name });
+  span.style.setProperty('--hk-c', st.c);
+  span.style.setProperty('--hk-g', String(st.g));
+  return span;
+}
 function hawkinsTier(level) {
   if (typeof level !== 'number' || isNaN(level)) return { tier: 'Reason', frame: 'at' };
   // Find the tier the level is in or approaching
@@ -7919,12 +7962,17 @@ function buildJourneyHawkinsMeter(s) {
   wrap.appendChild(head);
 
   const body = el('div', { class: 'hk-body' });
-  // tier labels (left)
+  // tier labels (left) — the full scale as context, spectrum-colored, with the
+  // current tier the visual focus and the rest subordinate (state-in-scale).
+  const curTierName = hawkinsTier(curV).tier;
   const labels = el('div', { class: 'hk-labels' });
   HAWKINS_TIERS.forEach(t => {
     if (t.v < lo || t.v > hi) return;
-    const lab = el('div', { class: 'hk-tier', style: 'bottom:' + pct(t.v).toFixed(1) + '%;' });
-    lab.appendChild(el('span', { class: 'hk-tier-name', text: t.name.toLowerCase() }));
+    const isCur = t.name === curTierName;
+    const lab = el('div', { class: 'hk-tier' + (isCur ? ' is-current' : ''), style: 'bottom:' + pct(t.v).toFixed(1) + '%;' });
+    const nameSpan = styleTierWord(t.name, { lower: true, current: isCur, dim: !isCur });
+    nameSpan.classList.add('hk-tier-name');
+    lab.appendChild(nameSpan);
     lab.appendChild(el('span', { class: 'hk-tier-val', text: String(t.v) }));
     labels.appendChild(lab);
   });
@@ -7942,12 +7990,16 @@ function buildJourneyHawkinsMeter(s) {
   // start marker (static, at baseline)
   const startMark = el('div', { class: 'hk-mark hk-mark--start', style: 'bottom:' + baseH.toFixed(1) + '%;' });
   startMark.appendChild(el('span', { class: 'hk-mark-line' }));
-  startMark.appendChild(el('span', { class: 'hk-mark-label', text: 'started · ' + baseV + (baseNode.hawkinsTier ? ' · ' + baseNode.hawkinsTier.toLowerCase() : '') }));
+  const startLabel = el('span', { class: 'hk-mark-label', text: 'started · ' + baseV });
+  if (baseNode.hawkinsTier) { startLabel.appendChild(document.createTextNode(' · ')); startLabel.appendChild(styleTierWord(baseNode.hawkinsTier, { lower: true, dim: true })); }
+  startMark.appendChild(startLabel);
   track.appendChild(startMark);
   // now marker (rides up to current on scroll-in)
   const nowMark = el('div', { class: 'hk-mark hk-mark--now', style: '--base-h:' + baseH.toFixed(1) + '%; --cur-h:' + curH.toFixed(1) + '%;' });
   nowMark.appendChild(el('span', { class: 'hk-mark-dot' }));
-  nowMark.appendChild(el('span', { class: 'hk-mark-label hk-mark-label--now', text: 'now · ' + curV + (curNode.hawkinsTier ? ' · ' + curNode.hawkinsTier.toLowerCase() : '') }));
+  const nowLabel = el('span', { class: 'hk-mark-label hk-mark-label--now', text: 'now · ' + curV });
+  if (curNode.hawkinsTier) { nowLabel.appendChild(document.createTextNode(' · ')); nowLabel.appendChild(styleTierWord(curNode.hawkinsTier, { lower: true, current: true })); }
+  nowMark.appendChild(nowLabel);
   track.appendChild(nowMark);
   body.appendChild(track);
   wrap.appendChild(body);
@@ -8228,7 +8280,17 @@ function buildMonthOneFace(s) {
     arc.appendChild(el('div', { class: 'month-arc-line', text: 'field ' + startA.toFixed(1) + 'm → ' + (nowA != null ? nowA.toFixed(1) : startA.toFixed(1)) + 'm' }));
     const startT = b.hawkinsTier || null;
     const nowT = (last && last.hawkinsTier) ? last.hawkinsTier : startT;
-    if (startT) arc.appendChild(el('div', { class: 'month-arc-tier', text: startT + (nowT && nowT !== startT ? ' → ' + nowT : '') }));
+    if (startT) {
+      const tierRow = el('div', { class: 'month-arc-tier' });
+      if (nowT && nowT !== startT) {
+        tierRow.appendChild(styleTierWord(startT, { dim: true }));
+        tierRow.appendChild(el('span', { class: 'hk-arrow', text: '→' }));
+        tierRow.appendChild(styleTierWord(nowT, { current: true }));
+      } else {
+        tierRow.appendChild(styleTierWord(startT, { current: true }));
+      }
+      arc.appendChild(tierRow);
+    }
     grid.appendChild(arc);
   }
 
@@ -8389,10 +8451,15 @@ function buildJourneySummary(s) {
   if (s.baseline.kind === 'pattern') {
     if (s.baseline.rootPattern) started.appendChild(el('div', { class: 'journey-col-lead', text: s.baseline.rootPattern.toLowerCase() }));
   } else {
-    const bits = [];
-    if (typeof s.baseline.auric === 'number') bits.push('field ' + s.baseline.auric.toFixed(1) + 'm');
-    if (s.baseline.hawkinsTier) bits.push(s.baseline.hawkinsTier);
-    if (bits.length) started.appendChild(el('div', { class: 'journey-col-lead', text: bits.join(' · ') }));
+    if (typeof s.baseline.auric === 'number' || s.baseline.hawkinsTier) {
+      const lead = el('div', { class: 'journey-col-lead' });
+      if (typeof s.baseline.auric === 'number') lead.appendChild(document.createTextNode('field ' + s.baseline.auric.toFixed(1) + 'm'));
+      if (s.baseline.hawkinsTier) {
+        if (lead.childNodes.length) lead.appendChild(document.createTextNode(' · '));
+        lead.appendChild(styleTierWord(s.baseline.hawkinsTier));   // spectrum-styled tier
+      }
+      started.appendChild(lead);
+    }
   }
   if (s.baseline.primaryQuote) {
     const q = s.baseline.primaryQuote.replace(/^["']|["']$/g, '');
