@@ -4446,7 +4446,17 @@ body.month-one-open .ebi-fab { bottom: 76px; }
 /* v1.20: Hawkins meter — a labeled vertical gauge that fills start → now */
 .hk-meter { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; }
 .hk-head { text-align: center; margin-bottom: 14px; }
-.hk-title { font-family: var(--sans); font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); }
+/* v1.32.7: bolder, slightly embossed 3D gold treatment for Hawkins-scale titles.
+   Reusable .hk-title-3d so it can be applied everywhere a Hawkins title appears. */
+.hk-title, .hk-title-3d {
+  font-family: var(--sans); font-size: 11px; letter-spacing: 0.24em;
+  text-transform: uppercase; font-weight: 700;
+  color: #FFD974;
+  text-shadow:
+    0 -0.5px 0 rgba(255,244,205,0.5),   /* top highlight */
+    0 1px 0 rgba(120,78,18,0.7),        /* lower bevel edge */
+    0 2px 4px rgba(0,0,0,0.5);          /* soft drop for depth */
+}
 .hk-sub { font-family: var(--serif); font-style: italic; font-size: 11.5px; color: var(--dim); margin-top: 2px; }
 .hk-body { display: flex; align-items: stretch; gap: 12px; height: 264px; padding-right: 124px; }
 .hk-labels { position: relative; width: 96px; }
@@ -5537,7 +5547,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.32.6';
+const VERSION = '1.32.7';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
