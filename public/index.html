@@ -5549,7 +5549,7 @@ const CloudSync = (function () {
 
 /* App version. Bump on each rolling release.
    Shown subtly in the footer so you can tell users "we're on v1.2 now". */
-const VERSION = '1.32.8';
+const VERSION = '1.32.9';
 
 /* Per-user data is loaded by users/<slug>.js (referenced via ?u=<slug>) and
    exposed on window.USER_DATA. We re-bind these `let` bindings inside the
@@ -8091,7 +8091,7 @@ function buildJourneyField(s) {
 
 /* The scan scrubber — dated dots; tap to move through time (morphs the
    restored body below + re-highlights). */
-function buildJourneyScrubber(s) {
+function buildJourneyScrubber(s, opts) {
   if (s.scanCount < 2) return null;
   const wrap = el('div', { class: 'journey-scrub' + (s.trajectory.length > 6 ? ' journey-scrub--dense' : '') });
   const active = getActiveSnapshotWeek();
@@ -8100,6 +8100,11 @@ function buildJourneyScrubber(s) {
     dot.appendChild(el('span', { class: 'journey-scrub-mark' }));
     dot.appendChild(el('span', { class: 'journey-scrub-date', text: journeyScanDate(n) }));
     dot.addEventListener('click', () => {
+      // v1.32.9: opts.onPick lets a scrubber rendered for a DIFFERENT month
+      // (e.g. the Month-1 journey shown inside the Month-2 view) re-scope the
+      // pick to its own month instead of the global current-month state. The
+      // default path morphs the live body + re-renders the current journey.
+      if (opts && opts.onPick) { opts.onPick(n.week); return; }
       setActiveSnapshot(n.week);   // morph the restored body below
       mountArc();                   // re-render the Journey (active highlight + detail)
     });
@@ -8129,7 +8134,7 @@ function buildJourneyActiveDetail(s) {
   return wrap;
 }
 
-function buildJourneyTrajectory(s) {
+function buildJourneyTrajectory(s, opts) {
   const wrap = el('div', { class: 'journey-card journey-card--field journey-traj' });
   wrap.appendChild(buildJourneyCardHead('The Field', 'Your field over time'));
 
@@ -8150,7 +8155,7 @@ function buildJourneyTrajectory(s) {
   const detail = buildJourneyActiveDetail(s);
   if (detail) wrap.appendChild(detail);
 
-  const scrub = buildJourneyScrubber(s);
+  const scrub = buildJourneyScrubber(s, opts);
   if (scrub) {
     wrap.appendChild(el('div', { class: 'journey-traj-scrub-label', text: 'tap a scan to move through time' }));
     wrap.appendChild(scrub);
@@ -8416,8 +8421,19 @@ function initMonthShell() {
   } else {
     // Month 2 is live (content = month-2 sections). Month-1 card is summary-only;
     // expanding shows a month-1 Journey summary rebuilt from month-1 data.
-    const j1 = withMonth(1, () => buildJourneySummary(arcSummarize()));
-    body.appendChild(j1);
+    // v1.32.9: the month-1 scrubber must scrub MONTH-1 scans, not the live
+    // month. Give it a month-scoped onPick that writes month-1's active
+    // snapshot and rebuilds THIS card in place (never the live month-2 view).
+    const renderMonthOne = () => withMonth(1, () => buildJourneySummary(arcSummarize(), {
+      onPick: (week) => {
+        withMonth(1, () => { try { localStorage.setItem(LS.activeSnapshot, String(week)); } catch (e) {} });
+        const fresh = renderMonthOne();
+        if (body.firstChild) body.replaceChild(fresh, body.firstChild); else body.appendChild(fresh);
+        // the card is already open, so reveal the meters immediately
+        if (!reducedMotion()) fresh.querySelectorAll('.journey-traj').forEach(t => t.classList.add('in-view'));
+      }
+    }));
+    body.appendChild(renderMonthOne());
     const first = content[0] || null;
     main.insertBefore(monthOne, first);
     main.insertBefore(buildMonthTwoIntentionCard(USER.months['2']), first);
@@ -8450,7 +8466,7 @@ function buildJourneyCardHead(kicker, heading, caption) {
   return head;
 }
 
-function buildJourneySummary(s) {
+function buildJourneySummary(s, opts) {
   const first = !window.__journeyMountedOnce;
   window.__journeyMountedOnce = true;
   const wrap = el('div', { class: 'journey' + (first ? ' journey--first' : '') + (s.lightStage === 'seed' ? ' journey--seed' : '') });
@@ -8497,7 +8513,7 @@ function buildJourneySummary(s) {
 
   // --- v1.18: the field over time (interactive change-over-time) ---
   if (s.mode !== 'pattern') {
-    wrap.appendChild(s.scanCount >= 2 ? buildJourneyTrajectory(s) : buildJourneyInvite(s));
+    wrap.appendChild(s.scanCount >= 2 ? buildJourneyTrajectory(s, opts) : buildJourneyInvite(s));
   }
 
   // --- The path so far: album-art rail ---
@@ -9529,9 +9545,17 @@ function buildSnapshot(weekN, text, ts, source) {
    per-week by `ts` mismatch — i.e., if a week's reading text/ts changes since
    the last cache write, that week's snapshot is rebuilt. */
 function getSnapshots() {
+  // v1.32.9: parse-version guard. The scan cache is keyed by (ts, raw), which
+  // does NOT change when the PARSER changes — so a cache built before the
+  // v1.32.8 auric-range parsing gets reused and mis-read (e.g. a "20-23 meters"
+  // scan stuck at the 13.8 baseline fallback). Bump SNAP_PARSE_VERSION whenever
+  // buildSnapshot / extractAuricMeters changes to force a clean rebuild.
+  const SNAP_PARSE_VERSION = '2';
   let cache = {};
-  try { cache = JSON.parse(localStorage.getItem(LS.snapshots)) || {}; }
-  catch { cache = {}; }
+  if (localStorage.getItem(LS.snapshots + '.pv') === SNAP_PARSE_VERSION) {
+    try { cache = JSON.parse(localStorage.getItem(LS.snapshots)) || {}; }
+    catch { cache = {}; }
+  }
 
   const out = {};
   let dirty = false;
@@ -9594,8 +9618,10 @@ function getSnapshots() {
   });
 
   if (dirty) {
-    try { localStorage.setItem(LS.snapshots, JSON.stringify(out)); }
-    catch { /* quota exceeded — silently skip caching */ }
+    try {
+      localStorage.setItem(LS.snapshots, JSON.stringify(out));
+      localStorage.setItem(LS.snapshots + '.pv', SNAP_PARSE_VERSION);
+    } catch { /* quota exceeded — silently skip caching */ }
   }
   return out;
 }
